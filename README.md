@@ -37,11 +37,11 @@ Download the pinned official artifacts (byte-size checked) with `python scripts/
 ```bash
 python src/blue3/analyze.py data/blue3/blue.png
 python src/solve_challenges.py blue3 data/blue3/blue.png
-python src/sleepy_alarm/analyze.py data/sleepy_alarm/morning_n_breakfast.mp3
+python src/sleepy_alarm/analyze.py data/sleepy_alarm/morning_n_breakfast.mp3 --reference data/sleepy_alarm/morning_n_breakfast_original.mp3
 python src/solve_challenges.py sleepy-alarm data/sleepy_alarm/morning_n_breakfast.mp3
 ```
 
-The audio filename is intentionally not hard-coded; use the exact artifact filename from the official challenge repository.
+Download the original audio reference from the same official repository into `data/sleepy_alarm/morning_n_breakfast_original.mp3` before running the optional aligned-source comparison. The analyzer supports `--reference` and requires matching sample rate/frame/channel dimensions; document any mismatch rather than force-aligning samples.
 
 ## Reproducibility
 
