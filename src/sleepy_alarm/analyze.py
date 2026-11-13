@@ -5,7 +5,7 @@ import argparse, hashlib, json
 from pathlib import Path
 import numpy as np
 import soundfile as sf
-from scipy.signal import stft
+from scipy.signal import stft, butter, sosfiltfilt, hilbert
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -23,6 +23,7 @@ def main() -> int:
     p.add_argument("--out-dir", type=Path, default=Path("results/sleepy_alarm"))
     p.add_argument("--nperseg", type=int, default=2048)
     p.add_argument("--noverlap", type=int, default=1536)
+    p.add_argument("--carrier", type=float, default=8000.0)
     args = p.parse_args()
     if not args.audio.is_file():
         p.error(f"audio file does not exist: {args.audio}")
@@ -52,6 +53,28 @@ def main() -> int:
     plt.title(f"STFT magnitude (nperseg={min(args.nperseg, frames)}, noverlap={min(args.noverlap, max(0, min(args.nperseg, frames)-1))})")
     plt.colorbar(label="Magnitude (dB)"); plt.tight_layout()
     plt.savefig(spec_path, dpi=160); plt.close()
+    # Isolate the ASK carrier and inspect its envelope. This complements the
+    # spectrogram and makes the 50-baud amplitude states measurable.
+    if not 0 < args.carrier < sr / 2:
+        p.error("carrier must be below Nyquist")
+    low, high = args.carrier - 500, args.carrier + 500
+    if low <= 0 or high >= sr / 2:
+        p.error("sample rate too low for carrier band")
+    sos = butter(4, [low, high], btype="bandpass", fs=sr, output="sos")
+    carrier = sosfiltfilt(sos, mono)
+    envelope = np.abs(hilbert(carrier))
+    symbol_samples = sr / 50.0
+    symbol_levels = []
+    for i in range(int(len(envelope) / symbol_samples)):
+        start = int(i * symbol_samples + symbol_samples * 0.25)
+        end = int((i + 1) * symbol_samples - symbol_samples * 0.25)
+        if end > start:
+            symbol_levels.append(float(np.median(envelope[start:end])))
+    envelope_path = args.out_dir / "ask_envelope.png"
+    plt.figure(figsize=(12, 3))
+    plt.plot(np.arange(len(envelope)) / sr, envelope, linewidth=0.5)
+    plt.xlabel("Time (s)"); plt.ylabel("Envelope"); plt.title("8 kHz carrier envelope")
+    plt.tight_layout(); plt.savefig(envelope_path, dpi=160); plt.close()
     result = {
         "file": str(args.audio), "sha256": sha256(args.audio),
         "format": sf.info(args.audio).format, "subtype": sf.info(args.audio).subtype,
@@ -63,7 +86,8 @@ def main() -> int:
         "stft": {"nperseg": int(min(args.nperseg, frames)),
                  "noverlap": int(min(args.noverlap, max(0, min(args.nperseg, frames)-1))),
                  "frequency_bins": int(len(freqs)), "time_frames": int(len(times))},
-        "plots": [str(waveform_path), str(spec_path)],
+        "ask": {"carrier_hz": args.carrier, "baud": 50, "symbol_duration_seconds": 0.02, "envelope_symbol_median_min": min(symbol_levels) if symbol_levels else None, "envelope_symbol_median_max": max(symbol_levels) if symbol_levels else None, "envelope_symbol_count": len(symbol_levels)},
+        "plots": [str(waveform_path), str(spec_path), str(envelope_path)],
         "note": "Plots are exploratory evidence, not proof of steganography by themselves."
     }
     print(json.dumps(result, indent=2, ensure_ascii=False))
