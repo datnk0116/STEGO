@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.DS_Store
+results/*
+!results/README.md
+data/*
+!data/README.md
+*.wav
+*.mp3
+*.flac
+*.png
+*.jpg
+*.jpeg
