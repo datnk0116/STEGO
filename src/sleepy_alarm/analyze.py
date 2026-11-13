@@ -36,6 +36,11 @@ def main() -> int:
     frames, channels = audio.shape
     duration = frames / sr
     mono = audio.mean(axis=1)
+    if not 0 < args.carrier < sr / 2:
+        p.error("carrier must be below Nyquist")
+    low, high = args.carrier - 500, args.carrier + 500
+    if low <= 0 or high >= sr / 2:
+        p.error("sample rate too low for carrier band")
     freqs, times, z = stft(mono, fs=sr, nperseg=min(args.nperseg, frames),
                             noverlap=min(args.noverlap, max(0, min(args.nperseg, frames)-1)))
     magnitude = np.abs(z)
@@ -57,9 +62,9 @@ def main() -> int:
     reference_info = None
     if args.reference:
         ref, ref_sr = sf.read(args.reference, always_2d=True, dtype="float64")
-        if ref_sr != sr or ref.shape != signal.shape:
+        if ref_sr != sr or ref.shape != audio.shape:
             p.error("reference must have the same sample rate, frame count and channel count")
-        residual = signal - ref
+        residual = audio - ref
         residual_mono = residual.mean(axis=1)
         r_sos = butter(4, [low, high], btype="bandpass", fs=sr, output="sos")
         residual_band = sosfiltfilt(r_sos, residual_mono)
@@ -80,11 +85,6 @@ def main() -> int:
         plt.tight_layout(); plt.savefig(difference_path, dpi=160); plt.close()
     # Isolate the ASK carrier and inspect its envelope. This complements the
     # spectrogram and makes the 50-baud amplitude states measurable.
-    if not 0 < args.carrier < sr / 2:
-        p.error("carrier must be below Nyquist")
-    low, high = args.carrier - 500, args.carrier + 500
-    if low <= 0 or high >= sr / 2:
-        p.error("sample rate too low for carrier band")
     sos = butter(4, [low, high], btype="bandpass", fs=sr, output="sos")
     carrier = sosfiltfilt(sos, mono)
     envelope = np.abs(hilbert(carrier))
