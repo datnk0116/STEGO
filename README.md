@@ -32,11 +32,13 @@ python -m pip install -r requirements.txt
 python scripts/check_environment.py
 ```
 
-Obtain challenge artifacts as described in `data/README.md`. Then run:
+Download the pinned official artifacts (byte-size checked) with `python scripts/download_artifacts.py all`. Then run:
 
 ```bash
 python src/blue3/analyze.py data/blue3/blue.png
-python src/sleepy_alarm/analyze.py data/sleepy_alarm/challenge.wav
+python src/solve_challenges.py blue3 data/blue3/blue.png
+python src/sleepy_alarm/analyze.py data/sleepy_alarm/morning_n_breakfast.mp3
+python src/solve_challenges.py sleepy-alarm data/sleepy_alarm/morning_n_breakfast.mp3
 ```
 
 The audio filename is intentionally not hard-coded; use the exact artifact filename from the official challenge repository.
@@ -51,4 +53,4 @@ The work is limited to offline analysis of challenge-provided files. It does not
 
 ## Status
 
-Initial scaffold. The challenge binaries/media must be acquired and locally executed before final claims and screenshots can be completed.
+Analysis scripts and independent solver logic are committed. Download and run the official artifacts locally; record generated evidence before making final experimental claims.
