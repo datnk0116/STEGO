@@ -246,7 +246,7 @@ Các mở rộng được thiết kế trong repository:
 1. Image analyzer: đọc ảnh, in metadata, histogram và thống kê kênh.
 2. Audio analyzer: đọc file, in đặc trưng tín hiệu, tạo waveform và spectrogram.
 3. Integrity manifest: ghi SHA-256 và thông tin artifact để tái lập.
-4. Robustness experiment: tạo bản sao xử lý có kiểm soát (JPEG quality, resize, bit depth; audio resampling, compression/filtering) và kiểm tra ảnh hưởng tới khả năng trích xuất. Chỉ chạy sau khi có baseline thành công.
+4. Robustness experiment: `src/experiments/robustness.py` tạo các bản sao JPEG quality 95/85/70, resize 0.75/0.5, audio resampling round-trip và gain/clipping. Chạy solver trên từng bản sao và ghi kết quả thành công/thất bại; không diễn giải độ bền khi chưa thực nghiệm.
 5. Comparative evaluation: so sánh vật mang tin, độ nhạy tham số, khả năng tự động hóa và false positives.
 
 **Triển khai trong repository:** `src/solve_challenges.py` chứa hai solver; `src/blue3/analyze.py` và `src/sleepy_alarm/analyze.py` chứa analyzer; `src/experiments/robustness.py` sinh các biến thể có kiểm soát. Các script chỉ tạo artifact thí nghiệm, chưa tự khẳng định mức độ bền. **Kết quả từng mở rộng:** [CẦN THỰC NGHIỆM — ghi commit, lệnh, input hash, output, solver success/failure, số liệu và ảnh minh chứng.]
