@@ -286,7 +286,7 @@ Hướng tiếp theo gồm thống kê ảnh nâng cao, steganalysis dựa trên
 
 [3] BYU-CSA, `create.py` and `solve.py` in the Blue 3 directory, upstream commit 18c8f246756e79069c1cb1753c8bfea5e73e31f5.
 
-[4] ImaginaryCTF, `src/createsignal.m`, `morning_n_breakfast_original.mp3`, and `togive/morning_n_breakfast.mp3`, upstream commit 21ea0e040638b953f5cc0efca1d900024899a7bc.
+[4] ImaginaryCTF, `src/createsignal.m`, `src/morning_n_breakfast_original.mp3`, and `togive/morning_n_breakfast.mp3`, upstream commit 21ea0e040638b953f5cc0efca1d900024899a7bc.
 
 [5] CTFtime team, “All about CTF (Capture The Flag),” tài liệu được assignment UET.CN3124 khuyến nghị.
 
