@@ -157,9 +157,9 @@ Bằng chứng cần có: ảnh đầu vào và SHA-256; metadata; histogram; lo
 
 **Bước 4 — FFT/STFT:** source mô tả sóng mang 8 kHz và 50 baud (0,02 s/bit). Dùng band-pass quanh 8 kHz, tính analytic signal/envelope bằng Hilbert transform, lấy trung vị biên độ ở phần giữa mỗi symbol để tránh chuyển tiếp. Phân loại gần 0,002 thành 0, gần 0,005 thành 1, mức gần 0 thành dấu phân cách byte. Script độc lập: `python src/solve_challenges.py sleepy-alarm data/sleepy_alarm/morning_n_breakfast.mp3`. Tham số lọc và ngưỡng là lựa chọn triển khai cần đánh giá độ nhạy, không phải một phần được nguyên văn xác định đầy đủ trong mô tả challenge.
 
-**Bước 5 — Kiểm thử giả thuyết:** tách kênh nếu stereo; phân tích đoạn khi có bằng chứng; đối chiếu mẫu bất thường với mô tả challenge. Mọi xử lý tạo file mới và ghi tham số.
+**Bước 5 — Kiểm thử giả thuyết:** challenge được phân phối là bản alarm đã trộn tín hiệu ASK với nhạc nền; repository upstream có bản original tương ứng. So sánh hai tín hiệu khi đã xác minh cùng sample rate, frame count và căn chỉnh, sau đó phân tích residual để giảm ảnh hưởng nhạc nền. Nếu không dùng reference, lọc quanh sóng mang và kiểm tra envelope; tách kênh nếu stereo. Mọi xử lý tạo file mới và ghi tham số.
 
-**Bước 6 — Xác minh:** giải mã theo cơ chế có bằng chứng; kiểm tra tính nhất quán và đối chiếu source/writeup. Không suy luận thông điệp chỉ từ một vệt phổ không rõ nguồn gốc.
+**Bước 6 — Xác minh:** giải mã ASK theo khung 0,02 giây/symbol, đọc 8 bit thành một byte và xem mức 0 là dấu phân cách/hoàn tất byte theo source. Dùng gợi ý độ dài flag 39 ký tự để kiểm tra tính đầy đủ, không dùng hint làm bằng chứng duy nhất. Đối chiếu chuỗi với cơ chế tạo trong `createsignal.m`.
 
 Bằng chứng cần có: metadata âm thanh; waveform; spectrogram có trục thời gian/tần số; cấu hình FFT/STFT; log; đầu ra trung gian; kết quả xác minh.
 
