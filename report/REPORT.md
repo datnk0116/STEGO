@@ -47,7 +47,7 @@ Phạm vi chỉ bao gồm file challenge công khai và bản sao cục bộ. Kh
 
 ### 2.1. Blue 3 — BYUCTF
 
-Blue 3 được chọn làm case study ảnh. Kho challenge upstream công bố các thành phần phục vụ tái hiện gồm ảnh đầu vào và mã nguồn liên quan đến quá trình tạo/giải challenge. Điều này cho phép nghiên cứu white-box để hình thành giả thuyết; tuy nhiên, báo cáo phải phân biệt thông tin đọc từ source tham khảo với kết quả tự kiểm chứng trên artifact.
+Blue 3 được BYU-CSA mô tả ở mức Hard. Flag được tách thành từng ký tự; với ký tự thứ i, bộ tạo chọn ngẫu nhiên ord(c) lần, mỗi lần tăng 1 một kênh màu ngẫu nhiên của một pixel trong vùng vuông thứ i trên đường chéo. Ảnh nền là RGB (64, 77, 205), kích thước 512×512. Các vùng có kích thước floor(512/L) × floor(512/L), trong đó L là độ dài flag; phần dư ở mép phải/dưới không thuộc các vùng được duyệt. Solver upstream ước lượng màu nền phổ biến nhất, thử độ dài L, cộng tổng chênh lệch ba kênh so với màu nền trong từng vùng rồi ánh xạ tổng sang mã ký tự. Bản triển khai độc lập nằm tại `src/solve_challenges.py`. Challenge hard-mode chỉ phân phối blue.png; create.py/solve.py là tài liệu tham khảo của tác giả, không phải artifact bắt buộc cho người chơi.
 
 Artifact cần thu thập: ảnh gốc và file mô tả/source từ kho BYU được liệt kê trong `data/README.md`.
 
@@ -55,7 +55,7 @@ Câu hỏi phân tích: dữ liệu có được biểu diễn bằng sự khác
 
 ### 2.2. Sleepy Alarm — ImaginaryCTF 2024
 
-Sleepy Alarm được chọn làm case study âm thanh. Phân tích bắt đầu từ đặc tính kỹ thuật của file, thay vì dùng một công cụ duy nhất rồi kết luận.
+Sleepy Alarm thuộc category Forensics, độ khó Medium, tác giả Minerva. Challenge cung cấp `togive/morning_n_breakfast.mp3` và gợi ý độ dài flag là 39 ký tự (tính cả ictf và dấu ngoặc nhọn). Writeup chính thức mô tả một thành phần jingle yếu với peak bất thường ở 8 kHz. Sau khi cô lập sóng mang 8 kHz, tín hiệu có ba mức biên độ: 2×10⁻³ biểu diễn bit 0, 5×10⁻³ biểu diễn bit 1 và 0 biểu diễn điểm kết thúc byte. Mỗi bit kéo dài 0,02 giây, tương ứng 50 baud. Đây là Amplitude Shift Keying (ASK). Challenge repository còn công bố file gốc `morning_n_breakfast_original.mp3` và script MATLAB tạo tín hiệu; có thể dùng cặp original/challenge để so sánh, nhưng lời giải phải được tái hiện trên file phân phối cho người chơi.
 
 Artifact cần thu thập: file âm thanh phát hành chính thức trong challenge repository của ImaginaryCTF 2024, cùng mô tả challenge và writeup tham khảo (nếu có).
 
@@ -139,9 +139,9 @@ Mỗi artifact được giữ nguyên và có SHA-256 ghi trong `results/artifac
 
 **Bước 2 — Khảo sát pixel:** xuất histogram kênh màu và thống kê cơ bản; quan sát giá trị tập trung bất thường, dải màu hoặc vùng khác biệt.
 
-**Bước 3 — Hình thành giả thuyết:** dựa trên đề bài, source công bố và dấu hiệu dữ liệu. Ví dụ: dữ liệu có thể được biểu diễn qua thay đổi cường độ kênh màu hoặc pixel được gom thành vùng. Đây là giả thuyết, không phải kết luận mặc định.
+**Bước 3 — Hình thành giả thuyết:** source creator cho biết mỗi ký tự c được biểu diễn bởi tổng số lần tăng kênh màu bằng `ord(c)` trong vùng đường chéo tương ứng. Vì mỗi thay đổi chỉ tăng một đơn vị ở một kênh, tổng sai khác RGB trong một vùng phải khôi phục được mã ký tự, miễn là màu nền và phân vùng được xác định đúng.
 
-**Bước 4 — Kiểm thử:** dùng script phân tích pixel; thử thứ tự duyệt/kênh/nhóm mà source hoặc bằng chứng hỗ trợ. Ghi từng phép thử và không brute-force không gian tham số không giới hạn.
+**Bước 4 — Kiểm thử:** ước lượng màu nền bằng RGB phổ biến nhất; với mỗi ứng viên L, chia ảnh thành L vùng vuông theo đường chéo, mỗi vùng kích thước `floor(W/L) × floor(H/L)`. Cộng `R−R₀ + G−G₀ + B−B₀` trên từng vùng để thu mã ký tự. Dừng khi chuỗi khớp regex `byuctf{[0-9A-Za-z_]*}`. Script độc lập: `python src/solve_challenges.py blue3 data/blue3/blue.png`.
 
 **Bước 5 — Xác minh:** kết quả cần có định dạng hợp lý và được đối chiếu độc lập với logic tạo challenge. Không dùng flag trong source làm bằng chứng duy nhất cho khả năng giải từ artifact.
 
@@ -155,7 +155,7 @@ Bằng chứng cần có: ảnh đầu vào và SHA-256; metadata; histogram; lo
 
 **Bước 3 — Waveform:** vẽ biên độ theo thời gian; kiểm tra khoảng lặng, clipping, đoạn lặp và thay đổi năng lượng.
 
-**Bước 4 — FFT/STFT:** chọn tham số theo dữ liệu; ghi FFT size, window và hop length; quan sát thành phần phổ và cấu trúc theo thời gian.
+**Bước 4 — FFT/STFT:** source mô tả sóng mang 8 kHz và 50 baud (0,02 s/bit). Dùng band-pass quanh 8 kHz, tính analytic signal/envelope bằng Hilbert transform, lấy trung vị biên độ ở phần giữa mỗi symbol để tránh chuyển tiếp. Phân loại gần 0,002 thành 0, gần 0,005 thành 1, mức gần 0 thành dấu phân cách byte. Script độc lập: `python src/solve_challenges.py sleepy-alarm data/sleepy_alarm/morning_n_breakfast.mp3`. Tham số lọc và ngưỡng là lựa chọn triển khai cần đánh giá độ nhạy, không phải một phần được nguyên văn xác định đầy đủ trong mô tả challenge.
 
 **Bước 5 — Kiểm thử giả thuyết:** tách kênh nếu stereo; phân tích đoạn khi có bằng chứng; đối chiếu mẫu bất thường với mô tả challenge. Mọi xử lý tạo file mới và ghi tham số.
 
@@ -188,7 +188,7 @@ Bằng chứng cần có: metadata âm thanh; waveform; spectrogram có trục t
 - Codec/container: [CẦN THỰC NGHIỆM]
 - Sample rate / channels / frame count: [CẦN THỰC NGHIỆM]
 - Thời lượng: [CẦN THỰC NGHIỆM]
-- FFT size / window / hop length: [CẦN THỰC NGHIỆM]
+- Sóng mang/baud/chu kỳ bit theo mô tả chính thức: 8.000 Hz / 50 baud / 0,02 s mỗi bit.
 - Quan sát waveform: [CẦN THỰC NGHIỆM]
 - Quan sát spectrogram: [CẦN THỰC NGHIỆM]
 - Kết quả trích xuất đã xác minh: [CẦN THỰC NGHIỆM]
@@ -276,9 +276,9 @@ Hướng tiếp theo gồm thống kê ảnh nâng cao, steganalysis dựa trên
 
 ## Tài liệu tham khảo
 
-[1] BYU-CSA, “Old CTF Challenges — Forensics/Steganography — Blue 3,” GitHub. https://github.com/BYU-CSA/old-ctf-challenges/tree/master/forensics-steganography/blue-3 (truy cập: [ngày truy cập thực tế]).
+[1] BYU-CSA, “Blue 3? — challenge description and write-up,” `forensics-steganography/blue-3/README.md`, commit 18c8f246756e79069c1cb1753c8bfea5e73e31f5. https://github.com/BYU-CSA/old-ctf-challenges/tree/master/forensics-steganography/blue-3 (truy cập: 14-11-2026).
 
-[2] ImaginaryCTF, “ImaginaryCTF 2024 Challenges — Sleepy Alarm,” GitHub. https://github.com/ImaginaryCTF/ImaginaryCTF-2024-Challenges (truy cập: [ngày truy cập thực tế]).
+[2] ImaginaryCTF, “Sleepy Alarm — challenge description and solution,” `Forensics/Sleepy Alarm/readme.md`, repository ImaginaryCTF-2024-Challenges. https://github.com/ImaginaryCTF/ImaginaryCTF-2024-Challenges/tree/main/Forensics/Sleepy%20Alarm (truy cập: 14-11-2026).
 
 [3] CTF42, “Blue 3 — BYUCTF,” https://ctf42.online/ (truy cập: [ngày truy cập thực tế]).
 
