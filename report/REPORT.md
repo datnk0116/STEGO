@@ -249,7 +249,7 @@ Các mở rộng được thiết kế trong repository:
 4. Robustness experiment: tạo bản sao xử lý có kiểm soát (JPEG quality, resize, bit depth; audio resampling, compression/filtering) và kiểm tra ảnh hưởng tới khả năng trích xuất. Chỉ chạy sau khi có baseline thành công.
 5. Comparative evaluation: so sánh vật mang tin, độ nhạy tham số, khả năng tự động hóa và false positives.
 
-**Kết quả từng mở rộng:** [CẦN THỰC NGHIỆM — ghi commit, lệnh, đầu vào, đầu ra, số liệu và ảnh minh chứng.] Không tuyên bố hoàn thành khi mới có kế hoạch hoặc code scaffold.
+**Triển khai trong repository:** `src/solve_challenges.py` chứa hai solver; `src/blue3/analyze.py` và `src/sleepy_alarm/analyze.py` chứa analyzer; `src/experiments/robustness.py` sinh các biến thể có kiểm soát. Các script chỉ tạo artifact thí nghiệm, chưa tự khẳng định mức độ bền. **Kết quả từng mở rộng:** [CẦN THỰC NGHIỆM — ghi commit, lệnh, input hash, output, solver success/failure, số liệu và ảnh minh chứng.]
 
 ## 8. Đánh giá, phản biện và tự học
 
