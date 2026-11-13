@@ -17,12 +17,13 @@ import soundfile as sf
 
 BLUE_RE = re.compile(r"byuctf\{[0-9A-Za-z_]*\}\Z")
 
-def solve_blue(path: Path, max_len: int | None = None) -> tuple[str | None, list[tuple[int, str]]]:
+def solve_blue(path: Path, max_len: int | None = None, base_color: tuple[int, int, int] = (64, 77, 205)) -> tuple[str | None, list[tuple[int, str]]]:
     with Image.open(path) as im:
         pixels = np.asarray(im.convert("RGB"), dtype=np.int16)
     h, w, _ = pixels.shape
-    colors, counts = np.unique(pixels.reshape(-1, 3), axis=0, return_counts=True)
-    base = colors[int(np.argmax(counts))]
+    # Blue 3's official creator uses a flat RGB (64,77,205) cover. Using
+    # that known baseline avoids depending on modal-color assumptions.
+    base = np.asarray(base_color, dtype=np.int16)
     limit = min(max_len or min(w, h), min(w, h))
     attempts = []
     for length in range(2, limit + 1):
@@ -111,13 +112,14 @@ def main() -> int:
     b = sub.add_parser("blue3")
     b.add_argument("image", type=Path)
     b.add_argument("--max-len", type=int)
+    b.add_argument("--base-color", type=int, nargs=3, default=(64, 77, 205), metavar=("R", "G", "B"))
     a = sub.add_parser("sleepy-alarm")
     a.add_argument("audio", type=Path)
     a.add_argument("--carrier", type=float, default=8000.0)
     a.add_argument("--baud", type=float, default=50.0)
     args = parser.parse_args()
     if args.challenge == "blue3":
-        result, attempts = solve_blue(args.image, args.max_len)
+        result, attempts = solve_blue(args.image, args.max_len, tuple(args.base_color))
         print("Candidate:", result if result else "NOT FOUND")
         print("Attempts:", len(attempts))
         if result:
