@@ -169,6 +169,8 @@ Bằng chứng cần có: metadata âm thanh; waveform; spectrogram có trục t
 
 ### 5.1. Blue 3
 
+- Upstream image: `blue.png`, 9,406 bytes; Git blob `1dc26a1dde421a6ed0a553c89256e0ad75394c6b`.
+- Upstream challenge source explains the diagonal-region character encoding; the independent decoder is in `src/solve_challenges.py`.
 - Artifact filename: [CẦN THỰC NGHIỆM]
 - SHA-256: [CẦN THỰC NGHIỆM]
 - Kích thước ảnh/mode: [CẦN THỰC NGHIỆM]
@@ -183,6 +185,8 @@ Bằng chứng cần có: metadata âm thanh; waveform; spectrogram có trục t
 
 ### 5.2. Sleepy Alarm
 
+- Official distributed audio: `morning_n_breakfast.mp3`, 179,283 bytes; Git blob `5140f9652af9848374263dca3fdfcd9469903c4d`.
+- Official description specifies an 8 kHz ASK carrier, 50 baud, amplitude levels 0.002 (bit 0), 0.005 (bit 1), and zero as byte separator; official source also contains an original audio track and MATLAB signal-generation script.
 - Artifact filename: [CẦN THỰC NGHIỆM]
 - SHA-256: [CẦN THỰC NGHIỆM]
 - Codec/container: [CẦN THỰC NGHIỆM]
@@ -280,9 +284,9 @@ Hướng tiếp theo gồm thống kê ảnh nâng cao, steganalysis dựa trên
 
 [2] ImaginaryCTF, “Sleepy Alarm — challenge description and solution,” `Forensics/Sleepy Alarm/readme.md`, repository ImaginaryCTF-2024-Challenges. https://github.com/ImaginaryCTF/ImaginaryCTF-2024-Challenges/tree/main/Forensics/Sleepy%20Alarm (truy cập: 14-11-2026).
 
-[3] CTF42, “Blue 3 — BYUCTF,” https://ctf42.online/ (truy cập: [ngày truy cập thực tế]).
+[3] BYU-CSA, `create.py` and `solve.py` in the Blue 3 directory, upstream commit 18c8f246756e79069c1cb1753c8bfea5e73e31f5.
 
-[4] CTF42, “Sleepy Alarm — ImaginaryCTF 2024,” https://ctf42.online/ (truy cập: [ngày truy cập thực tế]).
+[4] ImaginaryCTF, `src/createsignal.m`, `morning_n_breakfast_original.mp3`, and `togive/morning_n_breakfast.mp3`, upstream commit 21ea0e040638b953f5cc0efca1d900024899a7bc.
 
 [5] CTFtime team, “All about CTF (Capture The Flag),” tài liệu được assignment UET.CN3124 khuyến nghị.
 
