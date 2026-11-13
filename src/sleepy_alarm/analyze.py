@@ -24,6 +24,7 @@ def main() -> int:
     p.add_argument("--nperseg", type=int, default=2048)
     p.add_argument("--noverlap", type=int, default=1536)
     p.add_argument("--carrier", type=float, default=8000.0)
+    p.add_argument("--reference", type=Path, help="Optional original/reference audio for aligned difference inspection")
     args = p.parse_args()
     if not args.audio.is_file():
         p.error(f"audio file does not exist: {args.audio}")
@@ -53,6 +54,30 @@ def main() -> int:
     plt.title(f"STFT magnitude (nperseg={min(args.nperseg, frames)}, noverlap={min(args.noverlap, max(0, min(args.nperseg, frames)-1))})")
     plt.colorbar(label="Magnitude (dB)"); plt.tight_layout()
     plt.savefig(spec_path, dpi=160); plt.close()
+    reference_info = None
+    if args.reference:
+        ref, ref_sr = sf.read(args.reference, always_2d=True, dtype="float64")
+        if ref_sr != sr or ref.shape != signal.shape:
+            p.error("reference must have the same sample rate, frame count and channel count")
+        residual = signal - ref
+        residual_mono = residual.mean(axis=1)
+        r_sos = butter(4, [low, high], btype="bandpass", fs=sr, output="sos")
+        residual_band = sosfiltfilt(r_sos, residual_mono)
+        residual_env = np.abs(hilbert(residual_band))
+        reference_info = {
+            "file": str(args.reference),
+            "sha256": sha256(args.reference),
+            "difference_rms": float(np.sqrt(np.mean(residual**2))),
+            "difference_peak": float(np.max(np.abs(residual))),
+            "carrier_envelope_median": float(np.median(residual_env)),
+            "carrier_envelope_p99": float(np.percentile(residual_env, 99)),
+        }
+        difference_path = args.out_dir / "reference_difference.png"
+        plt.figure(figsize=(12, 3))
+        plt.plot(np.arange(len(residual_mono))/sr, residual_mono, linewidth=0.5)
+        plt.xlabel("Time (s)"); plt.ylabel("Amplitude")
+        plt.title("Distributed audio minus original reference")
+        plt.tight_layout(); plt.savefig(difference_path, dpi=160); plt.close()
     # Isolate the ASK carrier and inspect its envelope. This complements the
     # spectrogram and makes the 50-baud amplitude states measurable.
     if not 0 < args.carrier < sr / 2:
@@ -86,8 +111,9 @@ def main() -> int:
         "stft": {"nperseg": int(min(args.nperseg, frames)),
                  "noverlap": int(min(args.noverlap, max(0, min(args.nperseg, frames)-1))),
                  "frequency_bins": int(len(freqs)), "time_frames": int(len(times))},
+        "reference_comparison": reference_info,
         "ask": {"carrier_hz": args.carrier, "baud": 50, "symbol_duration_seconds": 0.02, "envelope_symbol_median_min": min(symbol_levels) if symbol_levels else None, "envelope_symbol_median_max": max(symbol_levels) if symbol_levels else None, "envelope_symbol_count": len(symbol_levels)},
-        "plots": [str(waveform_path), str(spec_path), str(envelope_path)],
+        "plots": [str(waveform_path), str(spec_path), str(envelope_path)] + ([str(args.out_dir / "reference_difference.png")] if args.reference else []),
         "note": "Plots are exploratory evidence, not proof of steganography by themselves."
     }
     print(json.dumps(result, indent=2, ensure_ascii=False))
