@@ -13,7 +13,7 @@ Báo cáo nghiên cứu hai challenge CTF thuộc chủ đề Steganography: Blu
 
 Phương pháp gồm: (1) thu thập và xác minh artifact chính thức; (2) khảo sát metadata, định dạng và đặc trưng tín hiệu; (3) kiểm tra giả thuyết bằng script; (4) đối chiếu kết quả và ghi nhận giới hạn. Với ảnh, quy trình tập trung vào histogram, kênh màu và sai khác pixel. Với âm thanh, quy trình khảo sát waveform, phổ Fourier và spectrogram. Kết quả thực nghiệm sẽ chỉ được báo cáo sau khi chạy trên artifact gốc.
 
-**Kết quả thực nghiệm:** [CẦN THỰC NGHIỆM — ghi phát hiện, SHA-256, số liệu và ảnh minh chứng thực tế.]
+**Kết quả từ phân tích source upstream:** Blue 3 có quy tắc tăng kênh màu theo vùng đường chéo; Sleepy Alarm dùng ASK 8 kHz/50 baud với ba mức biên độ. **Kết quả chạy trên artifact:** [CẦN THỰC NGHIỆM — ghi đầu ra solver, SHA-256 cục bộ, số liệu và ảnh minh chứng thực tế.]
 
 **Từ khóa:** Capture The Flag, steganography, steganalysis, pixel analysis, audio signal processing, FFT, spectrogram.
 
@@ -249,7 +249,7 @@ Các mở rộng được thiết kế trong repository:
 4. Robustness experiment: tạo bản sao xử lý có kiểm soát (JPEG quality, resize, bit depth; audio resampling, compression/filtering) và kiểm tra ảnh hưởng tới khả năng trích xuất. Chỉ chạy sau khi có baseline thành công.
 5. Comparative evaluation: so sánh vật mang tin, độ nhạy tham số, khả năng tự động hóa và false positives.
 
-**Triển khai trong repository:** `src/solve_challenges.py` chứa hai solver; `src/blue3/analyze.py` và `src/sleepy_alarm/analyze.py` chứa analyzer; `src/experiments/robustness.py` sinh các biến thể có kiểm soát. Các script chỉ tạo artifact thí nghiệm, chưa tự khẳng định mức độ bền. **Kết quả từng mở rộng:** [CẦN THỰC NGHIỆM — ghi commit, lệnh, input hash, output, solver success/failure, số liệu và ảnh minh chứng.]
+**Triển khai trong repository:** `src/solve_challenges.py` chứa hai solver; `src/blue3/analyze.py` và `src/sleepy_alarm/analyze.py` chứa analyzer; `src/experiments/robustness.py` sinh các biến thể có kiểm soát. Các script đã được viết nhưng chưa được chạy end-to-end trong môi trường này. **Kết quả từng mở rộng:** [CẦN THỰC NGHIỆM — ghi commit, lệnh, input hash, output, solver success/failure, số liệu và ảnh minh chứng.]
 
 ## 8. Đánh giá, phản biện và tự học
 
