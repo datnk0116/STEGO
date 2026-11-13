@@ -61,6 +61,8 @@ def solve_sleepy(path: Path, carrier_hz: float = 8000.0,
     # cancel content and allow explicit manual channel inspection if needed.
     mono = signal.mean(axis=1)
     nyquist = sr / 2
+    if not 0 < baud <= 1000:
+        raise ValueError("baud must be in (0, 1000]")
     if not 0 < carrier_hz < nyquist:
         raise ValueError(f"carrier {carrier_hz} Hz must be below Nyquist ({nyquist} Hz)")
     # A narrow bandpass around the documented carrier; envelope removes carrier phase.
