@@ -69,7 +69,7 @@ Mô hình tổng quát: `stego = Embed(cover, message, key, parameters)`. Quá t
 
 #### 2.3.2. Ảnh số
 
-Ảnh raster biểu diễn thành ma trận mẫu. Với RGB, mỗi pixel có ba thành phần R, G, B. Có thể khảo sát kích thước, mode, bit depth, metadata, histogram từng kênh, phân bố giá trị và sai khác pixel. Với hai ảnh A và B cùng kích thước: `D(x,y,c) = |A(x,y,c) − B(x,y,c)|`. Thống kê D gồm tỷ lệ pixel khác 0, trung bình, cực đại và histogram. Chỉ diễn giải D là sai khác stego-cover khi có ảnh tham chiếu tương thích.
+Ảnh raster biểu diễn thành ma trận mẫu. Với RGB, mỗi pixel có ba thành phần R, G, B. Có thể khảo sát kích thước, mode, bit depth, metadata, histogram từng kênh, phân bố giá trị và sai khác pixel. Với Blue 3, base image theo creator source là màu đồng nhất RGB (64,77,205), vì vậy có thể dùng chính màu này làm baseline thay vì cần một file cover riêng. Với hai ảnh A và B cùng kích thước: `D(x,y,c) = |A(x,y,c) − B(x,y,c)|`. Thống kê D gồm tỷ lệ pixel khác 0, trung bình, cực đại và histogram.
 
 #### 2.3.3. Âm thanh số
 
@@ -137,11 +137,11 @@ Mỗi artifact được giữ nguyên và có SHA-256 ghi trong `results/artifac
 
 **Bước 1 — Kiểm tra file:** ghi kích thước, mode, định dạng, metadata và SHA-256.
 
-**Bước 2 — Khảo sát pixel:** xuất histogram kênh màu và thống kê cơ bản; quan sát giá trị tập trung bất thường, dải màu hoặc vùng khác biệt.
+**Bước 2 — Khảo sát pixel:** xuất histogram kênh màu và thống kê cơ bản; kiểm tra màu RGB (64,77,205), tỷ lệ pixel đúng màu nền và phân bố tổng sai khác có dấu.
 
-**Bước 3 — Hình thành giả thuyết:** source creator cho biết mỗi ký tự c được biểu diễn bởi tổng số lần tăng kênh màu bằng `ord(c)` trong vùng đường chéo tương ứng. Vì mỗi thay đổi chỉ tăng một đơn vị ở một kênh, tổng sai khác RGB trong một vùng phải khôi phục được mã ký tự, miễn là màu nền và phân vùng được xác định đúng.
+**Bước 3 — Hình thành giả thuyết:** source creator cho biết mỗi ký tự c được biểu diễn bởi tổng số lần tăng kênh màu bằng `ord(c)` trong vùng đường chéo tương ứng. Vì mỗi thay đổi chỉ tăng một đơn vị ở một kênh, tổng sai khác RGB trong một vùng phải khôi phục được mã ký tự, miễn là màu nền và phân vùng được xác định đúng. Cụ thể, với L ký tự và ảnh 512×512, mỗi vùng có cạnh `floor(512/L)`; vùng i có góc trên-trái `(i·w, i·h)`.
 
-**Bước 4 — Kiểm thử:** ước lượng màu nền bằng RGB phổ biến nhất; với mỗi ứng viên L, chia ảnh thành L vùng vuông theo đường chéo, mỗi vùng kích thước `floor(W/L) × floor(H/L)`. Cộng `R−R₀ + G−G₀ + B−B₀` trên từng vùng để thu mã ký tự. Dừng khi chuỗi khớp regex `byuctf{[0-9A-Za-z_]*}`. Script độc lập: `python src/solve_challenges.py blue3 data/blue3/blue.png`.
+**Bước 4 — Kiểm thử:** solver upstream ước lượng màu nền từ màu phổ biến nhất. Bản tái triển khai sử dụng baseline đã biết từ creator source RGB (64,77,205), sau đó thử các ứng viên L. Với từng i, cộng `R−64 + G−77 + B−205` trong vùng vuông đường chéo để thu mã ký tự. Dừng khi chuỗi khớp regex `byuctf{[0-9A-Za-z_]*}`. Script độc lập: `python src/solve_challenges.py blue3 data/blue3/blue.png`. Việc biết baseline từ source được ghi nhận là lợi thế white-box; cần thêm phép thử suy luận baseline từ ảnh để đánh giá tình huống black-box.
 
 **Bước 5 — Xác minh:** kết quả cần có định dạng hợp lý và được đối chiếu độc lập với logic tạo challenge. Không dùng flag trong source làm bằng chứng duy nhất cho khả năng giải từ artifact.
 
@@ -175,7 +175,7 @@ Bằng chứng cần có: metadata âm thanh; waveform; spectrogram có trục t
 - SHA-256: [CẦN THỰC NGHIỆM]
 - Kích thước ảnh/mode: [CẦN THỰC NGHIỆM]
 - Số pixel: [CẦN THỰC NGHIỆM]
-- Số pixel khác biệt (chỉ khi có ảnh tham chiếu phù hợp): [CẦN THỰC NGHIỆM]
+- Số pixel có sai khác so với base RGB (64,77,205): [CẦN THỰC NGHIỆM]
 - Giả thuyết cuối cùng: [CẦN THỰC NGHIỆM]
 - Lệnh và phiên bản script: [CẦN THỰC NGHIỆM]
 - Kết quả trích xuất đã xác minh: [CẦN THỰC NGHIỆM]
@@ -218,7 +218,7 @@ Bằng chứng cần có: metadata âm thanh; waveform; spectrogram có trục t
 
 Ẩn tin thành công khi người quan sát không nhận ra vật mang tin chứa dữ liệu bổ sung và quy trình trích xuất biết cách diễn giải mẫu đã nhúng. Trong CTF, người giải thường biết phạm vi và có mô tả challenge; trong thực tế, người phân tích có thể không có cover gốc, key hoặc thông tin thuật toán.
 
-Với ảnh, JPEG recompression, resize, chuyển đổi không gian màu hoặc bit depth có thể làm biến đổi mẫu pixel và phá hủy payload, tùy thuật toán. Với âm thanh, lossy compression, resampling, filtering, mixing hoặc normalization có thể thay đổi thành phần tín hiệu. Độ bền phải được đo bằng thí nghiệm.
+Với Blue 3, cách giải dựa vào tổng sai khác tuyệt đối có dấu so với base color, nên thay đổi pixel ngoài cơ chế tạo, clipping ở biên kênh màu hoặc các phép biến đổi làm lệch baseline có thể làm sai tổng mã ký tự; resize/crop đặc biệt có thể phá vỡ phân vùng. Với Sleepy Alarm, lossy compression, resampling, filtering, mixing hoặc normalization có thể làm thay đổi biên độ/pha của sóng mang 8 kHz và gây lỗi phân loại ASK. Độ bền phải được đo bằng thí nghiệm.
 
 ### 6.2. Góc nhìn phòng thủ
 
