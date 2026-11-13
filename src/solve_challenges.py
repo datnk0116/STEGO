@@ -49,8 +49,14 @@ def solve_blue(path: Path, max_len: int | None = None, base_color: tuple[int, in
 
 def solve_sleepy(path: Path, carrier_hz: float = 8000.0,
                  baud: float = 50.0, zero_amp: float = 2e-3,
-                 one_amp: float = 5e-3, stop_amp: float = 0.0) -> dict:
+                 one_amp: float = 5e-3, stop_amp: float = 0.0,
+                 reference: Path | None = None) -> dict:
     signal, sr = sf.read(path, always_2d=True, dtype="float64")
+    if reference is not None:
+        original, original_sr = sf.read(reference, always_2d=True, dtype="float64")
+        if original_sr != sr or original.shape != signal.shape:
+            raise ValueError("reference must match sample rate, frame count and channel count")
+        signal = signal - original
     # Mono average retains an in-phase carrier; report when a stereo mix might
     # cancel content and allow explicit manual channel inspection if needed.
     mono = signal.mean(axis=1)
@@ -117,6 +123,7 @@ def main() -> int:
     a.add_argument("audio", type=Path)
     a.add_argument("--carrier", type=float, default=8000.0)
     a.add_argument("--baud", type=float, default=50.0)
+    a.add_argument("--reference", type=Path, help="Optional aligned original audio; analyze residual only")
     args = parser.parse_args()
     if args.challenge == "blue3":
         result, attempts = solve_blue(args.image, args.max_len, tuple(args.base_color))
@@ -127,7 +134,7 @@ def main() -> int:
             return 0
         return 2
     import json
-    print(json.dumps(solve_sleepy(args.audio, args.carrier, args.baud), indent=2))
+    print(json.dumps(solve_sleepy(args.audio, args.carrier, args.baud, reference=args.reference), indent=2))
     return 0
 
 if __name__ == "__main__":
