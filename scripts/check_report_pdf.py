@@ -1,10 +1,18 @@
 #!/usr/bin/env python3
-"""Verify total PDF pages and estimate main-body pages from extracted text."""
+"""Check PDF total pages and assignment main-body page limit."""
 from __future__ import annotations
 import argparse
 import re
 import subprocess
 from pathlib import Path
+
+
+def page_with_heading(pages: list[str], heading: str, start: int = 0) -> int | None:
+    for index in range(start, len(pages)):
+        lines = [line.strip() for line in pages[index].splitlines() if line.strip()]
+        if heading in lines:
+            return index
+    return None
 
 
 def main() -> int:
@@ -18,22 +26,27 @@ def main() -> int:
     info = subprocess.run(
         ["pdfinfo", str(args.pdf)], capture_output=True, text=True, check=True
     ).stdout
-    match = re.search(r"^Pages:\s+(\d+)", info, re.M)
+    match = re.search(r"^Pages:\\s+(\\d+)", info, re.M)
     total = int(match.group(1)) if match else None
+    if total is None:
+        print("FAIL: pdfinfo did not report a page count.")
+        return 2
 
     extracted = subprocess.run(
         ["pdftotext", "-layout", str(args.pdf), "-"],
         capture_output=True, text=True, check=True
     ).stdout
-    summary_index = extracted.find("Tóm tắt")
-    refs_index = extracted.find("Tài liệu tham khảo", summary_index + 1) if summary_index >= 0 else -1
-    if summary_index < 0 or refs_index < 0:
+    pages = extracted.split("\\f")
+    summary_page = page_with_heading(pages, "Tóm tắt")
+    refs_page = (
+        page_with_heading(pages, "Tài liệu tham khảo", summary_page + 1)
+        if summary_page is not None else None
+    )
+    if summary_page is None or refs_page is None:
         print(f"PDF total pages: {total}")
-        print("FAIL: could not find the main-body boundaries (Tóm tắt / Tài liệu tham khảo).")
+        print("FAIL: could not locate standalone headings Tóm tắt and Tài liệu tham khảo.")
         return 2
 
-    summary_page = extracted[:summary_index].count("\f") + 1
-    refs_page = extracted[:refs_index].count("\f") + 1
     main_pages = refs_page - summary_page
     print(f"PDF total pages: {total}")
     print(f"Main-body pages (Tóm tắt through page before references): {main_pages}")
