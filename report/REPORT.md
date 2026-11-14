@@ -624,9 +624,13 @@ python src/solve_challenges.py blue3 data/blue3/blue.png
 python src/blue3/visualize.py data/blue3/blue.png --length 50
 python src/experiments/blue3_robustness.py data/blue3/blue.png
 
-# Sleepy Alarm
+# Sleepy Alarm analysis and exact extraction
 python src/sleepy_alarm/analyze.py data/sleepy_alarm/morning_n_breakfast.mp3 --reference data/sleepy_alarm/morning_n_breakfast_original.mp3
-python src/solve_challenges.py sleepy-alarm data/sleepy_alarm/morning_n_breakfast.mp3 --reference data/sleepy_alarm/morning_n_breakfast_original.mp3
+python src/solve_challenges.py sleepy-alarm data/sleepy_alarm/morning_n_breakfast.mp3 --reference data/sleepy_alarm/morning_n_breakfast_original.mp3 --expected 'ictf{1_sl33py_NaYuKi_alarm_2a634dc1bb2}'
+
+# Paired and asymmetric robustness
+python src/experiments/sleepy_alarm_robustness.py data/sleepy_alarm/morning_n_breakfast.mp3 --reference data/sleepy_alarm/morning_n_breakfast_original.mp3 --expected 'ictf{1_sl33py_NaYuKi_alarm_2a634dc1bb2}'
+python src/experiments/sleepy_alarm_asymmetric_robustness.py data/sleepy_alarm/morning_n_breakfast.mp3 --reference data/sleepy_alarm/morning_n_breakfast_original.mp3 --expected 'ictf{1_sl33py_NaYuKi_alarm_2a634dc1bb2}'
 ~~~
 
 ## Phụ lục B — Checklist hoàn thiện trước khi nộp
