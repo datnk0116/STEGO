@@ -121,6 +121,7 @@ jobs:
       - name: Run paired Sleepy Alarm robustness tests
         if: steps.sleepy.outcome == 'success'
         run: |
+          mkdir -p results/sleepy_alarm/robustness
           python src/experiments/sleepy_alarm_robustness.py             data/sleepy_alarm/morning_n_breakfast.mp3             --reference data/sleepy_alarm/morning_n_breakfast_original.mp3             --expected 'ictf{1_sl33py_NaYuKi_alarm_2a634dc1bb2}'             --out-dir results/sleepy_alarm/robustness             > results/sleepy_alarm/robustness/run.json
 
       - name: Build draft or verified PDF and source ZIP
