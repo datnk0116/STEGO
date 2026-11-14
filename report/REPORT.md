@@ -91,8 +91,8 @@ Steganalysis tìm dấu hiệu thống kê hoặc cấu trúc bất thường. K
 
 - Hệ điều hành: macOS 15.7.4
 - Kiến trúc CPU: arm64
-- Python: [CẦN THỰC NGHIỆM]
-- Pillow 13.0.0; NumPy 2.5.4; SciPy 1.18.1; Matplotlib 3.11.2; SoundFile 0.14.0 (theo log môi trường ngày 14-11-2026)..
+- Python: 3.14.10
+- Pillow 13.0.0; NumPy 2.5.4; SciPy 1.18.1; Matplotlib 3.11.2; SoundFile 0.14.0 (theo log môi trường ngày 14-11-2026).
 - Môi trường: virtual environment `.venv`.
 - Dữ liệu: bản sao artifact upstream, không chỉnh sửa bản gốc.
 
@@ -251,8 +251,9 @@ Các mở rộng được thiết kế trong repository:
 3. Integrity manifest: ghi SHA-256 và thông tin artifact để tái lập.
 4. Robustness experiment: `src/experiments/robustness.py` tạo các bản sao JPEG quality 95/85/70, resize 0.75/0.5, audio resampling round-trip và gain/clipping. Chạy solver trên từng bản sao và ghi kết quả thành công/thất bại; không diễn giải độ bền khi chưa thực nghiệm.
 5. Comparative evaluation: so sánh vật mang tin, độ nhạy tham số, khả năng tự động hóa và false positives.
+6. Synthetic regression tests: `tests/test_blue3_solver.py` sinh ảnh giả lập theo creator algorithm để kiểm tra decoder; `tests/test_audio_alignment.py` kiểm tra đồng bộ sample offset, khác sample rate và lệch số kênh. Lệnh chạy: `python -m unittest discover -s tests -v`. Các test mới được thêm, cần chạy và lưu log trước khi báo cáo là đã pass.
 
-**Triển khai trong repository:** `src/solve_challenges.py` chứa hai solver; `src/blue3/analyze.py` và `src/sleepy_alarm/analyze.py` chứa analyzer; `src/experiments/robustness.py` sinh các biến thể có kiểm soát. Các script chỉ tạo artifact thí nghiệm, chưa tự khẳng định mức độ bền. **Kết quả từng mở rộng:** [CẦN THỰC NGHIỆM — ghi commit, lệnh, input hash, output, solver success/failure, số liệu và ảnh minh chứng.]
+**Triển khai trong repository:** `src/solve_challenges.py` chứa hai solver; `src/blue3/analyze.py` và `src/sleepy_alarm/analyze.py` chứa analyzer; `src/audio_alignment.py` đồng bộ reference; `src/experiments/robustness.py` sinh các biến thể có kiểm soát. Regression tests đã được thêm nhưng chưa có log xác nhận chạy pass trong môi trường người dùng. **Kết quả từng mở rộng:** [CẦN THỰC NGHIỆM — ghi commit, lệnh, input hash, output, solver success/failure, số liệu và ảnh minh chứng.]
 
 ## 8. Đánh giá, phản biện và tự học
 
