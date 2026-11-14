@@ -3,8 +3,8 @@
 
 **Tên đề tài:** Phân tích và đánh giá kỹ thuật ẩn tin trên ảnh và âm thanh qua Blue 3 (BYUCTF) và Sleepy Alarm (ImaginaryCTF 2024)  
 **Chủ đề CTF chính:** Steganography  
-**Sinh viên:** [HỌ VÀ TÊN] — **MSSV:** [MSSV]  
-**Lớp:** [LỚP] — **Ngày nộp:** [NGÀY NỘP] — **Hạn nộp:** [HẠN NỘP]
+**Sinh viên:** ______________________________ — **MSSV:** __________________  
+**Lớp:** __________________ — **Ngày nộp:** ____ / ____ / 2026 — **Hạn nộp:** ____ / ____ / 2026
 
 > **Trạng thái bằng chứng:** Blue 3 và Sleepy Alarm đều đã được giải từ artifact chính thức, đối chiếu với ground truth của ban tổ chức. Sleepy Alarm khôi phục đúng 39 ký tự, 350 symbol và 38 separator; sáu regression tests pass. Thí nghiệm robustness Blue 3 và bốn thí nghiệm audio theo cặp target/reference đã có kết quả đo trong results/. Nhật ký thời lượng làm việc cá nhân vẫn cần được người thực hiện điền theo thời gian thực tế.
 
@@ -86,15 +86,15 @@ Bảng này là bản đồ đối chiếu với rubric, không phải tự ch�
 
 Có thể mô tả quá trình nhúng tổng quát:
 
-\[
+$
 S = E(C,M,K,\theta)
-\]
+$
 
 Trong đó C là vật mang tin gốc, M là thông điệp, K là khóa (nếu có), θ là tham số thuật toán và S là vật mang tin sau khi nhúng. Quá trình trích xuất tìm:
 
-\[
+$
 \hat M = D(S,K,\theta)
-\]
+$
 
 Một kỹ thuật ẩn tin thường được đánh giá qua ba yếu tố: dung lượng (payload capacity), tính khó phát hiện (imperceptibility) và độ bền (robustness). Ba yếu tố này có thể xung đột. Ví dụ, thay đổi nhiều pixel có thể tăng dung lượng nhưng làm phân bố màu dễ bị phát hiện; nén ảnh có thể phá hủy payload.
 
@@ -102,38 +102,38 @@ Một kỹ thuật ẩn tin thường được đánh giá qua ba yếu tố: du
 
 Theo README và creator script chính thức, ảnh được tạo từ nền đồng nhất RGB = (64, 77, 205), kích thước 512 × 512. Với flag có độ dài L, đặt:
 
-\[
+$
 s = \left\lfloor \frac{512}{L} \right\rfloor
-\]
+$
 
 Ký tự thứ i được gắn với vùng vuông:
 
-\[
+$
 R_i = [is,(i+1)s)\times[is,(i+1)s)
-\]
+$
 
 Trong mỗi vòng lặp tương ứng một đơn vị mã ký tự, creator chọn ngẫu nhiên một pixel thuộc R_i và tăng một đơn vị ở một trong ba kênh RGB. Nếu pixel được chọn nhiều lần, các mức tăng được cộng dồn.
 
 Gọi B=(64,77,205) là màu nền và I(x,y,c) là giá trị kênh c tại pixel (x,y). Tổng sai khác của vùng i:
 
-\[
+$
 \Delta_i =
 \sum_{(x,y)\in R_i}
 \sum_{c\in\{R,G,B\}}
 (I(x,y,c)-B_c)
-\]
+$
 
 Mỗi thao tác nhúng chỉ tăng đúng một đơn vị ở đúng một kênh. Do đó, nếu ảnh không bị biến đổi và không xảy ra tràn/clipping giá trị kênh:
 
-\[
+$
 \Delta_i = \operatorname{ord}(m_i)
-\]
+$
 
 Suy ra ký tự:
 
-\[
+$
 \hat m_i = \operatorname{chr}(\Delta_i)
-\]
+$
 
 Phép tổng hợp không cần biết pixel nào đã bị thay đổi, kênh nào được chọn hay thứ tự ngẫu nhiên của creator. Các thao tác tăng một đơn vị có tính cộng, nên tổng sai khác giữ lại số lần tăng của cả vùng. Điều kiện thành công là xác định đúng L, đúng màu nền, đúng ranh giới vùng và bảo toàn giá trị pixel.
 
@@ -148,15 +148,15 @@ Source MATLAB của challenge mô tả ba trạng thái biên độ:
 
 Sóng mang có tần số fc = 8.000 Hz. Tốc độ symbol Rs = 50 baud, nên thời lượng mỗi symbol Ts = 1/Rs = 0,02 giây. Với sample rate 44.100 Hz, số mẫu mỗi symbol là:
 
-\[
+$
 N_s = 44100 \times 0.02 = 882
-\]
+$
 
 Một ký tự ASCII gồm 8 bit. Flag dài 39 ký tự nên có 312 bit. Generator chèn một dấu phân cách giữa các byte, tạo 38 dấu phân cách. Tổng số symbol là:
 
-\[
+$
 N_{\text{symbol}}=312+38=350
-\]
+$
 
 350 symbol × 0,02 giây = 7 giây. Trong mỗi symbol, sóng mang có 8.000 × 0,02 = 160 chu kỳ. Generator MATLAB cộng tín hiệu ASK vào cột thứ nhất của ma trận audio, tức kênh trái trong file stereo. Vì vậy, lấy trung bình hai kênh trước khi giải mã sẽ làm suy giảm biên độ thành phần ASK.
 
@@ -164,9 +164,9 @@ N_{\text{symbol}}=312+38=350
 
 Biến đổi Fourier rời rạc:
 
-\[
+$
 X[k]=\sum_{n=0}^{N-1}x[n]e^{-j2\pi kn/N}
-\]
+$
 
 Độ phân giải tần số của FFT N điểm là Δf = fs/N. FFT trên toàn file phù hợp để xác định peak tần số nhưng không cho biết peak xuất hiện ở thời điểm nào. STFT chia tín hiệu thành các cửa sổ ngắn; spectrogram biểu diễn năng lượng theo thời gian và tần số. Sau khi lọc băng quanh sóng mang, analytic signal/Hilbert transform có thể dùng để lấy envelope, từ đó ước lượng mức biên độ trong phần giữa mỗi symbol.
 
@@ -259,7 +259,7 @@ Creator source công bố màu nền RGB (64,77,205). Tuy nhiên, để tránh p
 1. **Black-box:** suy luận màu nền là bộ RGB xuất hiện phổ biến nhất trong ảnh.
 2. **Source-informed:** truyền trực tiếp màu nền biết từ creator source qua tham số.
 
-Phiên bản hiện tại đặt black-box làm mặc định. Điều này giúp so sánh một solver dựa trên quan sát artifact với một solver được hỗ trợ bởi thông tin triển khai. Cần chạy lại lệnh Blue 3 trên phiên bản mới và lưu output để chứng minh chế độ tự suy luận vẫn thu được cùng flag.
+Phiên bản hiện tại đặt black-box làm mặc định. Lần chạy black-box trên PNG chính thức đã khôi phục cùng flag sau 49 ứng viên; log được lưu tại `results/logs/blue3-solver.log`. Chế độ source-informed được giữ làm đối chứng để tách biệt lợi ích của thông tin creator với suy luận chỉ dựa trên artifact.
 
 ### 5.4. Độ phức tạp và điều kiện thành công
 
@@ -413,12 +413,12 @@ Kết quả chạy trên GitHub Actions (Ubuntu 26.04, Python 3.14.10; runtime t
 
 | Biến thể | Kết quả decoder | Số ứng viên / runtime (s) |
 |---|---|---:|
-| PNG gốc | Khôi phục đúng flag | 49 / 0,293 |
-| JPEG quality 95 | Không tìm thấy candidate | 511 / 0,756 |
-| JPEG quality 85 | Không tìm thấy candidate | 511 / 0,758 |
-| JPEG quality 70 | Không tìm thấy candidate | 511 / 0,757 |
-| Resize 0,75× | Không tìm thấy candidate | 383 / 0,422 |
-| Resize 0,5× | Không tìm thấy candidate | 255 / 0,178 |
+| PNG gốc | Khôi phục đúng flag | 49 / 0,237 |
+| JPEG quality 95 | Không tìm thấy candidate | 511 / 0,575 |
+| JPEG quality 85 | Không tìm thấy candidate | 511 / 0,569 |
+| JPEG quality 70 | Không tìm thấy candidate | 511 / 0,565 |
+| Resize 0,75× | Không tìm thấy candidate | 383 / 0,321 |
+| Resize 0,5× | Không tìm thấy candidate | 255 / 0,134 |
 
 CSV đầy đủ: `results/blue3/robustness/blue3_robustness.csv`. Ảnh tổng hợp chẩn đoán: `results/blue3/figures/blue3_diagnostics.png`.
 
@@ -532,7 +532,15 @@ Với Sleepy Alarm, việc dùng file gốc để trừ nền là một lợi th
 
 ### 11.4. Nhật ký và bằng chứng
 
-Log ban đầu được lưu tại results/2026-11-14/initial-run.md. GitHub Actions run 43543218421 lưu môi trường, SHA-256, 6/6 regression tests, output solver, waveform/spectrogram và Blue 3 robustness. Sleepy Alarm exact-match được lưu trong results/sleepy_alarm/solver.json; bốn kết quả audio robustness được lưu trong CSV. Logbook thời gian cá nhân vẫn là template; sinh viên phải tự ghi phiên làm việc, giả thuyết, thao tác và thời lượng thực tế, không điền số giờ ước lượng.
+Bằng chứng có thể tái kiểm tra được lưu theo từng lớp: artifact và SHA-256 trong `data/` và `results/artifact_manifest.json`; log lệnh trong `results/logs/`; sáu regression tests trong `results/logs/unit-tests.log`; kết quả Blue 3 trong `results/blue3/`; kết quả audio exact-match trong `results/sleepy_alarm/solver.json`; và các thí nghiệm robustness trong hai tệp CSV. `results/2026-11-14/initial-run.md` giữ lại lần giải mã Sleepy Alarm thất bại đầu tiên để đối chiếu với phiên bản cuối. Thời lượng làm việc và trải nghiệm cá nhân không thể suy ra từ commit; người thực hiện cần ghi đúng thời gian thực tế trong logbook, không ước lượng.
+
+### 11.5. Sự thay đổi giả thuyết và bài học kỹ thuật
+
+Quá trình giải Sleepy Alarm cho thấy một giả thuyết ban đầu có thể sai dù một chỉ số trung gian có vẻ tốt. Lần chạy đầu dùng cross-correlation cao (0,999873) nhưng vẫn giải mã sai: solver lấy trung bình hai kênh stereo, xử lý 497 symbol trên toàn bộ clip thay vì 350 symbol của payload và tạo ra các byte NUL. Vì vậy, correlation được xem là bằng chứng căn chỉnh nền, không phải bằng chứng đúng payload.
+
+Các sửa đổi tiếp theo xuất phát từ source generator và log lỗi: bảo toàn 1.729 mẫu đầu bị cắt khi căn chỉnh; chỉ phân tích kênh trái vì generator chèn ASK vào channel thứ nhất; giới hạn cửa sổ 7 giây; và thay Hilbert-envelope có transient bằng coherent sine/cosine projection trên từng khối 882 mẫu. Việc kiểm chứng sau sửa không dừng ở prefix/suffix mà đối chiếu toàn bộ 39 ký tự với bitmap ground truth độc lập. Đây là bước chuyển từ “kết quả có vẻ hợp định dạng” sang “kết quả có thể kiểm chứng chính xác”.
+
+Để thể hiện phần tự học cá nhân đúng yêu cầu học phần, sinh viên cần bổ sung 3–5 câu bằng trải nghiệm thật: giả thuyết nào bản thân từng tin nhưng phải sửa; bằng chứng nào làm thay đổi quyết định; kiến thức/công cụ nào đã tự học thêm; và lần sau sẽ thiết kế thí nghiệm khác đi thế nào. Không dùng đoạn mô tả kỹ thuật này thay cho trải nghiệm cá nhân.
 
 ## 12. Kết luận
 
@@ -590,16 +598,12 @@ python src/solve_challenges.py sleepy-alarm data/sleepy_alarm/morning_n_breakfas
 
 ## Phụ lục B — Checklist hoàn thiện trước khi nộp
 
-- [ ] Xác nhận workflow CI mới nhất pass trên nhánh main.
-- [ ] Kiểm tra output Blue 3 black-box và kết quả đối chiếu flag.
-- [ ] Kiểm tra toàn bộ regression tests pass; lưu log.
-- [ ] Chạy Sleepy Alarm trên MP3 chính thức; xác nhận 350 symbol, 38 separator, 39 byte, prefix/suffix, errors rỗng và exact ground-truth match.
-- [ ] Xuất và chèn hình Blue 3 histogram/heatmap/region contribution.
-- [ ] Xuất và chèn waveform, spectrogram, ASK envelope của Sleepy Alarm.
-- [ ] Chạy robustness evaluation trên ảnh và audio; lập bảng kết quả đo được và chỉ diễn giải khi baseline thành công.
-- [ ] Bổ sung ảnh chụp quá trình cài đặt, phân tích, lỗi và kết quả cuối.
-- [ ] Bổ sung nhật ký thời gian làm việc thực tế; không ước lượng hoặc bịa thời lượng.
-- [ ] Điền thông tin sinh viên, ngày nộp và chuẩn hóa trích dẫn IEEE.
-- [ ] Kiểm tra nội dung chính không vượt 15 trang; phụ lục và tài liệu tham khảo để riêng.
+Các hạng mục kỹ thuật sau đã có bằng chứng trong repository; trước khi nộp chỉ cần xác nhận bản build cuối cùng không bị thay đổi:
+- [ ] Điền họ tên, MSSV, lớp, ngày nộp và hạn nộp trên trang đầu và metadata.
+- [ ] Hoàn thiện logbook bằng giờ làm thực tế và viết phản tư cá nhân tại mục 11.5; không ước lượng thời lượng.
+- [ ] Mở PDF cuối và kiểm tra từng trang ở mức phóng đại đọc được: không mất chữ, không cắt hình, bảng không tràn lề, công thức hiển thị đúng.
+- [ ] Xác nhận phần nội dung chính không vượt 15 trang; phụ lục và tài liệu tham khảo nằm ngoài phạm vi đếm theo assignment.
+- [ ] Mở ZIP cuối, kiểm tra có `data/`, `src/`, `tests/`, `scripts/`, `references/`, `report/` và `results/`; không có `.venv`, cache hoặc secrets.
+- [ ] Đối chiếu PDF/ZIP được tạo từ cùng một revision của `main`; không nộp các binary cũ hơn source.
 
 
