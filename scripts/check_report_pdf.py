@@ -26,7 +26,7 @@ def main() -> int:
     info = subprocess.run(
         ["pdfinfo", str(args.pdf)], capture_output=True, text=True, check=True
     ).stdout
-    match = re.search(r"^Pages:\\s+(\\d+)", info, re.M)
+    match = re.search(r"^Pages:\s+(\d+)", info, re.M)
     total = int(match.group(1)) if match else None
     if total is None:
         print("FAIL: pdfinfo did not report a page count.")
@@ -36,7 +36,7 @@ def main() -> int:
         ["pdftotext", "-layout", str(args.pdf), "-"],
         capture_output=True, text=True, check=True
     ).stdout
-    pages = extracted.split("\\f")
+    pages = extracted.split("\f")
     summary_page = page_with_heading(pages, "Tóm tắt")
     refs_page = (
         page_with_heading(pages, "Tài liệu tham khảo", summary_page + 1)
