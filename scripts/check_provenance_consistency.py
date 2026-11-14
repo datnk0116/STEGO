@@ -36,7 +36,7 @@ class Report:
 def run(root, *args, check=True):
     p = subprocess.run(["git", *args], cwd=root, capture_output=True, text=True)
     if check and p.returncode: raise RuntimeError(p.stderr.strip() or p.stdout.strip())
-    return p.stdout.strip()
+    return p.stdout.rstrip()
 
 def sha256(path):
     h = hashlib.sha256()

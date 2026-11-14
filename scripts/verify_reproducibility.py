@@ -58,7 +58,7 @@ def _git_value(*args: str) -> str | None:
         completed = subprocess.run(
             ["git", *args], cwd=ROOT, capture_output=True, text=True, check=True
         )
-        return completed.stdout.strip()
+        return completed.stdout.rstrip()
     except (OSError, subprocess.CalledProcessError):
         return None
 
