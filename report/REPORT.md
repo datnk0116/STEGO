@@ -69,7 +69,7 @@ Các giả thuyết:
 |---|---|---|
 | Blue 3 | Khôi phục flag, đối chiếu nguồn chính thức, ghi hash và thông số ảnh | Đạt: flag 50 ký tự; 49 độ dài ứng viên; PNG RGB 512 × 512 |
 | Sleepy Alarm | 350 symbol, 38 separator, 39 byte; không byte lỗi; exact-match ground truth | Đạt: 39/39 ký tự; prefix/suffix hợp lệ; errors rỗng; ground_truth_match=true |
-| Robustness | Chạy decoder trên biến thể và ghi tham số | Đạt trong phạm vi đã thử: 5 biến thể ảnh và 3 biến thể audio; mọi biến thể audio khớp flag |
+| Robustness | Chạy decoder trên biến thể và ghi tham số | Đạt trong phạm vi đã thử: 5 biến thể ảnh; 4/4 phép audio theo cặp target/reference PASS; thí nghiệm bất đối xứng có 3/6 phép thử PASS và 3/6 FAIL |
 
 ### 1.5. Liên hệ trực tiếp với rubric
 
@@ -90,7 +90,7 @@ Có thể mô tả quá trình nhúng tổng quát:
 
 **Mô hình nhúng:** `S = E(C, M, K, θ)`. Trong đó `C` là vật mang tin, `M` là thông điệp, `K` là khóa (nếu có), `θ` là bộ tham số và `S` là vật mang tin sau khi nhúng.
 
-Trong đó C là vật mang tin gốc, M là thông điệp, K là khóa (nếu có), θ là tham số thuật toán và S là vật mang tin sau khi nhúng. Quá trình trích xuất tìm:
+Quá trình trích xuất tìm:
 
 **Mô hình trích xuất:** `M_hat = D(S, K, θ)`. Decoder nhận vật mang tin đã nhúng và khôi phục thông điệp ước lượng.
 
@@ -437,7 +437,20 @@ python src/experiments/sleepy_alarm_robustness.py \
 
 ### 8.3. Thí nghiệm bất đối xứng — phạm vi bổ sung
 
-Các kết quả ở mục 8.2 chưa trả lời câu hỏi quan trọng: decoder có còn hoạt động khi chỉ một phía (target hoặc reference) bị biến đổi hay không. Repository bổ sung script `src/experiments/sleepy_alarm_asymmetric_robustness.py` để đo riêng sáu trường hợp: target-only và reference-only với gain 0,5×, gain 1,5×, và resampling round-trip 44,1→48→44,1 kHz. Script luôn chạy baseline trước, không ghi đè artifact gốc, lưu exact-match, số symbol, số separator, lỗi giải mã, hệ số clipping và runtime vào JSON/CSV. Đây là phép đo bổ sung; **không đưa ra kết luận trước khi script được chạy trên artifact chính thức**. Lệnh chạy:
+Để kiểm tra giới hạn trên, script `src/experiments/sleepy_alarm_asymmetric_robustness.py` áp dụng biến đổi lên đúng một phía của cặp target/reference. Baseline PASS với 350 symbol, 38 separator và exact-match 39 ký tự. Kết quả sáu phép thử:
+
+| Biến thể | Exact-match | Số separator | Clipping phía bị đổi |
+|---|---|---:|---:|
+| Target-only gain 0,5× | **FAIL** | 46 | 0% |
+| Target-only gain 1,5× | **FAIL** | 37 | 0,441% |
+| Target-only resampling 44,1→48→44,1 kHz | **PASS** | 38 | 0% |
+| Reference-only gain 0,5× | **FAIL** | 41 | 0% |
+| Reference-only gain 1,5× | **FAIL** | 38 | 0,442% |
+| Reference-only resampling 44,1→48→44,1 kHz | **PASS** | 38 | 0% |
+
+Tổng cộng 3/6 phép thử PASS. Cả bốn trường hợp gain một phía đều FAIL; hai trường hợp resampling một phía đều PASS. Ở các trường hợp gain thất bại, decoder vẫn đo đủ 350 symbol nhưng phân loại sai số separator/bit, tạo các nhóm bit không đủ 8 bit và không khôi phục đúng ground truth. Đáng chú ý, alignment correlation vẫn nằm khoảng 0,99888–0,99987, cho thấy correlation cao không đảm bảo residual có biên độ phù hợp để giải mã ASK. Kết quả chỉ mô tả decoder và các phép biến đổi cụ thể này, không đại diện cho mọi mức gain hoặc codec.
+
+Kết quả chi tiết nằm tại `results/sleepy_alarm/asymmetric_robustness/asymmetric_robustness.json` và `.csv`. Lệnh tái hiện:
 
 ~~~bash
 python src/experiments/sleepy_alarm_asymmetric_robustness.py \
@@ -489,7 +502,7 @@ Các dấu hiệu trên chỉ là heuristic. Một ảnh đồ họa có màu n�
 | Thông tin cần suy luận | Độ dài L, màu nền, ranh giới vùng | Carrier, baud, symbol clock, channel, biên độ |
 | Phép phân tích chính | Histogram, pixel sum | FFT/STFT, coherent I/Q projection |
 | Ảnh hưởng của biến đổi | JPEG/resize thay đổi pixel và vùng | MP3/resampling ảnh hưởng biên độ và thời điểm |
-| Kết quả thực nghiệm | Flag 50 ký tự khớp nguồn chính thức | Flag 39 ký tự exact-match; 4/4 trường hợp audio robustness theo cặp vẫn giải đúng |
+| Kết quả thực nghiệm | Flag 50 ký tự khớp nguồn chính thức | Baseline exact-match; 4/4 phép biến đổi theo cặp PASS; 3/6 phép bất đối xứng PASS |
 
 Blue 3 có cơ chế xác định và ổn định hơn vì PNG bảo toàn giá trị pixel; tổng sai khác có quan hệ trực tiếp với mã ký tự. Sleepy Alarm khó hơn ở khâu tách tín hiệu vì dữ liệu nằm trên âm thanh nền và file đã qua mã hóa MP3. Hai challenge cho thấy “đọc được dữ liệu ẩn” phụ thuộc không chỉ vào thuật toán nhúng mà còn vào loại vật mang tin và chuỗi xử lý file.
 
@@ -506,7 +519,7 @@ Blue 3 có cơ chế xác định và ổn định hơn vì PNG bảo toàn giá
 ### 11.2. Hạn chế hiện tại
 
 1. Sleepy Alarm được giải bằng file tham chiếu gốc; đây là lợi thế white-box. Decoder không-reference chưa được triển khai/đánh giá.
-2. Các phép audio robustness được áp dụng đồng thời lên target và reference; chưa thử trường hợp chỉ một phía bị biến đổi.
+2. Thí nghiệm bất đối xứng cho thấy bốn phép gain một phía làm decoder thất bại; hai phép resampling một phía vẫn PASS. Decoder hiện nhạy với chênh lệch gain giữa target và reference.
 3. Chưa xây dựng tập ảnh/audio lành tính để đo false-positive rate; dấu hiệu phát hiện hiện mới ở mức heuristic.
 4. Mẫu nghiên cứu chỉ gồm hai challenge, không đại diện cho toàn bộ kỹ thuật steganography.
 5. Blue 3 là thuật toán đặc thù; việc decoder thất bại sau JPEG/resize không chứng minh payload bị xóa và không thể suy rộng cho mọi phương pháp steganography.
@@ -534,7 +547,7 @@ Các sửa đổi tiếp theo xuất phát từ source generator và log lỗi: 
 
 Đồ án đã tái hiện thành công hai challenge cùng chủ đề Steganography nhưng khác miền dữ liệu. Blue 3 được giải bằng tổng sai khác RGB theo vùng đường chéo; Sleepy Alarm được giải bằng ASK 8 kHz/50 baud sau khi đồng bộ reference, bảo toàn prefix và dùng coherent I/Q projection theo từng symbol. Cả hai chuỗi trích xuất đều exact-match với ground truth từ nguồn chính thức.
 
-Các thí nghiệm cho thấy decoder Blue 3 không còn tìm được candidate sau JPEG quality 95/85/70 hoặc resize 0,75×/0,5×; Sleepy Alarm vẫn giải đúng trong ba phép biến đổi audio theo cặp đã thử. Kết quả được giới hạn ở hai challenge và đúng pipeline thực nghiệm này, không suy rộng thành nhận định cho mọi thuật toán steganography.
+Các thí nghiệm cho thấy decoder Blue 3 không còn tìm được candidate sau JPEG quality 95/85/70 hoặc resize 0,75×/0,5×. Sleepy Alarm exact-match trong cả bốn trường hợp audio theo cặp; với biến đổi bất đối xứng, chỉ 3/6 phép thử PASS: hai phép resampling một phía thành công, còn bốn phép gain một phía thất bại. Kết quả cho thấy việc giữ tương quan nền cao không đủ để bảo đảm phân loại ASK đúng khi thang biên độ giữa target và reference không đồng nhất. Kết luận chỉ giới hạn ở hai challenge và đúng pipeline thực nghiệm này, không suy rộng thành nhận định cho mọi thuật toán steganography.
 
 Giá trị kỹ thuật của đồ án nằm ở việc tự triển khai hai decoder, giữ lại và phân tích lần giải mã thất bại, kiểm chứng bằng sáu regression tests, dùng artifact có SHA-256 và lượng hóa robustness bằng CSV/JSON. Hướng tiếp theo là xây dựng decoder Sleepy Alarm không cần reference, thử biến đổi bất đối xứng và đánh giá false positives trên tập ảnh/audio lành tính.
 
