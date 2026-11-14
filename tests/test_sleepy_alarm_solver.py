@@ -60,6 +60,11 @@ class SleepyAlarmSolverTests(unittest.TestCase):
             result = solve_sleepy(
                 distributed_path, reference=reference_path, expected_text=flag
             )
+            mismatch = solve_sleepy(
+                distributed_path,
+                reference=reference_path,
+                expected_text="ictf{" + ("y" * 33) + "}",
+            )
 
         self.assertTrue(result["success"], result)
         self.assertEqual(result["decoded_text"], flag)
@@ -74,11 +79,6 @@ class SleepyAlarmSolverTests(unittest.TestCase):
         self.assertTrue(result["ground_truth_match"])
         self.assertEqual(result["errors"], [])
 
-        mismatch = solve_sleepy(
-            distributed_path,
-            reference=reference_path,
-            expected_text="ictf{" + ("y" * 33) + "}",
-        )
         self.assertTrue(mismatch["format_valid"])
         self.assertFalse(mismatch["ground_truth_match"])
         self.assertFalse(mismatch["success"])
