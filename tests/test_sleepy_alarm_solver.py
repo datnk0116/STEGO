@@ -44,12 +44,13 @@ class SleepyAlarmSolverTests(unittest.TestCase):
         # Model the encoder priming delay before the original track begins.
         lead_samples = 1729
         lead = np.zeros((lead_samples, 2), dtype=np.float64)
-        # The distributed stream has a leading encoder delay; ASK is inserted
-        # into the first 7 seconds of the original source timeline after it.
+        # The distributed audio stream has a leading region before the
+        # original music aligns. The ASK generator starts at sample zero of
+        # this distributed stream, so its first two symbols lie in that
+        # unaligned prefix and must be retained by the decoder.
         distributed = np.vstack([lead, background])
-        # The upstream MATLAB generator writes the ASK signal to column 1
-        # (the first/left channel) only.
-        distributed[lead_samples:lead_samples + sample_count, 0] += carrier
+        # The upstream MATLAB generator writes ASK to the first/left channel.
+        distributed[:sample_count, 0] += carrier
 
         with tempfile.TemporaryDirectory() as temp_dir:
             temp = Path(temp_dir)
@@ -75,6 +76,7 @@ class SleepyAlarmSolverTests(unittest.TestCase):
         self.assertEqual(
             result["reference_alignment"]["target_start_sample"], lead_samples
         )
+        self.assertEqual(result["preserved_prefix_samples"], lead_samples)
         self.assertEqual(result["expected_text_provided"], True)
         self.assertTrue(result["ground_truth_match"])
         self.assertEqual(result["errors"], [])
