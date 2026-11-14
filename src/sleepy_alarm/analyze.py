@@ -46,7 +46,7 @@ def main() -> int:
 
     reference_info = None
     reference_plot = None
-    analysis_mono = mono
+    analysis_signal = audio
     if args.reference:
         ref, ref_sr = sf.read(args.reference, always_2d=True, dtype="float64")
         try:
@@ -56,7 +56,7 @@ def main() -> int:
         except ValueError as exc:
             p.error(str(exc))
         residual = aligned_target - aligned_ref
-        analysis_mono = residual.mean(axis=1)
+        analysis_signal = residual
         reference_info = {
             "file": str(args.reference),
             "sha256": sha256(args.reference),
@@ -64,7 +64,18 @@ def main() -> int:
             "difference_rms": float(np.sqrt(np.mean(residual**2))),
             "difference_peak": float(np.max(np.abs(residual))),
         }
+    # The official MATLAB generator adds the ASK waveform to the first audio
+    # channel only. Analyze that channel; averaging stereo halves the payload.
+    analysis_channel = 0
+    analysis_mono = analysis_signal[:, analysis_channel]
+    crop_start = int(reference_info["target_start_sample"]) if reference_info else 0
+    symbol_phase = int(round((-crop_start) % (sr / 50.0)))
+    transmission_samples = int(round(7.0 * sr))
+    end_sample = min(len(analysis_mono), symbol_phase + transmission_samples)
+    analysis_mono = analysis_mono[symbol_phase:end_sample]
     analysis_frames = len(analysis_mono)
+    if analysis_frames < int(7.0 * sr * 0.95):
+        p.error("not enough aligned samples for the 7-second ASK transmission")
     freqs, times, z = stft(analysis_mono, fs=sr, nperseg=min(args.nperseg, analysis_frames),
                             noverlap=min(args.noverlap, max(0, min(args.nperseg, analysis_frames)-1)))
     magnitude = np.abs(z)
@@ -115,7 +126,10 @@ def main() -> int:
     plt.xlabel("Time (s)"); plt.ylabel("Envelope"); plt.title("8 kHz carrier envelope")
     plt.tight_layout(); plt.savefig(envelope_path, dpi=160); plt.close()
     result = {
-        "file": str(args.audio), "sha256": sha256(args.audio),
+        "file": str(args.audio),
+        "analysis_channel": analysis_channel,
+        "symbol_clock_phase_samples_after_alignment": symbol_phase,
+        "expected_ask_symbols": 350, "sha256": sha256(args.audio),
         "format": sf.info(args.audio).format, "subtype": sf.info(args.audio).subtype,
         "samplerate_hz": int(sr), "channels": int(channels), "frames": int(frames),
         "duration_seconds": float(duration),
@@ -128,7 +142,7 @@ def main() -> int:
                  "noverlap": int(min(args.noverlap, max(0, min(args.nperseg, analysis_frames)-1))),
                  "frequency_bins": int(len(freqs)), "time_frames": int(len(times))},
         "reference_comparison": reference_info,
-        "ask": {"carrier_hz": args.carrier, "baud": 50, "symbol_duration_seconds": 0.02, "envelope_symbol_median_min": min(symbol_levels) if symbol_levels else None, "envelope_symbol_median_max": max(symbol_levels) if symbol_levels else None, "envelope_symbol_count": len(symbol_levels)},
+        "ask": {"carrier_hz": args.carrier, "baud": 50, "symbol_duration_seconds": 0.02, "transmission_seconds": 7.0, "envelope_symbol_median_min": min(symbol_levels) if symbol_levels else None, "envelope_symbol_median_max": max(symbol_levels) if symbol_levels else None, "envelope_symbol_count": len(symbol_levels)},
         "plots": [str(waveform_path), str(spec_path), str(envelope_path)] + ([reference_plot] if reference_plot else []),
         "note": "Plots are exploratory evidence, not proof of steganography by themselves."
     }
