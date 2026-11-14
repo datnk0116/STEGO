@@ -28,9 +28,9 @@ No flag, runtime, metric, or successful experiment is claimed unless it is produ
 Requirements: Python 3.10+.
 
 ```bash
-python -m venv .venv
+uv venv --python 3.14
 source .venv/bin/activate
-python -m pip install -r requirements.txt
+uv pip install -r requirements.txt
 python scripts/check_environment.py
 ```
 
@@ -43,7 +43,7 @@ python src/sleepy_alarm/analyze.py data/sleepy_alarm/morning_n_breakfast.mp3 --r
 python src/solve_challenges.py sleepy-alarm data/sleepy_alarm/morning_n_breakfast.mp3 --reference data/sleepy_alarm/morning_n_breakfast_original.mp3
 ```
 
-Download the original audio reference from the same official repository into `data/sleepy_alarm/morning_n_breakfast_original.mp3` before running the optional aligned-source comparison. The analyzer supports `--reference` and requires matching sample rate/frame/channel dimensions; document any mismatch rather than force-aligning samples.
+The original MP3 reference is downloaded by the same script. When `--reference` is supplied, the analyzer and solver resample the reference to the challenge sample rate if needed, estimate sample offset by cross-correlation, and analyze only the aligned overlap. The printed alignment metadata (lag, overlap duration and normalized correlation) must be recorded; a low correlation means the subtraction may not be trustworthy.
 
 ## Reproducibility
 
