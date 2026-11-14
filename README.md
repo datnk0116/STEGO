@@ -94,7 +94,7 @@ python src/experiments/sleepy_alarm_asymmetric_robustness.py \
   --expected 'ictf{1_sl33py_NaYuKi_alarm_2a634dc1bb2}'
 ```
 
-This writes `asymmetric_robustness.json` and `asymmetric_robustness.csv` under `results/sleepy_alarm/asymmetric_robustness/`. The run is intentionally separate from the already measured paired-transform results; do not report outcomes until it has been executed.
+This writes `asymmetric_robustness.json` and `asymmetric_robustness.csv` under `results/sleepy_alarm/asymmetric_robustness/`. The committed run records 3/6 one-sided variants as PASS: both one-sided resampling round-trips pass, while target-only and reference-only gain changes (0.5× and 1.5×) fail exact decoding. The detailed JSON/CSV are the source of truth; rerun the command after changing the decoder or input artifacts.
 
 The expected flag is taken from the official creator bitmap solely for exact validation. The decoder must reconstruct the text from the distributed MP3; it must not read the expected text as its extraction input. A structural-only run without `--expected` reports `success: null` and `format_valid` separately.
 
