@@ -56,6 +56,12 @@ def main():
             path=d/f"benign_graphic_{i}.png"; Image.fromarray(arr).save(path)
             add(path,"image","benign","synthetic_seed=20261114")
         add(args.blue3,"image","stego","official_ctf_artifact")
+        with Image.open(args.blue3) as source:
+            carrier=source.convert("RGB")
+        for i,factor in enumerate((0.98,1.02,0.95,1.05)):
+            variant=Image.fromarray(np.clip(np.asarray(carrier,dtype=np.float64)*factor,0,255).astype(np.uint8))
+            path=d/f"stego_blue3_brightness_{i}.png";variant.save(path)
+            add(path,"image","stego","derived_from_official_stego")
         sr=44100; duration=7.0; n=int(sr*duration); t=np.arange(n)/sr
         for i in range(8):
             noise=rng.normal(0,0.04,n)
@@ -63,6 +69,11 @@ def main():
             sf.write(path,np.column_stack([noise,noise*0.9]),sr)
             add(path,"audio","benign","synthetic_seed=20261114")
         add(args.sleepy,"audio","stego","official_ctf_artifact")
+        source_audio,source_sr=sf.read(args.sleepy,always_2d=True,dtype="float64")
+        for i,gain in enumerate((0.8,0.9,1.1,1.2)):
+            path=d/f"stego_sleepy_gain_{i}.wav"
+            sf.write(path,source_audio*gain,source_sr)
+            add(path,"audio","stego","derived_from_official_stego")
         # A separate reference-free extraction trial; success is reported, not assumed.
         try:
             no_ref=solve_sleepy(args.sleepy)
