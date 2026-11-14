@@ -168,3 +168,14 @@ Trước hết xác nhận lại toàn bộ 11 test tại commit cuối và lưu
 
 Không được nói STEGO là detector steganography tổng quát; không nói Sleepy Alarm hoạt động blind; không nói Blue 3 payload chắc chắn bị xóa sau JPEG/resize; không dùng FPR=0 từ tám mẫu synthetic để khẳng định không có false positive; không tuyên bố 11 test đã pass khi log hiện chỉ chứng minh sáu test cũ.
 
+## 11. Trả lời ngắn gọn về điểm yếu
+
+**Nếu phải chỉ ra một điểm yếu lớn nhất?**  
+Đồ án chứng minh tốt khả năng giải hai challenge cụ thể, nhưng chưa chứng minh tính tổng quát. Đặc biệt detector audio có recall=0 và Sleepy Alarm cần reference.
+
+**Nếu giảng viên yêu cầu chỉ ra đóng góp cá nhân?**  
+Trình bày phần decoder đã tự triển khai, giả định và lỗi từng gặp, vì sao sửa kênh stereo/prefix/symbol window, rồi mở log và JSON để chứng minh. Không nhận phần creator source hoặc thuật toán gốc là phát minh của mình.
+
+**Nếu được thêm một tuần?**  
+Ưu tiên dataset độc lập cho detector và kiểm thử full suite tại commit cuối; sau đó làm blind audio extraction và robustness sweep có BER. Đây là kế hoạch, không phải kết quả hiện tại.
+
