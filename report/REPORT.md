@@ -440,9 +440,9 @@ python src/experiments/sleepy_alarm_robustness.py \
 Các kết quả ở mục 8.2 chưa trả lời câu hỏi quan trọng: decoder có còn hoạt động khi chỉ một phía (target hoặc reference) bị biến đổi hay không. Repository bổ sung script `src/experiments/sleepy_alarm_asymmetric_robustness.py` để đo riêng sáu trường hợp: target-only và reference-only với gain 0,5×, gain 1,5×, và resampling round-trip 44,1→48→44,1 kHz. Script luôn chạy baseline trước, không ghi đè artifact gốc, lưu exact-match, số symbol, số separator, lỗi giải mã, hệ số clipping và runtime vào JSON/CSV. Đây là phép đo bổ sung; **không đưa ra kết luận trước khi script được chạy trên artifact chính thức**. Lệnh chạy:
 
 ~~~bash
-python src/experiments/sleepy_alarm_asymmetric_robustness.py \\
-  data/sleepy_alarm/morning_n_breakfast.mp3 \\
-  --reference data/sleepy_alarm/morning_n_breakfast_original.mp3 \\
+python src/experiments/sleepy_alarm_asymmetric_robustness.py \
+  data/sleepy_alarm/morning_n_breakfast.mp3 \
+  --reference data/sleepy_alarm/morning_n_breakfast_original.mp3 \
   --expected 'ictf{1_sl33py_NaYuKi_alarm_2a634dc1bb2}'
 ~~~
 
