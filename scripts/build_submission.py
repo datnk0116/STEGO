@@ -75,7 +75,7 @@ def main():
     info=subprocess.run(["pdfinfo",str(PDF)],check=True,text=True,capture_output=True).stdout
     (OUT/"pdf-metadata.txt").write_text(info,encoding="utf-8")
     build_zip()
-    print("\\nSubmission files:")
+    print("\nSubmission files:")
     for path in (DOCX,PDF,ZIP):
         print(f"- {path.relative_to(ROOT)} — {path.stat().st_size:,} bytes")
     raw.unlink(missing_ok=True); fixed.unlink(missing_ok=True)
