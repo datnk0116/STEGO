@@ -86,15 +86,15 @@ Bảng này là bản đồ đối chiếu với rubric, không phải tự ch�
 
 Có thể mô tả quá trình nhúng tổng quát:
 
-$
+$$
 S = E(C,M,K,\theta)
-$
+$$
 
 Trong đó C là vật mang tin gốc, M là thông điệp, K là khóa (nếu có), θ là tham số thuật toán và S là vật mang tin sau khi nhúng. Quá trình trích xuất tìm:
 
-$
+$$
 \hat M = D(S,K,\theta)
-$
+$$
 
 Một kỹ thuật ẩn tin thường được đánh giá qua ba yếu tố: dung lượng (payload capacity), tính khó phát hiện (imperceptibility) và độ bền (robustness). Ba yếu tố này có thể xung đột. Ví dụ, thay đổi nhiều pixel có thể tăng dung lượng nhưng làm phân bố màu dễ bị phát hiện; nén ảnh có thể phá hủy payload.
 
@@ -102,38 +102,38 @@ Một kỹ thuật ẩn tin thường được đánh giá qua ba yếu tố: du
 
 Theo README và creator script chính thức, ảnh được tạo từ nền đồng nhất RGB = (64, 77, 205), kích thước 512 × 512. Với flag có độ dài L, đặt:
 
-$
+$$
 s = \left\lfloor \frac{512}{L} \right\rfloor
-$
+$$
 
 Ký tự thứ i được gắn với vùng vuông:
 
-$
+$$
 R_i = [is,(i+1)s)\times[is,(i+1)s)
-$
+$$
 
 Trong mỗi vòng lặp tương ứng một đơn vị mã ký tự, creator chọn ngẫu nhiên một pixel thuộc R_i và tăng một đơn vị ở một trong ba kênh RGB. Nếu pixel được chọn nhiều lần, các mức tăng được cộng dồn.
 
 Gọi B=(64,77,205) là màu nền và I(x,y,c) là giá trị kênh c tại pixel (x,y). Tổng sai khác của vùng i:
 
-$
+$$
 \Delta_i =
 \sum_{(x,y)\in R_i}
 \sum_{c\in\{R,G,B\}}
 (I(x,y,c)-B_c)
-$
+$$
 
 Mỗi thao tác nhúng chỉ tăng đúng một đơn vị ở đúng một kênh. Do đó, nếu ảnh không bị biến đổi và không xảy ra tràn/clipping giá trị kênh:
 
-$
+$$
 \Delta_i = \operatorname{ord}(m_i)
-$
+$$
 
 Suy ra ký tự:
 
-$
+$$
 \hat m_i = \operatorname{chr}(\Delta_i)
-$
+$$
 
 Phép tổng hợp không cần biết pixel nào đã bị thay đổi, kênh nào được chọn hay thứ tự ngẫu nhiên của creator. Các thao tác tăng một đơn vị có tính cộng, nên tổng sai khác giữ lại số lần tăng của cả vùng. Điều kiện thành công là xác định đúng L, đúng màu nền, đúng ranh giới vùng và bảo toàn giá trị pixel.
 
@@ -148,15 +148,15 @@ Source MATLAB của challenge mô tả ba trạng thái biên độ:
 
 Sóng mang có tần số fc = 8.000 Hz. Tốc độ symbol Rs = 50 baud, nên thời lượng mỗi symbol Ts = 1/Rs = 0,02 giây. Với sample rate 44.100 Hz, số mẫu mỗi symbol là:
 
-$
+$$
 N_s = 44100 \times 0.02 = 882
-$
+$$
 
 Một ký tự ASCII gồm 8 bit. Flag dài 39 ký tự nên có 312 bit. Generator chèn một dấu phân cách giữa các byte, tạo 38 dấu phân cách. Tổng số symbol là:
 
-$
+$$
 N_{\text{symbol}}=312+38=350
-$
+$$
 
 350 symbol × 0,02 giây = 7 giây. Trong mỗi symbol, sóng mang có 8.000 × 0,02 = 160 chu kỳ. Generator MATLAB cộng tín hiệu ASK vào cột thứ nhất của ma trận audio, tức kênh trái trong file stereo. Vì vậy, lấy trung bình hai kênh trước khi giải mã sẽ làm suy giảm biên độ thành phần ASK.
 
@@ -164,9 +164,9 @@ $
 
 Biến đổi Fourier rời rạc:
 
-$
+$$
 X[k]=\sum_{n=0}^{N-1}x[n]e^{-j2\pi kn/N}
-$
+$$
 
 Độ phân giải tần số của FFT N điểm là Δf = fs/N. FFT trên toàn file phù hợp để xác định peak tần số nhưng không cho biết peak xuất hiện ở thời điểm nào. STFT chia tín hiệu thành các cửa sổ ngắn; spectrogram biểu diễn năng lượng theo thời gian và tần số. Sau khi lọc băng quanh sóng mang, analytic signal/Hilbert transform có thể dùng để lấy envelope, từ đó ước lượng mức biên độ trong phần giữa mỗi symbol.
 
