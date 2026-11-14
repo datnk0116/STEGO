@@ -22,7 +22,7 @@ A passing synthetic unit test does not prove that the official challenge artifac
 - `src/audio_alignment.py`: reference resampling and time alignment.
 - `src/blue3/`: image inspection and visualization.
 - `src/sleepy_alarm/`: waveform, spectrogram and ASK-envelope analysis.
-- `src/experiments/`: Blue 3 and audio robustness experiments.
+- `src/experiments/`: Blue 3, paired audio and asymmetric target/reference robustness experiments.
 - `tests/`: synthetic regression tests; these complement, not replace, artifact tests.
 - `results/`: machine-readable outputs, plots, CSVs and execution logs.
 - `report/REPORT.md`: report aligned to the UET.CN3124 assignment rubric.
