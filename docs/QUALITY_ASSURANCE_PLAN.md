@@ -23,7 +23,7 @@ Rubric mức Xuất sắc đòi hỏi: có tư duy thiết kế và so sánh ph�
 
 **Repository:** datnk0116/STEGO  
 **Canonical record:** results/verification/provenance.json  
-**Historical tested revision:** lấy từ quality-gate.json.git.commit; evidence-packaging commit và current HEAD được suy ra bằng strict checker, không hardcode trong snapshot.
+**Latest tested revision:** `38fbecab7aea8c241243fb50d044aea90ab657f7`; **evidence-packaging revision:** `29c7e9e8e98d96e20e5172a63a359cfefd22edcc`. Current HEAD được suy ra bằng strict checker, không hardcode trong snapshot.
 
 Baseline trước khi bổ sung provenance tooling (giữ nguyên như lịch sử):
 - 22/22 test methods pass, exit code 0.
@@ -220,7 +220,7 @@ Sau khi hoàn thiện nội dung báo cáo, build và kiểm tra riêng gói n�
 
 ~~~bash
 python scripts/build_submission.py --max-main-pages 15
-python scripts/check_report_pdf.py
+python scripts/check_report_pdf.py results/submission/STUDENT_UETCN3124_CTF_Report.pdf --max-main-pages 15
 unzip -l results/submission/STUDENT_UETCN3124_Scripts.zip
 ~~~
 

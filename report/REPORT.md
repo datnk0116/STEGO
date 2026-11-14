@@ -533,7 +533,7 @@ Blue 3 có cơ chế xác định và ổn định hơn vì PNG bảo toàn giá
 5. **Audio nhạy với điều kiện biến đổi.** Ma trận mở rộng có 7/23 PASS (bao gồm baseline). Trung bình số học trên 23 trial, bao gồm baseline, là SER 12,31%, BER 12,97%, separator precision 77,07% và recall 93,14%. Ví dụ target-side AWGN ở SNR 20 dB có SER 20,57% và BER 22,76%; reference-side AWGN ở 10 dB có SER 60,00% và BER 63,78%. Bốn phép gain một phía trong ma trận asymmetric ban đầu đều FAIL, trong khi hai phép resampling một phía PASS. Các giá trị trung bình này chỉ mô tả tập trial đã định trước, không phải ước lượng hiệu năng trên một quần thể audio.
 6. **Quy mô mẫu hạn chế.** Nghiên cứu chỉ có hai challenge chính thức; các biến thể sinh từ một artifact không độc lập thống kê. Chưa có khoảng tin cậy, repeated runs trên nhiều payload hoặc kiểm định chéo theo challenge.
 7. **Bằng chứng kiểm thử đã được đồng bộ ở mức source/evidence.** Gate mới nhất ghi nhận 38/38 tests pass, exit code 0, runtime 5,358 giây trên source commit `38fbecab7aea8c241243fb50d044aea90ab657f7`; evidence JSON/log/provenance được đóng gói tại commit `29c7e9e8e98d96e20e5172a63a359cfefd22edcc`. Working tree trước lần chạy được capture là clean. Baseline 22/22 vẫn là kết quả lịch sử; `results/logs/unit-tests.log` là log sáu test cũ và không được dùng thay quality-gate log. Các chỉnh sửa docs-only không làm stale technical gate; thay đổi source, tests, data, dependencies, manifest hoặc gate implementation cần chạy lại gate và lưu evidence mới.
-8. **Chưa có benchmark thực nghiệm đầy đủ với công cụ ngoài.** Phần đối chiếu Aperi'Solve, The-A-Files và ragibson/Steganography hiện dựa trên README/tài liệu công khai; chưa cài đặt và chạy cùng corpus, nên không có số liệu thời gian hoặc metric để so sánh. Riêng Blue 3 có reference solver chính thức [3] cùng xử lý artifact bằng modal RGB, quét độ dài ứng viên và tổng sai khác theo vùng; đây là đối chứng thuật toán phù hợp để chạy trên cùng `blue.png`, nhưng repository hiện chưa lưu kết quả chạy side-by-side. Không xem việc đọc source là benchmark đã hoàn tất; lệnh tái hiện đối chứng được đưa vào checklist cuối.
+8. **Chưa có benchmark thực nghiệm đầy đủ với công cụ ngoài.** Phần đối chiếu Aperi'Solve, The-A-Files và ragibson/Steganography hiện dựa trên README/tài liệu công khai; chưa cài đặt và chạy cùng corpus, nên không có số liệu thời gian hoặc metric để so sánh. Riêng Blue 3 có reference solver chính thức [3] cùng xử lý artifact bằng modal RGB, quét độ dài ứng viên và tổng sai khác theo vùng; đây là đối chứng thuật toán phù hợp để chạy trên cùng `blue.png`, nhưng repository hiện chưa lưu kết quả chạy side-by-side. Không xem việc đọc source là benchmark đã hoàn tất; lệnh tái hiện cùng artifact được ghi ở Phụ lục A, nhưng chưa có runtime/metric side-by-side được lưu.
 
 ### 11.3. Phản biện kết quả và đánh giá tính hợp lệ
 
@@ -692,6 +692,14 @@ python src/blue3/analyze.py data/blue3/blue.png
 python src/solve_challenges.py blue3 data/blue3/blue.png
 python src/blue3/visualize.py data/blue3/blue.png --length 50
 python src/experiments/blue3_robustness.py data/blue3/blue.png
+
+  # Upstream BYUCTF reference solver [3] on the same official Blue 3 artifact
+  # Reproducible functional cross-check only; not a timing/performance benchmark.
+tmpdir="$(mktemp -d)"
+curl -fsSL "https://raw.githubusercontent.com/BYU-CSA/old-ctf-challenges/18c8f246756e79069c1cb1753c8bfea5e73e31f5/forensics-steganography/blue-3/solve.py" -o "$tmpdir/solve.py"
+cp data/blue3/blue.png "$tmpdir/blue.png"
+(cd "$tmpdir" && python solve.py)
+rm -rf "$tmpdir"
 
 # Sleepy Alarm analysis and exact extraction
 python src/sleepy_alarm/analyze.py data/sleepy_alarm/morning_n_breakfast.mp3 --reference data/sleepy_alarm/morning_n_breakfast_original.mp3
