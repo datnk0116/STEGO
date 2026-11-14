@@ -27,3 +27,12 @@
 [10] Trường Đại học Công nghệ, ĐHQGHN, “Mô tả bài tập lớn / đồ án thực hành — UET.CN3124: Dự án thực hành CTF Jeopardy,” assignment brief, especially sections 3–7, pp. 3–8.
 
 For every external write-up or source-code reference used in the report, identify the exact file/section and explain how the method was independently reproduced. The challenge repositories and technical documentation listed above were consulted on 14 November 2026.
+
+
+## Comparative open-source repositories
+
+[11] Zeecka, “Aperi'Solve — Steganalysis web platform,” README, repository AperiSolve. https://github.com/Zeecka/AperiSolve (accessed 14 November 2026).
+
+[12] Paweł Kaczmarek and Zbigniew Piotrowski, “The A-Files — Research toolkit for evaluating audio steganography and watermarking,” README, repository The-A-Files. https://github.com/pawel-kaczmarek/The-A-Files (accessed 14 November 2026).
+
+[13] ragibson, “Steganography — Least Significant Bit Steganography for bitmap images, WAV sound files, and byte sequences,” repository README. https://github.com/ragibson/Steganography (accessed 14 November 2026).
