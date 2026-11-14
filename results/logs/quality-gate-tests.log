@@ -22,6 +22,6 @@ test_textured_image_is_not_flagged (test_steganalysis.SteganalysisTests.test_tex
 test_uniform_image_is_flagged_by_explicit_heuristic (test_steganalysis.SteganalysisTests.test_uniform_image_is_flagged_by_explicit_heuristic) ... ok
 
 ----------------------------------------------------------------------
-Ran 22 tests in 0.915s
+Ran 22 tests in 0.949s
 
 OK

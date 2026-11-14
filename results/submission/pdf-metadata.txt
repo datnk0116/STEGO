@@ -4,7 +4,7 @@ Keywords:        Steganography, Steganalysis, BYUCTF, ImaginaryCTF, UET.CN3124
 Author:          Sinh viên UET.CN3124
 Creator:         Writer
 Producer:        LibreOffice 26.8.3.1 (AARCH64)
-CreationDate:    Sat Nov 14 13:34:02 2026 +07
+CreationDate:    Sat Nov 14 15:48:13 2026 +07
 Custom Metadata: no
 Metadata Stream: yes
 Tagged:          yes
@@ -12,10 +12,10 @@ UserProperties:  no
 Suspects:        no
 Form:            none
 JavaScript:      no
-Pages:           17
+Pages:           18
 Encrypted:       no
 Page size:       595.304 x 841.89 pts (A4)
 Page rot:        0
-File size:       703399 bytes
+File size:       711994 bytes
 Optimized:       no
 PDF version:     1.7
