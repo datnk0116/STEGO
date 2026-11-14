@@ -45,6 +45,10 @@ Interpretation: solver produced a candidate matching the official BYUCTF flag sy
 - Original MP3: 160,495 bytes
 - Original MP3 SHA-256: d0c283834955e54d68b0bba723ccd194142a428d2de74722e5f1dff3ccbd94ad2
 
-Initial analyzer attempt reported that the sample rate, frame count and channel count did not match. The audio alignment module has since been added. It resamples the reference if needed, estimates sample lag through cross-correlation, and limits subtraction to aligned overlap.
+Initial analyzer attempt failed because the two MP3s did not have identical frame counts. The later solver run reported both at 44,100 Hz and two channels, with an aligned overlap of 438,912 frames and lag 1,729 samples (0.039206 s); normalized absolute correlation was 0.9998734.
 
-**Pending:** rerun the analyzer and ASK decoder with the updated alignment module, then record metadata, alignment score/lag, residual envelope levels, decoded bytes and validation. Do not claim successful audio extraction until this run succeeds.
+The first decoder after alignment was not successful: it averaged the stereo channels, processed 497 symbols over 9.952653 seconds instead of the 350-symbol / 7-second ASK transmission, classified 161 separators, produced 17 NUL characters, and reported malformed byte groups. This output is recorded as a failed attempt, not a decoded flag.
+
+The corrected decoder now selects channel 0, preserves the original target prefix excluded by alignment, limits processing to the first 7 seconds and clusters the three measured envelope levels. Synthetic ASK regression coverage has been added, including an aligned-offset case.
+
+**Pending:** run `git pull --ff-only origin main`, then execute the regression suite, analyzer and solver again. Record the resulting amplitude cluster centers, symbol counts, decoded bytes, flag validation, screenshots and elapsed time. Do not claim successful extraction until the official MP3 run succeeds.
