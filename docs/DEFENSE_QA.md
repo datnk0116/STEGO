@@ -85,7 +85,7 @@ python src/solve_challenges.py sleepy-alarm data/sleepy_alarm/morning_n_breakfas
 python scripts/build_submission.py
 ~~~
 
-## 6. Phản tư cá nhân — tự viết bằng trải nghiệm thật
+## 7. Phản tư cá nhân — tự viết bằng trải nghiệm thật
 
 Trước buổi bảo vệ, hãy chuẩn bị câu trả lời cụ thể:
 1. Ban đầu bạn tin giả thuyết nào, và dữ liệu nào khiến bạn thay đổi?
