@@ -7,6 +7,7 @@ thresholds, or claim that exploratory robustness results generalize.
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import ast
 import hashlib
 import importlib.metadata
 import json
@@ -89,24 +90,44 @@ def _check_artifacts() -> dict:
     return results
 
 
+def _count_test_methods() -> int:
+    """Count discoverable test_* functions from checked-in test source."""
+    total = 0
+    for path in sorted((ROOT / "tests").rglob("test_*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        total += sum(
+            isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+            and node.name.startswith("test_")
+            for node in ast.walk(tree)
+        )
+    return total
+
+
 def _run_unit_tests(log_path: Path) -> dict:
     command = [sys.executable, "-m", "unittest", "discover", "-s", "tests", "-v"]
+    expected_count = _count_test_methods()
     completed = subprocess.run(
         command, cwd=ROOT, capture_output=True, text=True, check=False
     )
     output = completed.stdout + completed.stderr
     log_path.parent.mkdir(parents=True, exist_ok=True)
     log_path.write_text(output, encoding="utf-8")
-    match = re.search(r"Ran\s+(\d+)\s+tests?", output)
+    match = re.search(r"Ran[ ]+([0-9]+)[ ]+tests?", output)
+    tests_run = int(match.group(1)) if match else None
     return {
         "command": "python -m unittest discover -s tests -v",
         "exit_code": completed.returncode,
-        "tests_run": int(match.group(1)) if match else None,
-        "passed": completed.returncode == 0 and match is not None,
+        "expected_test_methods": expected_count,
+        "tests_run": tests_run,
+        "test_count_matches_source": tests_run == expected_count,
+        "passed": (
+            completed.returncode == 0
+            and tests_run is not None
+            and tests_run == expected_count
+        ),
         "log": log_path.relative_to(ROOT).as_posix(),
         "tail": output[-2500:],
     }
-
 
 def _run_official_decoders() -> dict:
     blue_path = ROOT / ARTIFACTS["blue3"]["path"]
