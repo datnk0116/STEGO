@@ -54,7 +54,20 @@ Không. Decoder dùng track gốc để loại nền và tham khảo mô tả cr
 
 Các phép JPEG/resize chỉ đánh giá một decoder Blue 3 với những tham số đã liệt kê. Các phép audio được áp dụng đồng thời cho target và reference; kết quả không chứng minh khả năng chịu được biến đổi bất đối xứng khi chỉ một file bị sửa. Không khái quát các kết quả này cho codec hoặc phương pháp steganography khác.
 
-## 5. Bằng chứng cần mở khi vấn đáp
+## 5. Thí nghiệm bổ sung: robustness bất đối xứng
+
+Bản robustness ban đầu áp dụng phép biến đổi đồng thời lên target và reference. Để tránh đánh đồng kết quả này với khả năng chịu biến đổi một phía, repository có thêm script riêng:
+
+~~~bash
+python src/experiments/sleepy_alarm_asymmetric_robustness.py \\
+  data/sleepy_alarm/morning_n_breakfast.mp3 \\
+  --reference data/sleepy_alarm/morning_n_breakfast_original.mp3 \\
+  --expected 'ictf{1_sl33py_NaYuKi_alarm_2a634dc1bb2}'
+~~~
+
+Script kiểm tra target-only/reference-only với gain và resampling round-trip. Chỉ diễn giải các kết quả thực tế trong JSON/CSV sau khi chạy; không giả định trước trường hợp nào phải PASS hay FAIL.
+
+## 6. Bằng chứng cần mở khi vấn đáp
 
 - Manifest và SHA-256 của ba artifact.
 - Log của sáu regression tests.
