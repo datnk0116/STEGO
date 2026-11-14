@@ -70,7 +70,7 @@ Kết quả đã đo: baseline PASS; target-only gain 0,5× FAIL (46 separator),
 ## 6. Bằng chứng cần mở khi vấn đáp
 
 - Manifest và SHA-256 của ba artifact.
-- Log của sáu regression tests.
+- Log lịch sử sáu regression tests và quality-gate log mới chứng minh số test chạy ở revision hiện tại.
 - Blue 3 solver log và hình diagnostics.
 - Sleepy Alarm solver JSON: số symbol, tâm cụm, byte lỗi, exact-match.
 - Hai file CSV robustness.
@@ -162,11 +162,11 @@ Không. Thử nghiệm paired áp dụng cùng phép biến đổi lên target v
 
 **Em sẽ ưu tiên cải tiến điều gì đầu tiên?**
 
-Trước hết xác nhận lại toàn bộ 11 test tại commit cuối và lưu log. Tiếp theo sửa thiết kế đánh giá detector audio bằng tập đa nguồn có validation/test độc lập; sau đó cải thiện reference-free audio và xây dựng robustness curve bằng BER/partial recovery. Không tối ưu ngưỡng bằng cách nhìn vào test set.
+Trước hết chạy quality gate để xác nhận 22 test methods tại commit cuối và lưu log. Tiếp theo sửa thiết kế đánh giá detector audio bằng tập đa nguồn có validation/test độc lập; sau đó cải thiện reference-free audio và xây dựng robustness curve bằng BER/partial recovery. Không tối ưu ngưỡng bằng cách nhìn vào test set.
 
 **Những kết luận nào không được phép đưa ra?**
 
-Không được nói STEGO là detector steganography tổng quát; không nói Sleepy Alarm hoạt động blind; không nói Blue 3 payload chắc chắn bị xóa sau JPEG/resize; không dùng FPR=0 từ tám mẫu synthetic để khẳng định không có false positive; không tuyên bố 11 test đã pass khi log hiện chỉ chứng minh sáu test cũ.
+Không được nói STEGO là detector steganography tổng quát; không nói Sleepy Alarm hoạt động blind; không nói Blue 3 payload chắc chắn bị xóa sau JPEG/resize; không dùng FPR=0 từ tám mẫu synthetic để khẳng định không có false positive; không tuyên bố 22 test đã pass trước khi quality gate có log mới; log cũ chỉ chứng minh sáu test ở revision trước.
 
 ## 11. Trả lời ngắn gọn về điểm yếu
 
