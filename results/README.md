@@ -1,8 +1,10 @@
 # Results and evidence
 
-This directory contains committed technical outputs. The binary submission files and logbook are outside the scope of the current technical audit.
+This directory contains committed technical outputs and experiment evidence. Final DOCX/PDF/ZIP files are generated locally under `results/submission/` and are intentionally excluded from the source ZIP to avoid nesting generated submission artifacts. The logbook template is included as a separate record and must only be filled from actual work.
 
 ## Current verification outputs
+
+The latest gate was run at revision `a040e3863145038b786ba6719629e636fdf2e565` and its log/JSON were packaged by commit `3bb2b57790d164a6997ee1afe157a0fc7a8a8807`. The compare between those two revisions contains only the two verification-output files; source and tests are unchanged.
 
 - verification/quality-gate.json: latest quality-gate record. It records 22/22 tests passed, three artifact integrity checks, Blue 3 exact-match and Sleepy Alarm reference-assisted exact-match.
 - logs/quality-gate-tests.log: full 22-test run corresponding to the source commit recorded in the JSON.
