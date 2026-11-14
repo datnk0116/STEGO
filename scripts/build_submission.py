@@ -25,8 +25,8 @@ def require_tools(names):
           ". Install Pandoc, LibreOffice Writer and Poppler before building.")
 
 def build_zip():
-    top_files=["README.md","requirements.txt"]
-    directories=["data","src","tests","scripts","references","report","results","docs"]
+    top_files=[".gitignore","README.md","requirements.txt"]
+    directories=[".github","data","src","tests","scripts","references","report","results","docs"]
     excluded_parts={".venv","venv","__pycache__",".git"}
     excluded_suffixes={".pyc",".pyo",".tmp",".bak"}
     with zipfile.ZipFile(ZIP,"w",zipfile.ZIP_DEFLATED,compresslevel=8) as archive:
