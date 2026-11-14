@@ -110,3 +110,22 @@ Không. Chưa có benchmark trực tiếp trên cùng dữ liệu, cùng môi tr
 
 **Vì sao chưa dùng Aperi'Solve hoặc LSB tools để giải hai challenge?**
 Các công cụ đó tập trung vào nhiều họ steganography phổ biến, đặc biệt bit-plane/LSB và metadata. Blue 3 dùng tổng sai khác RGB theo vùng; Sleepy Alarm dùng ASK 8 kHz và cần reference alignment. Chúng có thể là công cụ khảo sát bổ sung, nhưng không mặc nhiên là decoder tương thích với hai cơ chế này.
+
+
+## 9. Detector baseline và đánh giá
+
+**Detector hiện tại có chứng minh phát hiện được steganography tổng quát không?**
+
+Không. `src/steganalysis.py` là baseline heuristic có thể giải thích: ảnh dùng tỷ lệ màu RGB phổ biến và độ lệch chuẩn kênh; audio dùng tỷ lệ năng lượng quanh 8 kHz và độ biến thiên RMS theo block 50 baud. Ngưỡng được đặt cố định, chưa được hiệu chuẩn trên corpus độc lập. Ảnh đơn sắc và audio có carrier tự nhiên có thể gây false positive.
+
+**Precision, Recall, F1 và FPR hiện được tính trên dữ liệu nào?**
+
+Benchmark tạo benign controls tổng hợp bằng seed 20261114, cùng các biến thể dẫn xuất từ hai artifact stego chính thức. Đây là bộ kiểm thử minh họa khả năng chạy pipeline, không đại diện dữ liệu đời thực; số lượng positive nhỏ và không được dùng để tuyên bố tổng quát hóa.
+
+**Làm sao chạy thử giải mã audio không reference?**
+
+Chạy `python src/solve_challenges.py sleepy-alarm data/sleepy_alarm/morning_n_breakfast.mp3` và không truyền `--reference`. Cần xem `format_valid`, symbol count, separator count và byte errors; không có expected ground truth thì không thể kết luận exact-match.
+
+**Thí nghiệm robustness mới bổ sung gì?**
+
+Blue 3 thêm brightness, contrast, blur, crop và Gaussian noise. Sleepy Alarm thêm gain nhiều mức, AWGN theo SNR, band-pass và resampling round-trip áp dụng riêng lên target hoặc reference. Kết quả chỉ mô tả artifact và tham số cụ thể, không phải thống kê trên quần thể.
