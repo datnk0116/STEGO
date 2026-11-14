@@ -86,15 +86,11 @@ Bảng này là bản đồ đối chiếu với rubric, không phải tự ch�
 
 Có thể mô tả quá trình nhúng tổng quát:
 
-$$
-S = E(C,M,K,\theta)
-$$
+**Mô hình nhúng:** `S = E(C, M, K, θ)`. Trong đó `C` là vật mang tin, `M` là thông điệp, `K` là khóa (nếu có), `θ` là bộ tham số và `S` là vật mang tin sau khi nhúng.
 
 Trong đó C là vật mang tin gốc, M là thông điệp, K là khóa (nếu có), θ là tham số thuật toán và S là vật mang tin sau khi nhúng. Quá trình trích xuất tìm:
 
-$$
-\hat M = D(S,K,\theta)
-$$
+**Mô hình trích xuất:** `M_hat = D(S, K, θ)`. Decoder nhận vật mang tin đã nhúng và khôi phục thông điệp ước lượng.
 
 Một kỹ thuật ẩn tin thường được đánh giá qua ba yếu tố: dung lượng (payload capacity), tính khó phát hiện (imperceptibility) và độ bền (robustness). Ba yếu tố này có thể xung đột. Ví dụ, thay đổi nhiều pixel có thể tăng dung lượng nhưng làm phân bố màu dễ bị phát hiện; nén ảnh có thể phá hủy payload.
 
@@ -102,38 +98,25 @@ Một kỹ thuật ẩn tin thường được đánh giá qua ba yếu tố: du
 
 Theo README và creator script chính thức, ảnh được tạo từ nền đồng nhất RGB = (64, 77, 205), kích thước 512 × 512. Với flag có độ dài L, đặt:
 
-$$
-s = \left\lfloor \frac{512}{L} \right\rfloor
-$$
+**Kích thước cạnh vùng:** `s = floor(512 / L)`, với `L` là độ dài flag.
 
 Ký tự thứ i được gắn với vùng vuông:
 
-$$
-R_i = [is,(i+1)s)\times[is,(i+1)s)
-$$
+**Vùng của ký tự thứ i:** `R_i = [i·s, (i+1)·s) × [i·s, (i+1)·s)`.
 
 Trong mỗi vòng lặp tương ứng một đơn vị mã ký tự, creator chọn ngẫu nhiên một pixel thuộc R_i và tăng một đơn vị ở một trong ba kênh RGB. Nếu pixel được chọn nhiều lần, các mức tăng được cộng dồn.
 
 Gọi B=(64,77,205) là màu nền và I(x,y,c) là giá trị kênh c tại pixel (x,y). Tổng sai khác của vùng i:
 
-$$
-\Delta_i =
-\sum_{(x,y)\in R_i}
-\sum_{c\in\{R,G,B\}}
-(I(x,y,c)-B_c)
-$$
+**Tổng sai khác RGB của vùng i:** `Δ_i = Σ_(x,y)∈R_i Σ_(c∈{R,G,B}) (I(x,y,c) − B_c)`, trong đó `B=(64,77,205)` là màu nền.
 
 Mỗi thao tác nhúng chỉ tăng đúng một đơn vị ở đúng một kênh. Do đó, nếu ảnh không bị biến đổi và không xảy ra tràn/clipping giá trị kênh:
 
-$$
-\Delta_i = \operatorname{ord}(m_i)
-$$
+**Quan hệ mã hóa:** `Δ_i = ord(m_i)`, vì mỗi đơn vị mã ký tự làm tăng đúng một đơn vị ở một kênh RGB trong vùng.
 
 Suy ra ký tự:
 
-$$
-\hat m_i = \operatorname{chr}(\Delta_i)
-$$
+**Khôi phục ký tự:** `m_hat_i = chr(Δ_i)`.
 
 Phép tổng hợp không cần biết pixel nào đã bị thay đổi, kênh nào được chọn hay thứ tự ngẫu nhiên của creator. Các thao tác tăng một đơn vị có tính cộng, nên tổng sai khác giữ lại số lần tăng của cả vùng. Điều kiện thành công là xác định đúng L, đúng màu nền, đúng ranh giới vùng và bảo toàn giá trị pixel.
 
@@ -148,15 +131,11 @@ Source MATLAB của challenge mô tả ba trạng thái biên độ:
 
 Sóng mang có tần số fc = 8.000 Hz. Tốc độ symbol Rs = 50 baud, nên thời lượng mỗi symbol Ts = 1/Rs = 0,02 giây. Với sample rate 44.100 Hz, số mẫu mỗi symbol là:
 
-$$
-N_s = 44100 \times 0.02 = 882
-$$
+**Số mẫu trên mỗi symbol:** `N_s = f_s × T_s = 44,100 × 0.02 = 882 samples`.
 
 Một ký tự ASCII gồm 8 bit. Flag dài 39 ký tự nên có 312 bit. Generator chèn một dấu phân cách giữa các byte, tạo 38 dấu phân cách. Tổng số symbol là:
 
-$$
-N_{\text{symbol}}=312+38=350
-$$
+**Tổng symbol:** `N_symbol = 39 × 8 + 38 = 350`, gồm 312 bit dữ liệu và 38 dấu phân cách.
 
 350 symbol × 0,02 giây = 7 giây. Trong mỗi symbol, sóng mang có 8.000 × 0,02 = 160 chu kỳ. Generator MATLAB cộng tín hiệu ASK vào cột thứ nhất của ma trận audio, tức kênh trái trong file stereo. Vì vậy, lấy trung bình hai kênh trước khi giải mã sẽ làm suy giảm biên độ thành phần ASK.
 
@@ -164,9 +143,7 @@ $$
 
 Biến đổi Fourier rời rạc:
 
-$$
-X[k]=\sum_{n=0}^{N-1}x[n]e^{-j2\pi kn/N}
-$$
+**DFT:** `X[k] = Σ_(n=0)^(N−1) x[n] · exp(−j·2π·k·n/N)`. Độ phân giải tần số của FFT N điểm là `Δf = f_s / N`.
 
 Độ phân giải tần số của FFT N điểm là Δf = fs/N. FFT trên toàn file phù hợp để xác định peak tần số nhưng không cho biết peak xuất hiện ở thời điểm nào. STFT chia tín hiệu thành các cửa sổ ngắn; spectrogram biểu diễn năng lượng theo thời gian và tần số. Sau khi lọc băng quanh sóng mang, analytic signal/Hilbert transform có thể dùng để lấy envelope, từ đó ước lượng mức biên độ trong phần giữa mỗi symbol.
 
