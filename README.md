@@ -28,7 +28,7 @@ A passing synthetic unit test does not prove that the official challenge artifac
 - `report/REPORT.md`: report aligned to the UET.CN3124 assignment rubric.
 - `references/REFERENCES.md`: cited primary sources and technical documentation.
 - `docs/DEFENSE_QA.md`: oral-defense questions for explaining the implementation and limits.
-- `docs/PERSONAL_REFLECTION_TEMPLATE.md`: prompts for the student's own reflection; never invent personal experience or hours.
+- `docs/PERSONAL_REFLECTION_TEMPLATE.md`: prompts for the student's own reflection; never invent personal experience or hours.\n- `references/REFERENCES.md`: includes comparative open-source steganalysis/audio-steganalysis repositories; source review is distinguished from executed benchmarks.
 
 ## Environment setup
 
