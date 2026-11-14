@@ -64,15 +64,18 @@ def main():
             add(path,"audio","benign","synthetic_seed=20261114")
         add(args.sleepy,"audio","stego","official_ctf_artifact")
         # A separate reference-free extraction trial; success is reported, not assumed.
-        no_ref=solve_sleepy(args.sleepy)
+        try:
+            no_ref=solve_sleepy(args.sleepy)
+            no_ref_result={"reference_used":False,"format_valid":no_ref["format_valid"],
+              "decoded_length":no_ref["decoded_length"],"symbol_count":no_ref["measured_symbol_count"],
+              "separator_count":no_ref["symbol_counts"]["separator"],"errors":no_ref["errors"],
+              "decoded_text":no_ref["decoded_text"],"status":"completed"}
+        except Exception as exc:
+            no_ref_result={"reference_used":False,"status":"failed",
+              "error_type":type(exc).__name__,"error":str(exc)}
+        no_ref_result["note"]="No-reference mode uses the distributed audio directly; exact correctness requires independent expected text."
         with (args.out/"reference_free_trial.json").open("w",encoding="utf-8") as f:
-            json.dump({"reference_used":False,"format_valid":no_ref["format_valid"],
-                       "decoded_length":no_ref["decoded_length"],
-                       "symbol_count":no_ref["measured_symbol_count"],
-                       "separator_count":no_ref["symbol_counts"]["separator"],
-                       "errors":no_ref["errors"],"decoded_text":no_ref["decoded_text"],
-                       "note":"No-reference mode uses the distributed audio directly; exact correctness requires independent expected text."},
-                      f,indent=2,ensure_ascii=False)
+            json.dump(no_ref_result,f,indent=2,ensure_ascii=False)
     summaries={}
     for kind in ("image","audio"):
         subset=[r for r in rows if r["kind"]==kind]
