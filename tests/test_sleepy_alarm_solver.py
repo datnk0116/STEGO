@@ -45,11 +45,9 @@ class SleepyAlarmSolverTests(unittest.TestCase):
 
         # Model the encoder priming delay before the original track begins.
         lead_samples = 1729
-        lead_t = np.arange(lead_samples) / sample_rate
-        lead = np.column_stack([
-            0.04 * np.sin(2 * np.pi * 333 * lead_t),
-            0.03 * np.sin(2 * np.pi * 777 * lead_t),
-        ])
+        # MP3 encoder delay is modeled as leading padding, not unrelated
+        # audio content. The shared source track begins exactly after padding.
+        lead = np.zeros((lead_samples, 2), dtype=np.float64)
         # Simulate MP3 encoder priming: the distributed stream has a leading
         # delay, then the same source audio. The ASK payload is inserted into
         # the first 7 seconds of the source timeline, i.e. after the priming.
