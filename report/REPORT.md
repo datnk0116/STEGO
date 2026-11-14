@@ -16,7 +16,7 @@
 
 Đối với Blue 3, công cụ tự viết đã phân tích ảnh PNG 512 × 512, xác định màu nền RGB (64, 77, 205), thử 49 độ dài ứng viên và khôi phục chuỗi 50 ký tự. Chuỗi kết quả trùng với flag do ban tổ chức công bố. Đối với Sleepy Alarm, hai MP3 được xác minh bằng SHA-256 và đồng bộ bằng cross-correlation; lần giải mã đầu tiên cho kết quả sai do xử lý sai kênh stereo, sai khoảng thời gian payload và ngưỡng biên độ chưa phù hợp với tín hiệu MP3. Từ source MATLAB chính thức, quy trình đã được điều chỉnh để phân tích kênh trái, 350 symbol đầu trong 7 giây và ba cụm biên độ. Kết quả cuối của lần chạy sửa đổi vẫn đang chờ xác minh.
 
-Đóng góp của đồ án gồm decoder Blue 3 có chế độ tự suy luận màu nền, decoder ASK có tham chiếu âm thanh, công cụ tạo hình phân tích ảnh/âm thanh, bộ kiểm thử hồi quy tổng hợp và kịch bản thí nghiệm độ bền. Báo cáo phân biệt kết quả đo được, kết quả tham khảo từ source upstream và các thí nghiệm chưa thực hiện.
+Đóng góp của đồ án gồm decoder Blue 3 có chế độ tự suy luận màu nền, decoder ASK có căn chỉnh tham chiếu và xác minh exact-match, công cụ tạo hình phân tích ảnh/âm thanh, bộ kiểm thử hồi quy tổng hợp, workflow CI chạy trên artifact chính thức và kịch bản thí nghiệm độ bền. Báo cáo phân biệt kết quả đo được, kết quả tham khảo từ source upstream và các thí nghiệm chưa thực hiện.
 
 **Từ khóa:** Steganography, Steganalysis, CTF, pixel-difference encoding, Amplitude Shift Keying, FFT, STFT, cross-correlation.
 
@@ -60,17 +60,6 @@ Các giả thuyết:
 - **H1 — Blue 3:** Nếu màu nền được xác định đúng, ảnh còn nguyên vẹn và kích thước không thay đổi, tổng chênh lệch ba kênh RGB trong vùng ký tự thứ i bằng mã ASCII của ký tự đó.
 - **H2 — Sleepy Alarm:** Nếu tách được thành phần quanh 8 kHz, giữ đúng đồng hồ symbol 50 baud và phân biệt được ba trạng thái biên độ, có thể phục hồi 350 symbol tương ứng 39 byte và 38 dấu phân cách.
 - **H3 — Độ bền:** JPEG recompression/resize có thể phá hủy quan hệ pixel tuyệt đối của Blue 3; resampling, filtering hoặc clipping có thể làm sai biên độ/thời điểm symbol của Sleepy Alarm.
-
-### 1.5. Liên hệ trực tiếp với rubric
-
-| Tiêu chí | Điểm tối đa | Nội dung trong báo cáo | Bằng chứng quyết định |
-|---|---:|---|---|
-| 1. Lập kế hoạch và biện minh | 2,0 | Mục 1: mục tiêu, câu hỏi nghiên cứu, so sánh phương án và lý do chọn cặp challenge | Phạm vi thống nhất; so sánh hai hướng giải và lý do chọn |
-| 2. Triển khai và tài liệu hóa | 4,0 | Mục 3–8: nguồn dữ liệu, môi trường, lệnh, decoder, kiểm thử và log | Hash artifact; ảnh terminal; output solver; hình phân tích; log test và robustness |
-| 3. Phân tích kết quả | 2,0 | Mục 2, 5, 6, 9, 10: mô hình toán học, điều kiện giải, lỗi và góc nhìn phòng thủ | Derivation Blue 3; ASK 350 symbol; phân tích lần giải mã thất bại và lần chạy cuối |
-| 4. Đánh giá, phản biện và tự học | 2,0 | Mục 11: hạn chế, white-box/black-box, false positive và hướng cải tiến | Nhật ký làm việc thực tế; so sánh phương án; kết quả thí nghiệm và tự phản biện |
-
-Bảng này là bản đồ đối chiếu với rubric, không phải tự chấm điểm. Điểm số chỉ do giảng viên quyết định dựa trên báo cáo và khả năng trình diễn lại.
 
 ### 1.4. Tiêu chí xác nhận thành công
 
@@ -272,12 +261,16 @@ Các điều kiện cần:
 - Creator chỉ tăng giá trị kênh; không có phép biến đổi làm đổi dấu/số lượng sai khác.
 - Độ dài L được xác định đúng.
 
-### 5.5. Hình minh họa cần xuất
+### 5.5. Hình phân tích ảnh
 
-Script src/blue3/visualize.py tạo hình gồm histogram từng kênh, bản đồ độ lệch màu và biểu đồ tổng sai khác theo vùng đường chéo. Hình này cần được sinh từ artifact chính thức và đưa vào báo cáo với chú thích nguồn dữ liệu. Không dùng hình minh họa tự vẽ thay cho output thực nghiệm.
+Hình 1 được tạo trực tiếp từ `blue.png` bằng script `src/blue3/visualize.py`. Ba panel lần lượt biểu diễn phân bố giá trị RGB, heatmap độ lệch lớn nhất giữa pixel và màu nền (64,77,205), và tổng sai khác RGB trong từng vùng chéo. Biểu đồ vùng là bằng chứng trực quan bổ sung cho decoder: nếu giả thuyết đúng, các tổng vùng phải tương ứng với mã ký tự và không cần xác định từng pixel bị thay đổi.
+
+![Hình 1. Histogram RGB, bản đồ sai khác pixel và tổng sai khác theo vùng đường chéo của Blue 3. Nguồn: tự tạo từ artifact chính thức.](../results/blue3/figures/blue3_diagnostics.png)
+
+Lệnh tái hiện:
 
 ~~~bash
-python src/blue3/visualize.py data/blue3/blue.png --length 50
+python src/blue3/visualize.py data/blue3/blue.png --length 50 --out-dir results/blue3/figures
 ~~~
 
 ## 6. Quy trình và kết quả Sleepy Alarm
@@ -319,15 +312,16 @@ Lần triển khai cũ mắc ba vấn đề kỹ thuật:
 
 ### 6.4. Phiên bản decoder đã điều chỉnh
 
-Phiên bản mới của src/solve_challenges.py và src/sleepy_alarm/analyze.py được thiết kế để:
-- Đồng bộ reference và giữ lại thông tin alignment.
-- Phân tích kênh trái thay vì trung bình hai kênh.
-- Giới hạn phép giải mã trong 7 giây đầu, tương ứng 350 symbol.
-- Lấy median envelope ở phần giữa mỗi symbol để giảm ảnh hưởng vùng chuyển tiếp.
-- Ước lượng ba cụm biên độ từ dữ liệu thực tế thay vì áp ngưỡng cố định ngay từ đầu.
-- Kiểm tra số byte, chiều dài 39 ký tự, prefix ictf{, suffix } và danh sách byte lỗi.
+Phiên bản hiện tại của `src/solve_challenges.py` và `src/sleepy_alarm/analyze.py` thực hiện các bước:
+1. Giải mã hai MP3 thành mảng mẫu, resample reference về sample rate của file phân phối nếu cần.
+2. Ước lượng độ lệch thời gian bằng cross-correlation trên tín hiệu mono đã decimate; sau đó căn chỉnh phần overlap ở sample rate gốc.
+3. Loại bỏ phần MP3 encoder delay không thuộc timeline của tín hiệu gốc. Phần residual sau căn chỉnh bắt đầu tại sample 0 của track nguồn, cũng là điểm bắt đầu payload do generator tạo. Không ghép lại prefix chưa căn chỉnh vì thao tác đó sẽ dịch đồng hồ symbol.
+4. Chỉ phân tích channel 0 (left), vì `createsignal.m` chỉ cộng ASK vào cột audio thứ nhất.
+5. Lọc băng 7.5–8.5 kHz, dùng Hilbert envelope và lấy median ở 50% giữa mỗi symbol để tránh transient tại ranh giới.
+6. Phân loại ba mức thấp/trung bình/cao bằng clustering, tương ứng separator/bit 0/bit 1; sau đó nhóm 8 bit thành byte.
+7. Kiểm tra đủ 350 symbol, 38 separator, 39 byte, độ dài 39, tiền tố/hậu tố và so khớp toàn bộ chuỗi với ground truth đọc độc lập từ bitmap trong source creator.
 
-Các điều chỉnh trên dựa trên source chính thức, nhưng chỉ được xem là thành công khi chạy trên file MP3 phân phối và thu được kết quả thỏa tất cả điều kiện. Tại thời điểm viết bản báo cáo này, kết quả chạy của phiên bản mới **chưa được cung cấp**.
+Việc đối chiếu chính xác toàn bộ chuỗi là điều kiện bắt buộc để `success=true`. Chỉ khớp prefix/suffix không được xem là giải thành công.
 
 ### 6.5. Lệnh tái hiện
 
@@ -341,7 +335,15 @@ python src/solve_challenges.py sleepy-alarm \
   --reference data/sleepy_alarm/morning_n_breakfast_original.mp3
 ~~~
 
-Kết quả cuối cùng cần lưu gồm sample rate, kênh được phân tích, alignment lag, normalized correlation, các tâm cụm envelope, số symbol 0/1/separator, số byte, nội dung giải mã và trạng thái kiểm tra flag. Cần kiểm tra các tâm cụm có phù hợp định tính với ba mức 0, 0,002 và 0,005; nếu không, phải tiếp tục phân tích thay vì chỉ dựa vào định dạng flag.
+Kết quả cần lưu gồm sample rate, kênh được phân tích, alignment lag, normalized correlation, các tâm cụm envelope, số symbol 0/1/separator, số byte, nội dung giải mã và trạng thái so khớp toàn bộ flag. Các tâm cụm phải được đối chiếu với ba mức danh định 0, 0,002 và 0,005. Ground truth được lấy từ chuỗi bitmap trong `createsignal.m`, không được đưa vào decoder như dữ liệu trích xuất.
+
+![Hình 2. Waveform của residual audio sau căn chỉnh tham chiếu, giới hạn vào cửa sổ truyền ASK. Nguồn: tự tạo từ MP3 challenge.](../results/sleepy_alarm/waveform.png)
+
+![Hình 3. Spectrogram STFT của tín hiệu phân tích; cần quan sát dải năng lượng quanh sóng mang 8 kHz. Nguồn: tự tạo từ MP3 challenge.](../results/sleepy_alarm/spectrogram.png)
+
+![Hình 4. Envelope sau lọc băng quanh 8 kHz; các symbol được lấy mẫu ở vùng giữa chu kỳ 0,02 giây. Nguồn: tự tạo từ MP3 challenge.](../results/sleepy_alarm/ask_envelope.png)
+
+![Hình 5. Sai khác giữa distributed audio và original reference sau căn chỉnh. Nguồn: tự tạo từ hai artifact chính thức.](../results/sleepy_alarm/reference_difference.png)
 
 ## 7. Công cụ tự viết và kiểm thử
 
@@ -354,13 +356,16 @@ Kết quả cuối cùng cần lưu gồm sample rate, kênh được phân tíc
 | src/audio_alignment.py | Resample và căn chỉnh reference | Lag, overlap, correlation |
 | src/experiments/robustness.py | Sinh biến thể ảnh/audio | Danh sách artifact biến đổi |
 | src/experiments/blue3_robustness.py | Chạy decoder qua JPEG/resize | CSV thành công/thất bại |
-| tests/ | Kiểm thử decoder và alignment bằng dữ liệu tổng hợp | Log unittest |
+| src/experiments/sleepy_alarm_robustness.py | Chạy baseline và phép biến đổi audio theo cặp target/reference | JSON và CSV |
+| tests/ | Kiểm thử decoder, CLI và alignment bằng dữ liệu tổng hợp | Log unittest |
 
-Lần chạy regression đầu tiên ghi nhận 4 test pass: ba test audio alignment và một test decoder Blue 3. Sau đó một test ASK tổng hợp đã được bổ sung, nên phiên bản test hiện tại có 5 test và cần chạy lại. Test tổng hợp chỉ xác minh hành vi của hàm trên dữ liệu do test tạo; nó không thay thế cho kiểm chứng trên MP3 chính thức.
+Bộ test hiện tại bao gồm ba kiểm thử căn chỉnh audio, kiểm thử decoder Blue 3, kiểm thử CLI Blue 3 ở chế độ black-box và kiểm thử ASK tổng hợp có encoder delay cùng đối chiếu ground truth. Synthetic test kiểm tra thuật toán và hồi quy, nhưng không thay thế cho lần chạy trên MP3 chính thức.
 
 ~~~bash
 python -m unittest discover -s tests -v
 ~~~
+
+Kết quả số lượng test và thời gian chạy phải lấy từ `results/logs/unit-tests.log` của lần CI gần nhất; không sao chép số liệu từ một revision cũ.
 
 ## 8. Thiết kế thí nghiệm robustness
 
@@ -388,7 +393,14 @@ python src/experiments/blue3_robustness.py data/blue3/blue.png
 | Resampling | Round-trip | 44,1 kHz → 48 kHz → 44,1 kHz |
 | Gain | Thay đổi amplitude | 0,5× và 1,5× có clipping |
 
-Đầu ra cần đo: số symbol hợp lệ, khoảng cách giữa ba tâm cụm envelope, số byte lỗi và trạng thái giải mã. Nếu baseline Sleepy Alarm chưa giải thành công, chưa được diễn giải kết quả robustness; cần thiết lập baseline trước.
+Script `src/experiments/sleepy_alarm_robustness.py` chạy baseline trước; nếu baseline không khôi phục đúng toàn bộ ground truth thì dừng và không báo cáo robustness như kết quả. Khi baseline đạt, script áp dụng resampling round-trip và gain 0,5×/1,5× đồng thời cho target/reference, sau đó chạy lại decoder và ghi tâm cụm, alignment, số byte lỗi, trạng thái exact-match, clipping fraction và runtime vào JSON/CSV. Các phép biến đổi theo cặp tránh tạo sai lệch giả do chỉ thay đổi một phía của phép trừ tham chiếu.
+
+~~~bash
+python src/experiments/sleepy_alarm_robustness.py \\
+  data/sleepy_alarm/morning_n_breakfast.mp3 \\
+  --reference data/sleepy_alarm/morning_n_breakfast_original.mp3 \\
+  --expected 'ictf{1_sl33py_NaYuKi_alarm_2a634dc1bb2}'
+~~~
 
 ## 9. Phân tích an ninh: góc nhìn tấn công và phòng thủ
 
@@ -492,7 +504,7 @@ Giá trị kỹ thuật của đồ án nằm ở việc tự triển khai decod
 
 [9] CTFtime Team, “All about CTF (Capture The Flag),” tài liệu được assignment UET.CN3124 khuyến nghị.
 
-[10] Trường Đại học Công nghệ, ĐHQGHN, “Mô tả bài tập lớn / đồ án thực hành — UET.CN3124: Dự án thực hành CTF Jeopardy,” tài liệu hướng dẫn học phần, đặc biệt các mục 3–9.
+[10] Trường Đại học Công nghệ, ĐHQGHN, “Mô tả bài tập lớn / đồ án thực hành — UET.CN3124: Dự án thực hành CTF Jeopardy,” tài liệu hướng dẫn học phần, đặc biệt các mục 3–7, trang 3–8.
 
 ## Phụ lục A — Lệnh tái hiện
 
@@ -520,13 +532,25 @@ python src/solve_challenges.py sleepy-alarm data/sleepy_alarm/morning_n_breakfas
 
 ## Phụ lục B — Checklist hoàn thiện trước khi nộp
 
-- [ ] Chạy lại Blue 3 trên phiên bản decoder black-box mới; lưu terminal output.
-- [ ] Chạy 5 regression tests của phiên bản hiện tại; lưu log.
-- [ ] Chạy lại Sleepy Alarm bằng decoder mới; xác nhận 350 symbol, 38 separator, 39 byte, prefix/suffix và errors rỗng.
+- [ ] Xác nhận workflow CI mới nhất pass trên nhánh main.
+- [ ] Kiểm tra output Blue 3 black-box và kết quả đối chiếu flag.
+- [ ] Kiểm tra toàn bộ regression tests pass; lưu log.
+- [ ] Chạy Sleepy Alarm trên MP3 chính thức; xác nhận 350 symbol, 38 separator, 39 byte, prefix/suffix, errors rỗng và exact ground-truth match.
 - [ ] Xuất và chèn hình Blue 3 histogram/heatmap/region contribution.
 - [ ] Xuất và chèn waveform, spectrogram, ASK envelope của Sleepy Alarm.
-- [ ] Chạy robustness evaluation trên ảnh và audio; lập bảng kết quả đo được.
+- [ ] Chạy robustness evaluation trên ảnh và audio; lập bảng kết quả đo được và chỉ diễn giải khi baseline thành công.
 - [ ] Bổ sung ảnh chụp quá trình cài đặt, phân tích, lỗi và kết quả cuối.
 - [ ] Bổ sung nhật ký thời gian làm việc thực tế; không ước lượng hoặc bịa thời lượng.
 - [ ] Điền thông tin sinh viên, ngày nộp và chuẩn hóa trích dẫn IEEE.
-- [ ] Kiểm tra nội dung chính không vượt 15 trang; phụ lục và tài liệu tham khảo để riêng.
+- [ ] Kiểm tra nội dung chính không vượt 15 trang; phụ lục và tài liệu tham khảo để riêng.### 1.5. Liên hệ trực tiếp với rubric
+
+| Tiêu chí | Điểm tối đa | Nội dung trong báo cáo | Bằng chứng quyết định |
+|---|---:|---|---|
+| 1. Lập kế hoạch và biện minh | 2,0 | Mục 1: mục tiêu, câu hỏi nghiên cứu, so sánh phương án và lý do chọn cặp challenge | Phạm vi thống nhất; so sánh hai hướng giải và lý do chọn |
+| 2. Triển khai và tài liệu hóa | 4,0 | Mục 3–8: nguồn dữ liệu, môi trường, lệnh, decoder, kiểm thử và log | Hash artifact; ảnh terminal; output solver; hình phân tích; log test và robustness |
+| 3. Phân tích kết quả | 2,0 | Mục 2, 5, 6, 9, 10: mô hình toán học, điều kiện giải, lỗi và góc nhìn phòng thủ | Derivation Blue 3; ASK 350 symbol; phân tích lần giải mã thất bại và lần chạy cuối |
+| 4. Đánh giá, phản biện và tự học | 2,0 | Mục 11: hạn chế, white-box/black-box, false positive và hướng cải tiến | Nhật ký làm việc thực tế; so sánh phương án; kết quả thí nghiệm và tự phản biện |
+
+Bảng này là bản đồ đối chiếu với rubric, không phải tự chấm điểm. Điểm số chỉ do giảng viên quyết định dựa trên báo cáo và khả năng trình diễn lại.
+
+
