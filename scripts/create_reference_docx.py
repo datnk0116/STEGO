@@ -79,10 +79,15 @@ def main():
         set_run_font(run, "Noto Sans", 8, color=(100, 110, 120))
 
     # Pandoc will use paragraph/table styles from this reference document.
-    table = styles["Table"]
-    table.font.name = "Noto Sans"
-    table._element.rPr.rFonts.set(qn("w:eastAsia"), "Noto Sans")
-    table.font.size = Pt(9)
+    for table_style_name in ("Table Grid", "Table"):
+        try:
+            table = styles[table_style_name]
+            table.font.name = "Noto Sans"
+            table._element.rPr.rFonts.set(qn("w:eastAsia"), "Noto Sans")
+            table.font.size = Pt(9)
+            break
+        except KeyError:
+            continue
     args.out.parent.mkdir(parents=True, exist_ok=True)
     doc.save(args.out)
 
