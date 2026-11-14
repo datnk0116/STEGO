@@ -14,6 +14,7 @@ import numpy as np
 from PIL import Image
 from scipy.signal import butter, sosfiltfilt, hilbert
 import soundfile as sf
+from audio_alignment import align_reference
 
 BLUE_RE = re.compile(r"byuctf\{[0-9A-Za-z_]*\}\Z")
 
@@ -52,10 +53,12 @@ def solve_sleepy(path: Path, carrier_hz: float = 8000.0,
                  one_amp: float = 5e-3, stop_amp: float = 0.0,
                  reference: Path | None = None) -> dict:
     signal, sr = sf.read(path, always_2d=True, dtype="float64")
+    alignment_info = None
     if reference is not None:
         original, original_sr = sf.read(reference, always_2d=True, dtype="float64")
-        if original_sr != sr or original.shape != signal.shape:
-            raise ValueError("reference must match sample rate, frame count and channel count")
+        signal, original, alignment_info = align_reference(
+            signal, int(sr), original, int(original_sr)
+        )
         signal = signal - original
     # Mono average retains an in-phase carrier; report when a stereo mix might
     # cancel content and allow explicit manual channel inspection if needed.
@@ -109,6 +112,7 @@ def solve_sleepy(path: Path, carrier_hz: float = 8000.0,
         "baud": baud, "samples_per_bit": samples_per_bit,
         "symbol_count": len(symbols), "separator_count": symbols.count(" "),
         "unknown_symbol_count": symbols.count("?"),
+        "reference_alignment": alignment_info,
         "median_envelope_range": [float(np.min(values)), float(np.max(values))] if values else None,
         "bit_chunks": chunks, "decoded_text": "".join(decoded), "errors": errors,
         "note": "Exploratory ASK envelope decoder. Verify against original challenge source and test timing/threshold sensitivity."
