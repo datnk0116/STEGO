@@ -39,10 +39,10 @@ def main():
     section = doc.sections[0]
     section.page_width = Cm(21.0)
     section.page_height = Cm(29.7)
-    section.top_margin = Cm(2.0)
-    section.bottom_margin = Cm(2.0)
-    section.left_margin = Cm(2.3)
-    section.right_margin = Cm(2.0)
+    section.top_margin = Cm(1.6)
+    section.bottom_margin = Cm(1.6)
+    section.left_margin = Cm(1.8)
+    section.right_margin = Cm(1.6)
     section.header_distance = Cm(0.9)
     section.footer_distance = Cm(0.9)
 
@@ -50,15 +50,15 @@ def main():
     normal = styles["Normal"]
     normal.font.name = "Noto Sans"
     normal._element.rPr.rFonts.set(qn("w:eastAsia"), "Noto Sans")
-    normal.font.size = Pt(10.5)
-    normal.paragraph_format.space_after = Pt(5)
-    normal.paragraph_format.line_spacing = 1.12
+    normal.font.size = Pt(10.0)
+    normal.paragraph_format.space_after = Pt(3)
+    normal.paragraph_format.line_spacing = 1.02
 
     for name, size, color in [
-        ("Title", 18, (31, 55, 86)),
-        ("Heading 1", 15, (31, 78, 121)),
-        ("Heading 2", 12, (46, 96, 145)),
-        ("Heading 3", 11, (68, 84, 106)),
+        ("Title", 17, (31, 55, 86)),
+        ("Heading 1", 13, (31, 78, 121)),
+        ("Heading 2", 11, (46, 96, 145)),
+        ("Heading 3", 10, (68, 84, 106)),
     ]:
         style = styles[name]
         style.font.name = "Noto Sans"
@@ -67,8 +67,8 @@ def main():
         style.font.bold = True
         style.font.color.rgb = RGBColor(*color)
         style.paragraph_format.keep_with_next = True
-        style.paragraph_format.space_before = Pt(10)
-        style.paragraph_format.space_after = Pt(5)
+        style.paragraph_format.space_before = Pt(6)
+        style.paragraph_format.space_after = Pt(3)
 
     header = section.header.paragraphs[0]
     header.alignment = WD_ALIGN_PARAGRAPH.RIGHT
@@ -84,7 +84,7 @@ def main():
             table = styles[table_style_name]
             table.font.name = "Noto Sans"
             table._element.rPr.rFonts.set(qn("w:eastAsia"), "Noto Sans")
-            table.font.size = Pt(9)
+            table.font.size = Pt(8.5)
             break
         except KeyError:
             continue
