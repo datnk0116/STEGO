@@ -26,7 +26,7 @@
 
 [10] Trường Đại học Công nghệ, ĐHQGHN, “Mô tả bài tập lớn / đồ án thực hành — UET.CN3124: Dự án thực hành CTF Jeopardy,” assignment brief, especially sections 3–7, pp. 3–8.
 
-For every external write-up or source-code reference used in the report, identify the exact file/section and explain how the method was independently reproduced. The challenge repositories and technical documentation listed above were consulted on 14 November 2026.
+The challenge repositories and technical documentation [1]–[8] were consulted on 14 November 2026. The comparative repositories [11]–[13] were reviewed through their public README files for scope comparison only; they were not installed, executed, or benchmarked against STEGO. The report identifies this distinction explicitly.
 
 
 ## Comparative open-source repositories
