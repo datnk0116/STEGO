@@ -69,6 +69,17 @@ Các giả thuyết:
 | Sleepy Alarm | 350 symbol; 38 separator; 39 byte; prefix ictf{; suffix }; không có byte lỗi; đối chiếu generator | Chưa đạt trên lần chạy đầu; phiên bản decoder mới đang chờ xác minh |
 | Robustness | Mỗi biến thể có trạng thái giải mã và tham số biến đổi được ghi lại | Đã có script tạo biến thể; chưa có kết quả đo |
 
+### 1.5. Liên hệ trực tiếp với rubric
+
+| Tiêu chí | Điểm tối đa | Nội dung trong báo cáo | Bằng chứng quyết định |
+|---|---:|---|---|
+| 1. Lập kế hoạch và biện minh | 2,0 | Mục 1: mục tiêu, câu hỏi nghiên cứu, so sánh phương án và lý do chọn cặp challenge | Phạm vi thống nhất; so sánh hai hướng giải và lý do chọn |
+| 2. Triển khai và tài liệu hóa | 4,0 | Mục 3–8: nguồn dữ liệu, môi trường, lệnh, decoder, kiểm thử và log | Hash artifact; ảnh terminal; output solver; hình phân tích; log test và robustness |
+| 3. Phân tích kết quả | 2,0 | Mục 2, 5, 6, 9, 10: mô hình toán học, điều kiện giải, lỗi và góc nhìn phòng thủ | Derivation Blue 3; ASK 350 symbol; phân tích lần giải mã thất bại và lần chạy cuối |
+| 4. Đánh giá, phản biện và tự học | 2,0 | Mục 11: hạn chế, white-box/black-box, false positive và hướng cải tiến | Nhật ký làm việc thực tế; so sánh phương án; kết quả thí nghiệm và tự phản biện |
+
+Bảng này là bản đồ đối chiếu với rubric, không phải tự chấm điểm. Điểm số chỉ do giảng viên quyết định dựa trên báo cáo và khả năng trình diễn lại.
+
 ## 2. Kiến thức nền và mô hình kỹ thuật
 
 ### 2.1. Mô hình steganography
@@ -542,15 +553,6 @@ python src/solve_challenges.py sleepy-alarm data/sleepy_alarm/morning_n_breakfas
 - [ ] Bổ sung ảnh chụp quá trình cài đặt, phân tích, lỗi và kết quả cuối.
 - [ ] Bổ sung nhật ký thời gian làm việc thực tế; không ước lượng hoặc bịa thời lượng.
 - [ ] Điền thông tin sinh viên, ngày nộp và chuẩn hóa trích dẫn IEEE.
-- [ ] Kiểm tra nội dung chính không vượt 15 trang; phụ lục và tài liệu tham khảo để riêng.### 1.5. Liên hệ trực tiếp với rubric
-
-| Tiêu chí | Điểm tối đa | Nội dung trong báo cáo | Bằng chứng quyết định |
-|---|---:|---|---|
-| 1. Lập kế hoạch và biện minh | 2,0 | Mục 1: mục tiêu, câu hỏi nghiên cứu, so sánh phương án và lý do chọn cặp challenge | Phạm vi thống nhất; so sánh hai hướng giải và lý do chọn |
-| 2. Triển khai và tài liệu hóa | 4,0 | Mục 3–8: nguồn dữ liệu, môi trường, lệnh, decoder, kiểm thử và log | Hash artifact; ảnh terminal; output solver; hình phân tích; log test và robustness |
-| 3. Phân tích kết quả | 2,0 | Mục 2, 5, 6, 9, 10: mô hình toán học, điều kiện giải, lỗi và góc nhìn phòng thủ | Derivation Blue 3; ASK 350 symbol; phân tích lần giải mã thất bại và lần chạy cuối |
-| 4. Đánh giá, phản biện và tự học | 2,0 | Mục 11: hạn chế, white-box/black-box, false positive và hướng cải tiến | Nhật ký làm việc thực tế; so sánh phương án; kết quả thí nghiệm và tự phản biện |
-
-Bảng này là bản đồ đối chiếu với rubric, không phải tự chấm điểm. Điểm số chỉ do giảng viên quyết định dựa trên báo cáo và khả năng trình diễn lại.
+- [ ] Kiểm tra nội dung chính không vượt 15 trang; phụ lục và tài liệu tham khảo để riêng.
 
 
