@@ -479,7 +479,7 @@ Repository bổ sung ba nhánh kiểm tra có thể chạy độc lập:
 2. `src/experiments/blue3_extended_robustness.py` mở rộng phép thử ảnh với brightness, contrast, blur, crop và Gaussian noise ở nhiều mức.
 3. `src/experiments/sleepy_alarm_robustness_matrix.py` kiểm tra biến đổi một phía trên target/reference: gain nhiều mức, AWGN theo SNR, band-pass và resampling round-trip.
 
-Decoder Sleepy Alarm đã có chế độ không reference bằng cách bỏ tham số `--reference`. Benchmark ghi riêng kết quả thử này vào `reference_free_trial.json`; không mặc định xem là thành công. Nếu không tách được tín hiệu, đó là bằng chứng về giới hạn của phương pháp khi thiếu cover track, không được thay bằng kết quả reference-assisted.
+Decoder Sleepy Alarm đã có chế độ không reference bằng cách bỏ tham số `--reference`. Benchmark ghi riêng kết quả thử này vào `reference_comparison.json`; không mặc định xem là thành công. Nếu không tách được tín hiệu, đó là bằng chứng về giới hạn của phương pháp khi thiếu cover track, không được thay bằng kết quả reference-assisted.
 
 Các lệnh tái hiện:
 
