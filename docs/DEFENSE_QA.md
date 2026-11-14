@@ -129,3 +129,42 @@ Chạy `python src/solve_challenges.py sleepy-alarm data/sleepy_alarm/morning_n_
 **Thí nghiệm robustness mới bổ sung gì?**
 
 Blue 3 thêm brightness, contrast, blur, crop và Gaussian noise. Sleepy Alarm thêm gain nhiều mức, AWGN theo SNR, band-pass và resampling round-trip áp dụng riêng lên target hoặc reference. Kết quả chỉ mô tả artifact và tham số cụ thể, không phải thống kê trên quần thể.
+
+## 10. Phản biện nâng cao: câu hỏi giảng viên có thể hỏi
+
+**Threat model của đồ án là gì? Có giải được trong tình huống blind steganalysis không?**
+
+Không hoàn toàn. Blue 3 được phân tích với hiểu biết về creator algorithm và giả định ảnh PNG gốc. Sleepy Alarm hiện là reference-assisted vì cần track gốc để tạo residual. Thử reference-free đã chạy nhưng thất bại: 350 symbol, 49 separator, 26 ký tự, format invalid. Vì vậy không tuyên bố đây là blind decoder.
+
+**Vì sao Sleepy Alarm có correlation gần 1 nhưng vẫn sai khi gain một phía?**
+
+Cross-correlation chuẩn hóa chủ yếu phản ánh tương đồng hình dạng/độ trễ, không đảm bảo scale của hai track bằng nhau. Khi chỉ target hoặc reference bị gain, phép trừ residual để lại thành phần nền không triệt tiêu đúng; ba cụm ASK có thể chồng lấn hoặc lệch. Dữ liệu cho thấy correlation khoảng 0,99888–0,99987 trong nhiều trường hợp gain FAIL. Cần xem cluster centers và byte errors để kết luận cụ thể cho từng trường hợp.
+
+**Tại sao detector audio có recall bằng 0?**
+
+Detector yêu cầu đồng thời carrier-band energy ratio >= 0,02 và block-RMS coefficient of variation >= 0,15. Positive audio trong benchmark có carrier ratio khoảng 0,000204, thấp hơn ngưỡng hơn hai bậc độ lớn; dù RMS CV cao khoảng 0,987, điều kiện AND vẫn làm detector bỏ qua tất cả positive. Không nên chỉ hạ threshold dựa trên cùng benchmark; phải dùng validation độc lập, giữ test set riêng.
+
+**Ảnh detector có precision/recall/F1 = 1 có chứng minh detector tốt?**
+
+Không. Năm positive đều là bản gốc/biến thể brightness cùng nguồn Blue 3, còn 12 negative là synthetic. Đây không phải mẫu ảnh độc lập đại diện cho ảnh tự nhiên. Kết quả xác nhận heuristic phân biệt nhóm mẫu đã tạo, không xác nhận generalization.
+
+**Blue 3 thất bại sau JPEG/resize có chứng minh dữ liệu ẩn bị xóa?**
+
+Không. Kết quả chỉ xác nhận decoder hiện tại không khôi phục được payload theo đúng phép tổng pixel và phân vùng cũ. Một phương pháp khác có thể còn khôi phục được một phần payload. Cần báo BER hoặc tỷ lệ ký tự phục hồi trước khi nói payload bị phá hủy.
+
+**Thành công 4/4 audio paired robustness có mâu thuẫn với 3/6 asymmetric robustness không?**
+
+Không. Thử nghiệm paired áp dụng cùng phép biến đổi lên target và reference, giữ scale tương đối. Thử nghiệm asymmetric chỉ biến đổi một phía; bốn gain một phía thất bại, hai resampling round-trip một phía thành công. Hai nhóm có điều kiện khác nhau nên phải báo riêng.
+
+**Đóng góp mới của đồ án là gì nếu challenge source/writeup đã tồn tại?**
+
+Đóng góp không phải phát minh thuật toán ẩn tin mới. Đóng góp trong phạm vi bài thực hành là tái triển khai decoder, phân tích điều kiện hoạt động, ghi lại lỗi trong quá trình debug, exact-match với ground truth độc lập, đo robustness và trình bày giới hạn định lượng. Cần phân biệt đóng góp học tập/kỹ thuật này với novelty nghiên cứu.
+
+**Em sẽ ưu tiên cải tiến điều gì đầu tiên?**
+
+Trước hết xác nhận lại toàn bộ 11 test tại commit cuối và lưu log. Tiếp theo sửa thiết kế đánh giá detector audio bằng tập đa nguồn có validation/test độc lập; sau đó cải thiện reference-free audio và xây dựng robustness curve bằng BER/partial recovery. Không tối ưu ngưỡng bằng cách nhìn vào test set.
+
+**Những kết luận nào không được phép đưa ra?**
+
+Không được nói STEGO là detector steganography tổng quát; không nói Sleepy Alarm hoạt động blind; không nói Blue 3 payload chắc chắn bị xóa sau JPEG/resize; không dùng FPR=0 từ tám mẫu synthetic để khẳng định không có false positive; không tuyên bố 11 test đã pass khi log hiện chỉ chứng minh sáu test cũ.
+
