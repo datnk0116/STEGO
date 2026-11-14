@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
   "snapshot_type": "generated_run",
-  "verification_id": "444080f65bea4319a36caf720f539678",
-  "created_at_utc": "2026-11-14T10:54:38.132445+00:00",
+  "verification_id": "9c75d9d3e559451a8052bbad49f252a5",
+  "created_at_utc": "2026-11-14T15:04:29.694892+00:00",
   "repository": "datnk0116/STEGO",
-  "branch": "main",
-  "tested_commit": "38fbecab7aea8c241243fb50d044aea90ab657f7",
+  "branch": "work/final-improvement-2026-11-14",
+  "tested_commit": "b1acd4bc730f7ca68b3f03ee7dfd6c19f1ab8c74",
   "working_tree_before_run": {
     "captured": true,
     "clean": true,
@@ -15,11 +15,11 @@
   "evidence_files": {
     "quality_gate_json": {
       "path": "results/verification/quality-gate.json",
-      "sha256": "ef09ca3d24592d3a0e5a1a96fc5b35da43bd464bbb113b70c4cb600a8f96b0e6"
+      "sha256": "4a12e41b80708c69c6616336a15985212c2966f95cf477e3a5dd32d212ca56dd"
     },
     "quality_gate_log": {
       "path": "results/logs/quality-gate-tests.log",
-      "sha256": "9cbf2978008bd1777d4e944c12ed9d4851b7939a98288d5d9c5e693a836d2ca1"
+      "sha256": "9bccd41ed98096a1b367959b6da0f658ba1ca2999ded17ad1f9db083b226f0e5"
     },
     "artifact_manifest": {
       "path": "results/artifact_manifest.json",
@@ -48,8 +48,8 @@
   ],
   "quality_gate": {
     "tests_passed": true,
-    "tests_run": 38,
-    "tests_expected": 38,
+    "tests_run": 54,
+    "tests_expected": 54,
     "exit_code": 0,
     "artifact_integrity_passed": true,
     "blue3_exact_match": true,

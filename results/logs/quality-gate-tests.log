@@ -2,6 +2,7 @@ test_aligns_integer_offset_and_returns_equal_overlap (test_audio_alignment.Audio
 test_channel_mismatch_is_downmixed (test_audio_alignment.AudioAlignmentTests.test_channel_mismatch_is_downmixed) ... ok
 test_resamples_reference_before_alignment (test_audio_alignment.AudioAlignmentTests.test_resamples_reference_before_alignment) ... ok
 test_cli_black_box_mode_does_not_require_base_color (test_blue3_cli.Blue3CliTests.test_cli_black_box_mode_does_not_require_base_color) ... ok
+test_cross_check_output_matches_on_deterministic_synthetic_fixture (test_blue3_reference_comparison.Blue3ReferenceComparisonTests.test_cross_check_output_matches_on_deterministic_synthetic_fixture) ... ok
 test_decodes_with_modal_base_color_in_black_box_mode (test_blue3_solver.Blue3SolverTests.test_decodes_with_modal_base_color_in_black_box_mode) ... ok
 test_blue3_official_artifact_exact_flag (test_official_artifacts.OfficialArtifactIntegrationTests.test_blue3_official_artifact_exact_flag) ... ok
 test_official_artifact_sha256 (test_official_artifacts.OfficialArtifactIntegrationTests.test_official_artifact_sha256) ... ok
@@ -32,12 +33,27 @@ test_sleepy_metrics_reject_wrong_symbol_count (test_robustness_metrics.Robustnes
 test_sleepy_perfect_symbol_stream_has_zero_error_rates (test_robustness_metrics.RobustnessMetricsTests.test_sleepy_perfect_symbol_stream_has_zero_error_rates) ... ok
 test_decodes_39_byte_ask_message_from_first_stereo_channel (test_sleepy_alarm_solver.SleepyAlarmSolverTests.test_decodes_39_byte_ask_message_from_first_stereo_channel) ... ok
 test_ask_like_modulation_is_flagged (test_steganalysis.SteganalysisTests.test_ask_like_modulation_is_flagged) ... ok
+test_audio_feature_window_is_explicit_and_preserves_source_duration (test_steganalysis.SteganalysisTests.test_audio_feature_window_is_explicit_and_preserves_source_duration) ... ok
+test_audio_feature_window_rejects_nonpositive_values (test_steganalysis.SteganalysisTests.test_audio_feature_window_rejects_nonpositive_values) ... ok
 test_audio_features_are_finite (test_steganalysis.SteganalysisTests.test_audio_features_are_finite) ... ok
 test_broadband_noise_is_not_flagged (test_steganalysis.SteganalysisTests.test_broadband_noise_is_not_flagged) ... ok
 test_textured_image_is_not_flagged (test_steganalysis.SteganalysisTests.test_textured_image_is_not_flagged) ... ok
 test_uniform_image_is_flagged_by_explicit_heuristic (test_steganalysis.SteganalysisTests.test_uniform_image_is_flagged_by_explicit_heuristic) ... ok
+test_duplicate_hash_across_splits_fails (test_steganalysis_dataset_manifest.SteganalysisDatasetManifestTests.test_duplicate_hash_across_splits_fails) ... ok
+test_host_source_in_multiple_splits_fails (test_steganalysis_dataset_manifest.SteganalysisDatasetManifestTests.test_host_source_in_multiple_splits_fails) ... ok
+test_missing_file_fails_integrity (test_steganalysis_dataset_manifest.SteganalysisDatasetManifestTests.test_missing_file_fails_integrity) ... ok
+test_secret_source_in_multiple_splits_fails (test_steganalysis_dataset_manifest.SteganalysisDatasetManifestTests.test_secret_source_in_multiple_splits_fails) ... ok
+test_valid_manifest_passes_integrity_and_source_disjointness (test_steganalysis_dataset_manifest.SteganalysisDatasetManifestTests.test_valid_manifest_passes_integrity_and_source_disjointness) ... ok
+test_wrong_hash_fails_integrity (test_steganalysis_dataset_manifest.SteganalysisDatasetManifestTests.test_wrong_hash_fails_integrity) ... ok
+test_build_revision_must_exist_and_be_ancestor (test_submission_manifest.SubmissionManifestTests.test_build_revision_must_exist_and_be_ancestor) ... ok
+test_input_change_after_build_marks_package_stale (test_submission_manifest.SubmissionManifestTests.test_input_change_after_build_marks_package_stale) ... ok
+test_missing_artifact_fails (test_submission_manifest.SubmissionManifestTests.test_missing_artifact_fails) ... ok
+test_uncommitted_input_change_is_rejected (test_submission_manifest.SubmissionManifestTests.test_uncommitted_input_change_is_rejected) ... ok
+test_valid_committed_manifest_passes (test_submission_manifest.SubmissionManifestTests.test_valid_committed_manifest_passes) ... ok
+test_visual_inspection_pass_requires_confirmation_timestamp (test_submission_manifest.SubmissionManifestTests.test_visual_inspection_pass_requires_confirmation_timestamp) ... ok
+test_wrong_sha256_fails (test_submission_manifest.SubmissionManifestTests.test_wrong_sha256_fails) ... ok
 
 ----------------------------------------------------------------------
-Ran 38 tests in 5.358s
+Ran 54 tests in 7.373s
 
 OK
