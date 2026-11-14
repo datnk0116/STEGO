@@ -179,3 +179,21 @@ Trình bày phần decoder đã tự triển khai, giả định và lỗi từn
 **Nếu được thêm một tuần?**  
 Ưu tiên dataset độc lập cho detector và kiểm thử full suite tại commit cuối; sau đó làm blind audio extraction và robustness sweep có BER. Đây là kế hoạch, không phải kết quả hiện tại.
 
+## 12. Kiểm chứng artifact thật và metric partial recovery
+
+**Vì sao cần integration test nếu đã có unit test synthetic?**
+
+Unit test synthetic kiểm tra các thành phần trong môi trường kiểm soát. Integration test mới chạy Blue 3 và Sleepy Alarm trên đúng artifact được pin trong `data/`, kiểm tra SHA-256, flag đầy đủ, số symbol và separator. Nó phát hiện được lỗi do dữ liệu/codec thực tế mà fixture synthetic không mô phỏng được.
+
+**BER trong ma trận audio được tính thế nào?**
+
+Sau khi decoder tạo 350 nhãn symbol, script mới mã hóa chuỗi ground truth thành 312 bit và 38 separator rồi so sánh vị trí tương ứng. BER = số bit sai / 312; symbol error rate tính trên 350 vị trí. Separator precision/recall báo riêng lỗi thừa/thiếu separator. Ground truth chỉ được dùng ở bước chấm đầu ra, không phải đầu vào giải mã.
+
+**Levenshtein edit distance trong Blue 3 có ý nghĩa gì?**
+
+Script lấy candidate được tạo ở độ dài baseline flag, rồi so sánh với chuỗi gốc. Edit distance đếm số phép chèn, xóa, thay thế tối thiểu; normalized edit similarity = 1 - distance / độ dài lớn nhất. Nếu không có candidate ở độ dài đó, edit distance được để null, không giả vờ là đo được zero.
+
+**Lệnh nào xác nhận revision có thể tái lập?**
+
+Chạy `python scripts/verify_reproducibility.py`. Script ghi commit SHA, environment, kết quả 22 test methods, hash ba artifact và hai phép giải chính thức vào `results/verification/quality-gate.json`. Chỉ dùng kết quả từ chính revision đang nộp.
+
