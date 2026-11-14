@@ -8,7 +8,6 @@ Sleepy Alarm: extract the 8 kHz carrier envelope and decode 50-baud ASK symbols.
 from __future__ import annotations
 import argparse
 import re
-from collections import Counter
 from pathlib import Path
 import numpy as np
 from PIL import Image
@@ -48,74 +47,143 @@ def solve_blue(path: Path, max_len: int | None = None, base_color: tuple[int, in
             return candidate, attempts
     return None, attempts
 
+def _three_level_cluster(values: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Cluster measured ASK envelope medians into separator, zero and one levels."""
+    values = np.asarray(values, dtype=np.float64)
+    if values.size < 3 or not np.isfinite(values).all():
+        raise ValueError("not enough finite symbol envelope measurements")
+    centers = np.quantile(values, [0.05, 0.50, 0.95]).astype(np.float64)
+    for _ in range(100):
+        labels = np.argmin(np.abs(values[:, None] - centers[None, :]), axis=1)
+        updated = centers.copy()
+        for k in range(3):
+            members = values[labels == k]
+            if members.size:
+                updated[k] = float(np.mean(members))
+        updated.sort()
+        if np.allclose(updated, centers, rtol=1e-7, atol=1e-12):
+            centers = updated
+            break
+        centers = updated
+    labels = np.argmin(np.abs(values[:, None] - centers[None, :]), axis=1)
+    if len(np.unique(labels)) != 3:
+        raise ValueError(
+            "could not distinguish three ASK amplitude states; inspect the residual/envelope"
+        )
+    return centers, labels
+
+
 def solve_sleepy(path: Path, carrier_hz: float = 8000.0,
-                 baud: float = 50.0, zero_amp: float = 2e-3,
-                 one_amp: float = 5e-3, stop_amp: float = 0.0,
-                 reference: Path | None = None) -> dict:
+                 baud: float = 50.0, reference: Path | None = None,
+                 transmission_seconds: float = 7.0) -> dict:
     signal, sr = sf.read(path, always_2d=True, dtype="float64")
     alignment_info = None
+    crop_start = 0
     if reference is not None:
         original, original_sr = sf.read(reference, always_2d=True, dtype="float64")
         signal, original, alignment_info = align_reference(
             signal, int(sr), original, int(original_sr)
         )
+        crop_start = int(alignment_info["target_start_sample"])
         signal = signal - original
-    # Mono average retains an in-phase carrier; report when a stereo mix might
-    # cancel content and allow explicit manual channel inspection if needed.
-    mono = signal.mean(axis=1)
-    nyquist = sr / 2
+
     if not 0 < baud <= 1000:
         raise ValueError("baud must be in (0, 1000]")
-    if not 0 < carrier_hz < nyquist:
-        raise ValueError(f"carrier {carrier_hz} Hz must be below Nyquist ({nyquist} Hz)")
-    # A narrow bandpass around the documented carrier; envelope removes carrier phase.
+    if not 0 < carrier_hz < sr / 2:
+        raise ValueError(f"carrier {carrier_hz} Hz must be below Nyquist")
     low, high = carrier_hz - 500, carrier_hz + 500
-    if low <= 0 or high >= nyquist:
-        raise ValueError("sample rate too low for the selected carrier band")
+    if low <= 0 or high >= sr / 2:
+        raise ValueError("sample rate too low for selected carrier band")
+
+    # The official MATLAB generator writes the added ASK waveform to the
+    # first audio channel only. Do not average stereo channels: that halves
+    # the ASK amplitude and causes the zero/one thresholds to overlap.
+    analysis_channel = 0
+    channel_signal = signal[:, analysis_channel]
     sos = butter(4, [low, high], btype="bandpass", fs=sr, output="sos")
-    band = sosfiltfilt(sos, mono)
+    band = sosfiltfilt(sos, channel_signal)
     envelope = np.abs(hilbert(band))
+
     samples_per_bit = sr / baud
-    # 0.02 s symbols are 882 samples at 44.1 kHz. Use centers to avoid transitions.
-    nbits = int(len(envelope) / samples_per_bit)
-    symbols = []
-    values = []
-    for i in range(nbits):
-        start = int(round(i * samples_per_bit + samples_per_bit * 0.25))
-        end = int(round((i + 1) * samples_per_bit - samples_per_bit * 0.25))
-        if end <= start:
-            continue
-        level = float(np.median(envelope[start:end]))
-        values.append(level)
-        if abs(level - zero_amp) <= abs(level - one_amp) and abs(level-zero_amp) < zero_amp*0.8:
-            symbols.append("0")
-        elif abs(level - one_amp) < one_amp*0.8:
-            symbols.append("1")
-        elif level < max(zero_amp, one_amp) * 0.2:
-            symbols.append(" ")
+    symbol_count = int(round(transmission_seconds * baud))
+    # The ASK payload begins at sample 0 of the distributed track. Since
+    # reference alignment crops the beginning of the distributed track,
+    # restore its symbol-clock phase in the cropped residual.
+    phase_offset = int(round((-crop_start) % samples_per_bit))
+    levels = []
+    for i in range(symbol_count):
+        bit_start = phase_offset + i * samples_per_bit
+        start = int(round(bit_start + 0.25 * samples_per_bit))
+        end = int(round(bit_start + 0.75 * samples_per_bit))
+        if end > len(envelope):
+            break
+        levels.append(float(np.median(envelope[start:end])))
+    if len(levels) != symbol_count:
+        raise ValueError(
+            f"expected {symbol_count} symbols for {transmission_seconds}s at {baud} baud, "
+            f"but only measured {len(levels)}; check alignment and source duration"
+        )
+
+    centers, labels = _three_level_cluster(np.asarray(levels))
+    # Source documents three states: 0 amplitude = byte separator,
+    # 2e-3 = bit 0, 5e-3 = bit 1. The three clusters are ordered by amplitude.
+    mapping = {0: " ", 1: "0", 2: "1"}
+    symbols = [mapping[int(label)] for label in labels]
+    chunks = []
+    current = []
+    for symbol in symbols:
+        if symbol == " ":
+            if current:
+                chunks.append("".join(current))
+                current = []
         else:
-            symbols.append("?")
-    # The source describes a zero-amplitude symbol as a byte separator/completion.
-    # Strip leading/trailing separators and decode each 8-bit group.
-    bitstream = "".join(symbols).strip()
-    chunks = [x for x in bitstream.split() if x]
+            current.append(symbol)
+    if current:
+        chunks.append("".join(current))
+
     decoded = []
     errors = []
     for idx, chunk in enumerate(chunks):
-        if len(chunk) != 8 or set(chunk) - {"0", "1"}:
+        if len(chunk) != 8:
             errors.append({"index": idx, "bits": chunk, "reason": "not an 8-bit byte"})
             continue
         decoded.append(chr(int(chunk, 2)))
+    decoded_text = "".join(decoded)
+    expected_prefix_ok = decoded_text.startswith("ictf{")
+    expected_suffix_ok = decoded_text.endswith("}")
     return {
-        "samplerate_hz": sr, "channels": signal.shape[1],
-        "duration_seconds": len(mono)/sr, "carrier_hz": carrier_hz,
-        "baud": baud, "samples_per_bit": samples_per_bit,
-        "symbol_count": len(symbols), "separator_count": symbols.count(" "),
-        "unknown_symbol_count": symbols.count("?"),
+        "samplerate_hz": int(sr),
+        "channels": int(signal.shape[1]),
+        "analysis_channel": analysis_channel,
+        "carrier_hz": carrier_hz,
+        "baud": baud,
+        "samples_per_bit": samples_per_bit,
+        "transmission_seconds": transmission_seconds,
+        "expected_symbol_count": symbol_count,
+        "measured_symbol_count": len(levels),
+        "symbol_clock_phase_samples_after_alignment": phase_offset,
         "reference_alignment": alignment_info,
-        "median_envelope_range": [float(np.min(values)), float(np.max(values))] if values else None,
-        "bit_chunks": chunks, "decoded_text": "".join(decoded), "errors": errors,
-        "note": "Exploratory ASK envelope decoder. Verify against original challenge source and test timing/threshold sensitivity."
+        "amplitude_cluster_centers": [float(x) for x in centers],
+        "symbol_counts": {
+            "separator": symbols.count(" "),
+            "bit_0": symbols.count("0"),
+            "bit_1": symbols.count("1"),
+        },
+        "byte_count": len(chunks),
+        "decoded_text": decoded_text,
+        "expected_flag_length": 39,
+        "decoded_length": len(decoded_text),
+        "flag_prefix_ok": expected_prefix_ok,
+        "flag_suffix_ok": expected_suffix_ok,
+        "errors": errors,
+        "success": (
+            len(chunks) == 39 and not errors and len(decoded_text) == 39
+            and expected_prefix_ok and expected_suffix_ok
+        ),
+        "note": (
+            "The amplitude clusters are estimated from the measured residual. "
+            "Confirm cluster centers are consistent with the documented 0/0.002/0.005 states."
+        ),
     }
 
 def main() -> int:
@@ -129,7 +197,8 @@ def main() -> int:
     a.add_argument("audio", type=Path)
     a.add_argument("--carrier", type=float, default=8000.0)
     a.add_argument("--baud", type=float, default=50.0)
-    a.add_argument("--reference", type=Path, help="Optional aligned original audio; analyze residual only")
+    a.add_argument("--transmission-seconds", type=float, default=7.0)
+    a.add_argument("--reference", type=Path, help="Optional original audio; resample and align before subtraction")
     args = parser.parse_args()
     if args.challenge == "blue3":
         result, attempts = solve_blue(args.image, args.max_len, tuple(args.base_color))
@@ -140,7 +209,7 @@ def main() -> int:
             return 0
         return 2
     import json
-    print(json.dumps(solve_sleepy(args.audio, args.carrier, args.baud, reference=args.reference), indent=2))
+    print(json.dumps(solve_sleepy(args.audio, args.carrier, args.baud, reference=args.reference, transmission_seconds=args.transmission_seconds), indent=2))
     return 0
 
 if __name__ == "__main__":
