@@ -6,42 +6,42 @@
       "candidate": "byuctf{more_blue_steganography_da_ba_dee_nkiY9CyP}",
       "matches_baseline": true,
       "attempts": 49,
-      "elapsed_seconds": 0.2415618520000038
+      "elapsed_seconds": 0.23812671800000373
     },
     {
       "variant": "jpeg_q95",
       "candidate": null,
       "matches_baseline": false,
       "attempts": 511,
-      "elapsed_seconds": 0.5710156580000074
+      "elapsed_seconds": 0.5718960140000036
     },
     {
       "variant": "jpeg_q85",
       "candidate": null,
       "matches_baseline": false,
       "attempts": 511,
-      "elapsed_seconds": 0.5673170749999912
+      "elapsed_seconds": 0.5605902169999979
     },
     {
       "variant": "jpeg_q70",
       "candidate": null,
       "matches_baseline": false,
       "attempts": 511,
-      "elapsed_seconds": 0.5641060260000046
+      "elapsed_seconds": 0.5591354409999951
     },
     {
       "variant": "resize_0.75",
       "candidate": null,
       "matches_baseline": false,
       "attempts": 383,
-      "elapsed_seconds": 0.31630500300001074
+      "elapsed_seconds": 0.31979819099998963
     },
     {
       "variant": "resize_0.5",
       "candidate": null,
       "matches_baseline": false,
       "attempts": 255,
-      "elapsed_seconds": 0.1333668410000115
+      "elapsed_seconds": 0.13254725899999187
     }
   ],
   "csv": "results/blue3/robustness/blue3_robustness.csv"

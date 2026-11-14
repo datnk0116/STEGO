@@ -1,0 +1,19 @@
+Title:           Phân tích và đánh giá kỹ thuật Steganography
+Author:          [HỌ VÀ TÊN] — [MSSV]
+Creator:         Writer
+Producer:        LibreOffice 26.2.6.3 (X86_64)
+CreationDate:    Sat Nov 14 01:52:22 2026 UTC
+Custom Metadata: no
+Metadata Stream: yes
+Tagged:          yes
+UserProperties:  no
+Suspects:        no
+Form:            none
+JavaScript:      no
+Pages:           24
+Encrypted:       no
+Page size:       595.304 x 841.89 pts (A4)
+Page rot:        0
+File size:       997449 bytes
+Optimized:       no
+PDF version:     1.7
