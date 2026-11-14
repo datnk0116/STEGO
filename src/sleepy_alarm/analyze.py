@@ -56,11 +56,20 @@ def main() -> int:
         except ValueError as exc:
             p.error(str(exc))
         residual = aligned_target - aligned_ref
-        analysis_signal = residual
+        target_start = int(alignment_info["target_start_sample"])
+        if alignment_info["channel_handling"] == "downmixed_to_mono":
+            raw_prefix = audio.mean(axis=1, keepdims=True)
+        else:
+            raw_prefix = audio
+        prefix = raw_prefix[:target_start] if target_start > 0 else raw_prefix[:0]
+        # Preserve the leading distributed-track samples excluded from the
+        # reference overlap so the ASK payload still starts at time zero.
+        analysis_signal = np.concatenate((prefix, residual), axis=0)
         reference_info = {
             "file": str(args.reference),
             "sha256": sha256(args.reference),
             **alignment_info,
+            "preserved_prefix_samples": int(len(prefix)),
             "difference_rms": float(np.sqrt(np.mean(residual**2))),
             "difference_peak": float(np.max(np.abs(residual))),
         }
@@ -68,8 +77,8 @@ def main() -> int:
     # channel only. Analyze that channel; averaging stereo halves the payload.
     analysis_channel = 0
     analysis_mono = analysis_signal[:, analysis_channel]
-    crop_start = int(reference_info["target_start_sample"]) if reference_info else 0
-    symbol_phase = int(round((-crop_start) % (sr / 50.0)))
+    # The full target timeline is restored by prefix preservation above.
+    symbol_phase = 0
     transmission_samples = int(round(7.0 * sr))
     end_sample = min(len(analysis_mono), symbol_phase + transmission_samples)
     analysis_mono = analysis_mono[symbol_phase:end_sample]
@@ -129,6 +138,9 @@ def main() -> int:
         "file": str(args.audio),
         "analysis_channel": analysis_channel,
         "symbol_clock_phase_samples_after_alignment": symbol_phase,
+        "reference_prefix_samples_preserved": (
+            int(reference_info["preserved_prefix_samples"]) if reference_info else 0
+        ),
         "expected_ask_symbols": 350, "sha256": sha256(args.audio),
         "format": sf.info(args.audio).format, "subtype": sf.info(args.audio).subtype,
         "samplerate_hz": int(sr), "channels": int(channels), "frames": int(frames),
