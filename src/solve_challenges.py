@@ -17,12 +17,17 @@ from audio_alignment import align_reference
 
 BLUE_RE = re.compile(r"byuctf\{[0-9A-Za-z_]*\}\Z")
 
-def solve_blue(path: Path, max_len: int | None = None, base_color: tuple[int, int, int] = (64, 77, 205)) -> tuple[str | None, list[tuple[int, str]]]:
+def solve_blue(path: Path, max_len: int | None = None, base_color: tuple[int, int, int] | None = None) -> tuple[str | None, list[tuple[int, str]]]:
     with Image.open(path) as im:
         pixels = np.asarray(im.convert("RGB"), dtype=np.int16)
     h, w, _ = pixels.shape
-    # Blue 3's official creator uses a flat RGB (64,77,205) cover. Using
-    # that known baseline avoids depending on modal-color assumptions.
+    # In black-box mode, infer the cover color as the modal RGB triplet.
+    # The source-informed mode accepts an explicit baseline for comparison.
+    if base_color is None:
+        colors, counts = np.unique(
+            pixels.reshape(-1, 3), axis=0, return_counts=True
+        )
+        base_color = tuple(int(v) for v in colors[int(np.argmax(counts))])
     base = np.asarray(base_color, dtype=np.int16)
     limit = min(max_len or min(w, h), min(w, h))
     attempts = []
@@ -204,7 +209,7 @@ def main() -> int:
     b = sub.add_parser("blue3")
     b.add_argument("image", type=Path)
     b.add_argument("--max-len", type=int)
-    b.add_argument("--base-color", type=int, nargs=3, default=(64, 77, 205), metavar=("R", "G", "B"))
+    b.add_argument("--base-color", type=int, nargs=3, default=None, metavar=("R", "G", "B"), help="Optional source-informed baseline; omit to infer the modal RGB color")
     a = sub.add_parser("sleepy-alarm")
     a.add_argument("audio", type=Path)
     a.add_argument("--carrier", type=float, default=8000.0)
