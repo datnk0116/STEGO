@@ -70,7 +70,7 @@ Kết quả đã đo: baseline PASS; target-only gain 0,5× FAIL (46 separator),
 ## 6. Bằng chứng cần mở khi vấn đáp
 
 - Manifest và SHA-256 của ba artifact.
-- Log lịch sử sáu regression tests và quality-gate log mới chứng minh số test chạy ở revision hiện tại.
+- Log unit-tests.log chỉ là lịch sử sáu regression tests; quality-gate-tests.log ghi 22/22 tests pass tại source commit 11cd5e3. Commit 3015d5d lưu bằng chứng và ma trận mới, không đổi source/tests.
 - Blue 3 solver log và hình diagnostics.
 - Sleepy Alarm solver JSON: số symbol, tâm cụm, byte lỗi, exact-match.
 - Hai file CSV robustness.
@@ -124,11 +124,11 @@ Benchmark tạo benign controls tổng hợp bằng seed 20261114, cùng các bi
 
 **Làm sao chạy thử giải mã audio không reference?**
 
-Chạy `python src/solve_challenges.py sleepy-alarm data/sleepy_alarm/morning_n_breakfast.mp3` và không truyền `--reference`. Cần xem `format_valid`, symbol count, separator count và byte errors; không có expected ground truth thì không thể kết luận exact-match.
+Chạy `python src/solve_challenges.py sleepy-alarm data/sleepy_alarm/morning_n_breakfast.mp3` và không truyền `--reference`. Bằng chứng hiện tại: 350 symbol, 49 separator, giải ra 26 ký tự và format không hợp lệ. Đây là thất bại có ý nghĩa trong threat model blind, không phải thành công; cần phương pháp đồng bộ/ước lượng nền không phụ thuộc track gốc.
 
 **Thí nghiệm robustness mới bổ sung gì?**
 
-Blue 3 thêm brightness, contrast, blur, crop và Gaussian noise. Sleepy Alarm thêm gain nhiều mức, AWGN theo SNR, band-pass và resampling round-trip áp dụng riêng lên target hoặc reference. Kết quả chỉ mô tả artifact và tham số cụ thể, không phải thống kê trên quần thể.
+Blue 3 có 9 biến thể exact-match 1/9 và metric partial recovery; ví dụ brightness 0,9 còn 47/50 ký tự đúng. Sleepy Alarm có 23 trial, 7 PASS; mean SER 12,31%, mean BER 12,97%, separator precision 77,07% và recall 93,14% (trung bình theo trial, tính baseline). Các phép biến đổi gồm gain, AWGN, band-pass và resampling áp dụng riêng cho target hoặc reference. Đây là một ma trận trên một artifact, không phải ước lượng thống kê quần thể.
 
 ## 10. Phản biện nâng cao: câu hỏi giảng viên có thể hỏi
 
@@ -162,11 +162,11 @@ Không. Thử nghiệm paired áp dụng cùng phép biến đổi lên target v
 
 **Em sẽ ưu tiên cải tiến điều gì đầu tiên?**
 
-Trước hết chạy quality gate để xác nhận 22 test methods tại commit cuối và lưu log. Tiếp theo sửa thiết kế đánh giá detector audio bằng tập đa nguồn có validation/test độc lập; sau đó cải thiện reference-free audio và xây dựng robustness curve bằng BER/partial recovery. Không tối ưu ngưỡng bằng cách nhìn vào test set.
+Quality gate P0 đã hoàn tất: 22/22 tests pass, ba artifact đúng hash và hai decoder exact-match trong điều kiện đã nêu; log/JSON đã được commit. Ưu tiên kỹ thuật tiếp theo là (1) xây dựng corpus detector đa nguồn có validation/test độc lập, (2) nghiên cứu reference-free synchronization cho Sleepy Alarm, và (3) mở rộng robustness theo cường độ. Không tối ưu threshold trên test set.
 
 **Những kết luận nào không được phép đưa ra?**
 
-Không được nói STEGO là detector steganography tổng quát; không nói Sleepy Alarm hoạt động blind; không nói Blue 3 payload chắc chắn bị xóa sau JPEG/resize; không dùng FPR=0 từ tám mẫu synthetic để khẳng định không có false positive; không tuyên bố 22 test đã pass trước khi quality gate có log mới; log cũ chỉ chứng minh sáu test ở revision trước.
+Không được nói STEGO là detector steganography tổng quát; không nói Sleepy Alarm hoạt động blind; không nói Blue 3 payload chắc chắn bị xóa sau JPEG/resize; không dùng FPR=0 từ tám mẫu synthetic để khẳng định không có false positive. Có thể khẳng định 22/22 tests pass theo quality-gate log ở source commit 11cd5e3; nếu thay source hoặc tests thì phải chạy lại, không dùng log cũ sáu test.
 
 ## 11. Trả lời ngắn gọn về điểm yếu
 
@@ -177,7 +177,7 @@ Không được nói STEGO là detector steganography tổng quát; không nói 
 Trình bày phần decoder đã tự triển khai, giả định và lỗi từng gặp, vì sao sửa kênh stereo/prefix/symbol window, rồi mở log và JSON để chứng minh. Không nhận phần creator source hoặc thuật toán gốc là phát minh của mình.
 
 **Nếu được thêm một tuần?**  
-Ưu tiên dataset độc lập cho detector và kiểm thử full suite tại commit cuối; sau đó làm blind audio extraction và robustness sweep có BER. Đây là kế hoạch, không phải kết quả hiện tại.
+Quality gate và ma trận BER/partial recovery hiện đã có kết quả. Phần công việc mới có giá trị nhất là corpus độc lập cho detector và blind/reference-free audio extraction, sau đó là robustness sweep trên nhiều challenge/cover. Đây là hướng nghiên cứu, không phải kết quả đã đạt.
 
 ## 12. Kiểm chứng artifact thật và metric partial recovery
 
@@ -195,5 +195,5 @@ Script lấy candidate được tạo ở độ dài baseline flag, rồi so sá
 
 **Lệnh nào xác nhận revision có thể tái lập?**
 
-Chạy `python scripts/verify_reproducibility.py`. Script ghi commit SHA, environment, kết quả 22 test methods, hash ba artifact và hai phép giải chính thức vào `results/verification/quality-gate.json`. Chỉ dùng kết quả từ chính revision đang nộp.
+Chạy `python scripts/verify_reproducibility.py`. Bằng chứng hiện có ghi 22/22 tests pass, hash ba artifact và hai decoder exact-match. JSON ghi source commit đã kiểm thử (`11cd5e3`); commit `3015d5d` lưu các file kết quả sau lần chạy, không thay đổi source/tests. Nếu sửa source/tests, chạy gate lại trước khi nộp.
 
