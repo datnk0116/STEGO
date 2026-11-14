@@ -59,9 +59,9 @@ Các phép JPEG/resize chỉ đánh giá một decoder Blue 3 với những tham
 Bản robustness ban đầu áp dụng phép biến đổi đồng thời lên target và reference. Để tránh đánh đồng kết quả này với khả năng chịu biến đổi một phía, repository có thêm script riêng:
 
 ~~~bash
-python src/experiments/sleepy_alarm_asymmetric_robustness.py \\
-  data/sleepy_alarm/morning_n_breakfast.mp3 \\
-  --reference data/sleepy_alarm/morning_n_breakfast_original.mp3 \\
+python src/experiments/sleepy_alarm_asymmetric_robustness.py \
+  data/sleepy_alarm/morning_n_breakfast.mp3 \
+  --reference data/sleepy_alarm/morning_n_breakfast_original.mp3 \
   --expected 'ictf{1_sl33py_NaYuKi_alarm_2a634dc1bb2}'
 ~~~
 
