@@ -6,6 +6,7 @@ from pathlib import Path
 import numpy as np
 import soundfile as sf
 from scipy.signal import stft, butter, sosfiltfilt, hilbert
+from audio_alignment import align_reference
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -41,16 +42,39 @@ def main() -> int:
     low, high = args.carrier - 500, args.carrier + 500
     if low <= 0 or high >= sr / 2:
         p.error("sample rate too low for carrier band")
-    freqs, times, z = stft(mono, fs=sr, nperseg=min(args.nperseg, frames),
-                            noverlap=min(args.noverlap, max(0, min(args.nperseg, frames)-1)))
+
+    reference_info = None
+    reference_plot = None
+    analysis_mono = mono
+    if args.reference:
+        ref, ref_sr = sf.read(args.reference, always_2d=True, dtype="float64")
+        try:
+            aligned_target, aligned_ref, alignment_info = align_reference(
+                audio, int(sr), ref, int(ref_sr)
+            )
+        except ValueError as exc:
+            p.error(str(exc))
+        residual = aligned_target - aligned_ref
+        analysis_mono = residual.mean(axis=1)
+        reference_info = {
+            "file": str(args.reference),
+            "sha256": sha256(args.reference),
+            **alignment_info,
+            "difference_rms": float(np.sqrt(np.mean(residual**2))),
+            "difference_peak": float(np.max(np.abs(residual))),
+        }
+    analysis_frames = len(analysis_mono)
+    freqs, times, z = stft(analysis_mono, fs=sr, nperseg=min(args.nperseg, analysis_frames),
+                            noverlap=min(args.noverlap, max(0, min(args.nperseg, analysis_frames)-1)))
     magnitude = np.abs(z)
     args.out_dir.mkdir(parents=True, exist_ok=True)
     waveform_path = args.out_dir / "waveform.png"
     spec_path = args.out_dir / "spectrogram.png"
-    t = np.arange(frames) / sr
+    t = np.arange(analysis_frames) / sr
     plt.figure(figsize=(12, 3))
-    plt.plot(t, mono, linewidth=0.5)
-    plt.xlabel("Time (s)"); plt.ylabel("Amplitude"); plt.title("Mono waveform")
+    plt.plot(t, analysis_mono, linewidth=0.5)
+    plt.xlabel("Time (s)"); plt.ylabel("Amplitude")
+    plt.title("Aligned residual waveform" if args.reference else "Mono waveform")
     plt.tight_layout(); plt.savefig(waveform_path, dpi=160); plt.close()
     plt.figure(figsize=(12, 4))
     plt.pcolormesh(times, freqs, 20*np.log10(np.maximum(magnitude, 1e-12)),
@@ -59,34 +83,23 @@ def main() -> int:
     plt.title(f"STFT magnitude (nperseg={min(args.nperseg, frames)}, noverlap={min(args.noverlap, max(0, min(args.nperseg, frames)-1))})")
     plt.colorbar(label="Magnitude (dB)"); plt.tight_layout()
     plt.savefig(spec_path, dpi=160); plt.close()
-    reference_info = None
     if args.reference:
-        ref, ref_sr = sf.read(args.reference, always_2d=True, dtype="float64")
-        if ref_sr != sr or ref.shape != audio.shape:
-            p.error("reference must have the same sample rate, frame count and channel count")
-        residual = audio - ref
-        residual_mono = residual.mean(axis=1)
         r_sos = butter(4, [low, high], btype="bandpass", fs=sr, output="sos")
-        residual_band = sosfiltfilt(r_sos, residual_mono)
+        residual_band = sosfiltfilt(r_sos, analysis_mono)
         residual_env = np.abs(hilbert(residual_band))
-        reference_info = {
-            "file": str(args.reference),
-            "sha256": sha256(args.reference),
-            "difference_rms": float(np.sqrt(np.mean(residual**2))),
-            "difference_peak": float(np.max(np.abs(residual))),
-            "carrier_envelope_median": float(np.median(residual_env)),
-            "carrier_envelope_p99": float(np.percentile(residual_env, 99)),
-        }
+        reference_info["carrier_envelope_median"] = float(np.median(residual_env))
+        reference_info["carrier_envelope_p99"] = float(np.percentile(residual_env, 99))
         difference_path = args.out_dir / "reference_difference.png"
         plt.figure(figsize=(12, 3))
-        plt.plot(np.arange(len(residual_mono))/sr, residual_mono, linewidth=0.5)
+        plt.plot(np.arange(len(analysis_mono))/sr, analysis_mono, linewidth=0.5)
         plt.xlabel("Time (s)"); plt.ylabel("Amplitude")
-        plt.title("Distributed audio minus original reference")
+        plt.title("Aligned distributed audio minus original reference")
         plt.tight_layout(); plt.savefig(difference_path, dpi=160); plt.close()
+        reference_plot = str(difference_path)
     # Isolate the ASK carrier and inspect its envelope. This complements the
     # spectrogram and makes the 50-baud amplitude states measurable.
     sos = butter(4, [low, high], btype="bandpass", fs=sr, output="sos")
-    carrier = sosfiltfilt(sos, mono)
+    carrier = sosfiltfilt(sos, analysis_mono)
     envelope = np.abs(hilbert(carrier))
     symbol_samples = sr / 50.0
     symbol_levels = []
@@ -105,6 +118,8 @@ def main() -> int:
         "format": sf.info(args.audio).format, "subtype": sf.info(args.audio).subtype,
         "samplerate_hz": int(sr), "channels": int(channels), "frames": int(frames),
         "duration_seconds": float(duration),
+        "analysis_frames": int(analysis_frames),
+        "analysis_duration_seconds": float(analysis_frames/sr),
         "peak_amplitude": float(np.max(np.abs(audio))),
         "rms_amplitude": float(np.sqrt(np.mean(audio**2))),
         "clipped_sample_fraction": float(np.mean(np.abs(audio) >= 0.999)),
@@ -113,7 +128,7 @@ def main() -> int:
                  "frequency_bins": int(len(freqs)), "time_frames": int(len(times))},
         "reference_comparison": reference_info,
         "ask": {"carrier_hz": args.carrier, "baud": 50, "symbol_duration_seconds": 0.02, "envelope_symbol_median_min": min(symbol_levels) if symbol_levels else None, "envelope_symbol_median_max": max(symbol_levels) if symbol_levels else None, "envelope_symbol_count": len(symbol_levels)},
-        "plots": [str(waveform_path), str(spec_path), str(envelope_path)] + ([str(args.out_dir / "reference_difference.png")] if args.reference else []),
+        "plots": [str(waveform_path), str(spec_path), str(envelope_path)] + ([reference_plot] if reference_plot else []),
         "note": "Plots are exploratory evidence, not proof of steganography by themselves."
     }
     print(json.dumps(result, indent=2, ensure_ascii=False))
