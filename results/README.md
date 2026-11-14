@@ -15,6 +15,10 @@ All committed results must be produced by a recorded run. Use a dated folder suc
 - `sleepy_alarm/solver.json`: decoded text, symbol counts, cluster centers, byte errors and exact expected-text comparison.
 - `sleepy_alarm/robustness/sleepy_alarm_robustness.csv` and `.json`: paired target/reference transform tests, only after baseline succeeds.
 - `sleepy_alarm/asymmetric_robustness/asymmetric_robustness.csv` and `.json`: target-only/reference-only transform tests, including decoded text, errors, clipping and alignment correlation.
+- `steganalysis/benchmark.csv` and `.json`: first-pass image/audio detector benchmark, fixed seed and confusion-matrix metrics; benign controls are synthetic and must not be described as a representative corpus.
+- `steganalysis/reference_free_trial.json`: Sleepy Alarm extraction attempt without the original/reference track; failure is a valid experimental outcome.
+- `blue3/extended_robustness/`: brightness, contrast, blur, crop and seeded-noise trials.
+- `sleepy_alarm/robustness_matrix/`: one-sided gain, AWGN/SNR, band-pass and resampling trials.
 - Per-experiment command lines and outputs are recorded in the corresponding `results/logs/*.log`, JSON metadata and dated run notes. A consolidated `logs/commands.log` is not currently committed.
 - `logbook-template.csv`: blank template; copy it to a dated logbook and record actual work sessions.
 
@@ -23,3 +27,8 @@ All committed results must be produced by a recorded run. Use a dated folder suc
 Do not label a run successful because a string merely matches a flag prefix/suffix. For Sleepy Alarm, the verified run must match the full independently extracted 39-character value from the official generator bitmap. Keep both failed and successful attempts.
 
 Never invent runtimes, metrics, screenshots or activity durations. If a metric has not been measured, mark it pending. The historical failed attempt in `2026-11-14/initial-run.md` must not be confused with the later verified final solver output.
+
+
+## Interpretation of new experiments
+
+The detector in `src/steganalysis.py` is an explainable heuristic baseline, not a trained classifier. Report its fixed thresholds and the synthetic nature of benign controls. Do not claim real-world precision/recall from this constructed sample set. The reference-free audio trial must be reported separately from reference-assisted exact-match. Extended robustness CSV/JSON files describe only the exact artifact and transform parameters used.
