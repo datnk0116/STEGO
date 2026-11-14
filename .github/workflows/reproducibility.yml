@@ -1,10 +1,6 @@
 name: Reproducible steganography project
 
 on:
-  push:
-    branches: [main]
-    paths-ignore:
-      - "results/**"
   workflow_dispatch:
 
 permissions:
