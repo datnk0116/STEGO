@@ -179,6 +179,7 @@ Bằng chứng cần có: metadata âm thanh; waveform; spectrogram có trục t
 - B channel: min=205, max=209, mean=205.00653457641602, std=0.09423309511716214, 5 unique values.
 - Giả thuyết đã xác nhận theo solver: màu nền RGB (64,77,205); tổng sai khác RGB trong từng vùng vuông đường chéo cho mã ký tự.
 - Lệnh: `python src/blue3/analyze.py data/blue3/blue.png` và `python src/solve_challenges.py blue3 data/blue3/blue.png`.
+- Regression test bổ sung: `python -m unittest discover -s tests -v` tạo ảnh Blue 3 nhân tạo để kiểm tra độc lập thuật toán decoder.
 - Kết quả terminal: `byuctf{more_blue_steganography_da_ba_dee_nkiY9CyP}`; solver thử 49 candidate lengths và báo `Format validated: True`.
 - Thời gian chạy: chưa được đo/ghi lại.
 
@@ -191,7 +192,7 @@ Bằng chứng cần có: metadata âm thanh; waveform; spectrogram có trục t
 - Artifact filename: `data/sleepy_alarm/morning_n_breakfast.mp3`; reference: `data/sleepy_alarm/morning_n_breakfast_original.mp3`.
 - Distributed MP3: 179,283 bytes; local SHA-256 `bd181876c2d28152b9c3982fd88945d4e681fd93d49477622ea5841a3ff25ae2`.
 - Original MP3: 160,495 bytes; local SHA-256 `d0c283834955e54d68b0bba723ccd194142a428d2de74722e5f1dff3ccbd94ad2`.
-- Initial analyzer run failed because the two MP3s had mismatched sample rate/frame/channel metadata. The first decoder then aligned the tracks but incorrectly averaged stereo channels and decoded the full 9.95-second clip, which includes about 3 seconds after the 7-second ASK transmission. A later revision selects the left channel, applies the crop-dependent 50-baud phase, limits extraction to 350 symbols, and clusters the three observed amplitude levels. The latest revision still requires a user-run end-to-end check.
+- Initial analyzer run failed because the two MP3s had mismatched sample rate/frame/channel metadata. The first decoder then aligned the tracks but incorrectly averaged stereo channels and decoded the full 9.95-second clip, which includes about 3 seconds after the 7-second ASK transmission. The revised decoder now (i) preserves the original target prefix excluded by cross-correlation cropping, (ii) uses the first/left channel where the MATLAB generator inserts ASK, (iii) decodes exactly 350 symbols in the first 7 seconds, and (iv) estimates the three amplitude clusters rather than applying thresholds to stereo-averaged MP3 residuals. Synthetic regression coverage has been added; the revised implementation still requires a user-run end-to-end check on the official MP3.
 - Codec/container: [CẦN THỰC NGHIỆM — re-run analyzer after alignment update].
 - Sample rate / channels / frame count: [CẦN THỰC NGHIỆM]
 - Thời lượng: [CẦN THỰC NGHIỆM]
@@ -201,7 +202,7 @@ Bằng chứng cần có: metadata âm thanh; waveform; spectrogram có trục t
 - Kết quả trích xuất đã xác minh: [CẦN THỰC NGHIỆM]
 - Thời gian chạy: [CẦN THỰC NGHIỆM]
 
-**Diễn giải:** [Sau lần chạy tiếp theo, ghi tâm cụm 0/0.002/0.005 đo được; xác nhận số symbol, số dấu phân cách, số byte và flag. Nêu rõ sai lệch còn lại do MP3 encoding/filtering nếu có.]
+**Diễn giải:** [Sau lần chạy tiếp theo, ghi tâm cụm 0/0.002/0.005 đo được; xác nhận 350 symbol, 38 dấu phân cách, 39 byte, flag length 39 và prefix/suffix. Nêu rõ sai lệch còn lại do MP3 encoding/filtering nếu có.]
 
 ### 5.3. Tổng hợp
 
