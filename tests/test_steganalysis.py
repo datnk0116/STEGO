@@ -61,6 +61,33 @@ class SteganalysisTests(unittest.TestCase):
         flagged, _ = classify_audio(features)
         self.assertFalse(flagged, features)
 
+    def test_audio_feature_window_is_explicit_and_preserves_source_duration(self):
+        sr = 44100
+        duration = 10
+        t = np.arange(sr * duration, dtype=np.float64) / sr
+        signal = 0.01 * np.sin(2 * np.pi * 8000 * t)
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "ten-seconds.wav"
+            sf.write(path, np.column_stack([signal, signal]), sr)
+            full = audio_features(path)
+            windowed = audio_features(path, analysis_seconds=7.0)
+        self.assertAlmostEqual(full["duration_seconds"], 10.0, places=3)
+        self.assertAlmostEqual(full["analysis_window_seconds"], 10.0, places=3)
+        self.assertAlmostEqual(windowed["duration_seconds"], 10.0, places=3)
+        self.assertAlmostEqual(windowed["analysis_window_seconds"], 7.0, places=3)
+        self.assertEqual(windowed["analysis_samples"], sr * 7)
+
+    def test_audio_feature_window_rejects_nonpositive_values(self):
+        sr = 8000
+        signal = np.zeros(sr, dtype=np.float64)
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "one-second.wav"
+            sf.write(path, np.column_stack([signal, signal]), sr)
+            for invalid in (0, -1, float("nan"), float("inf")):
+                with self.subTest(analysis_seconds=invalid):
+                    with self.assertRaises(ValueError):
+                        audio_features(path, carrier_hz=1000, analysis_seconds=invalid)
+
     def test_audio_features_are_finite(self):
         sr = 44100
         t = np.arange(sr, dtype=np.float64) / sr

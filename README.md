@@ -115,7 +115,7 @@ Install the document tools once (`pandoc`, LibreOffice Writer and `poppler-utils
 python scripts/build_submission.py
 ```
 
-Outputs are written under `results/submission/`: the DOCX, PDF and `STUDENT_UETCN3124_Scripts.zip`. The local PDF checker allows up to 17 main-body pages for this build. This is a local checking allowance and does not override any stricter page limit stated in the course instructions. The report remains a Markdown source of truth; binary submission files must be regenerated after report changes.
+Outputs are written under `results/submission/`: the DOCX, PDF and `STUDENT_UETCN3124_Scripts.zip`. The local PDF checker uses a 20-page sanity ceiling for this build. This is a local checking allowance and does not override any stricter page limit stated in the course instructions. The report remains a Markdown source of truth; binary submission files must be regenerated after report changes.
 
 ## Tests and local quality gate
 
@@ -125,7 +125,7 @@ Run the one-command local evidence gate:
 python scripts/verify_reproducibility.py
 ```
 
-Latest committed gate evidence (14 November 2026): **38/38 tests passed** (exit code 0; 5.358 s), all **3/3 official artifact** size/SHA-256 checks passed, and both Blue 3 and reference-assisted Sleepy Alarm exact-matched. The run tested source commit `38fbecab7aea8c241243fb50d044aea90ab657f7` on `main`; its evidence-packaging commit is `29c7e9e8e98d96e20e5172a63a359cfefd22edcc`. The pre-run working tree was captured as clean. The earlier **22/22** result remains a historical baseline and is not overwritten. The canonical JSON/log pair is `results/verification/quality-gate.json` and `results/logs/quality-gate-tests.log`; `results/logs/unit-tests.log` remains a historical six-test log. After documentation-only updates, run the strict provenance checker to verify current HEAD; rerun the full gate only when source, tests, challenge data, dependencies, manifest or gate implementation changes.
+Historical committed gate evidence (14 November 2026): **38/38 tests passed** (exit code 0; 5.358 s), all **3/3 official artifact** size/SHA-256 checks passed, and both Blue 3 and reference-assisted Sleepy Alarm exact-matched. The run tested source commit `38fbecab7aea8c241243fb50d044aea90ab657f7`; its evidence-packaging commit is `29c7e9e8e98d96e20e5172a63a359cfefd22edcc`. This is evidence for that historical revision only. The final-improvement branch changes source, tests and gate implementation, so its technical gate is **STALE pending a new local run**; do not present 38/38 as verification of the new branch. The pre-run working tree was captured as clean. The earlier **22/22** result remains a historical baseline and is not overwritten. The canonical JSON/log pair is `results/verification/quality-gate.json` and `results/logs/quality-gate-tests.log`; `results/logs/unit-tests.log` remains a historical six-test log. After documentation-only updates, run the strict provenance checker to verify current HEAD; rerun the full gate only when source, tests, challenge data, dependencies, manifest or gate implementation changes.
 
 The GitHub Actions workflow is optional. The quality gate does not start GitHub Actions or build DOCX/PDF/ZIP. For those local submission artifacts, the separate command is `python scripts/build_submission.py`.
 
@@ -144,7 +144,7 @@ python src/experiments/sleepy_alarm_robustness_matrix.py \
   --expected 'ictf{1_sl33py_NaYuKi_alarm_2a634dc1bb2}'
 ```
 
-The benchmark includes deterministic **synthetic benign controls** (seed 20261114) and one official positive artifact per modality. Its precision/recall/F1/FPR are descriptive of this small constructed set only; they are not estimates of real-world detection performance. The benchmark also compares reference-free and reference-assisted Sleepy Alarm extraction. The committed comparison is complete: reference-free extraction fails exact decoding (26 characters, 49 separators), while reference-assisted extraction succeeds. Do not describe the reference-free mode as successful.
+The benchmark includes deterministic **synthetic benign controls** (seed 20261114) and one official positive artifact per modality. Its precision/recall/F1/FPR are descriptive of this small constructed set only; they are not estimates of real-world detection performance. The benchmark also records carrier-only, block-RMS-only and combined-AND audio ablations over whole-file and first-7-second windows with original thresholds. A Mendeley Spanish-speech steganography dataset is identified as a CC BY 4.0 candidate, but has not been downloaded or included in current metrics. The benchmark also compares reference-free and reference-assisted Sleepy Alarm extraction. A sample-manifest checker and tests for file integrity plus host/secret source leakage are ready for a future verified corpus; the current Mendeley manifest template remains empty. The committed comparison is complete: reference-free extraction fails exact decoding (26 characters, 49 separators), while reference-assisted extraction succeeds. Do not describe the reference-free mode as successful.
 
 The expanded Blue 3 matrix tests brightness, contrast, blur, crop and seeded Gaussian noise. Its committed output includes candidate-at-baseline-length, position accuracy, Levenshtein edit distance and normalized edit similarity: 1/9 variants exact-match; brightness 0.9 still recovers 47/50 positions (edit distance 3), brightness 1.1 recovers 28/50 (edit distance 20), and two Gaussian-noise levels produce no candidate at the baseline length. The audio matrix covers one-sided gain, AWGN at several SNRs, band-pass filtering and resampling round-trip; its 23 trials include BER, symbol error rate and separator precision/recall. It records 7/23 exact matches, mean trial SER 12.31%, mean trial BER 12.97%, mean separator precision 77.07% and recall 93.14% (arithmetic means including baseline). The detector benchmark reports image TP=5/TN=12/FP=0/FN=0 on its constructed set, but audio TP=0/TN=8/FP=0/FN=5 (recall=0). Positive samples are derivatives of one official artifact per modality and benign controls are synthetic; these metrics are not real-world performance estimates. For the five positive audio samples, the recorded carrier-band energy ratio is approximately 0.000204, about 98 times below the fixed 0.02 threshold; block-RMS CV is approximately 0.987 and exceeds its 0.15 threshold. Because the classifier requires both conditions (AND), the carrier-band condition alone rejects every positive in this constructed set. This diagnoses the current benchmark failure; it does not establish the cause for other recordings or justify threshold tuning on this same test set. The reference-free Sleepy Alarm trial also fails (26 characters, 49 separators); do not call it blind decoding.
 
@@ -168,3 +168,28 @@ The report includes a dedicated critical-evaluation section covering the threat 
 
 See `report/REPORT.md` section 11.7–11.9, `docs/DEFENSE_QA.md`, and `docs/QUALITY_GATE.md` for the threat model, validity discussion, defense questions, and reproducible verification procedure. These findings describe the committed experiments only and are not claims about all steganography methods.
 
+
+
+### External audio corpus integrity (only after actual collection)
+
+The Mendeley record is currently **identified but not downloaded**. Do not treat the empty `results/steganalysis/external_dataset_manifest.template.json` as a dataset. After obtaining and hashing real samples, populate a manifest with per-file source, license, label, carrier, transformation, host/secret IDs, split, byte size and SHA-256, then run:
+
+```bash
+python scripts/check_steganalysis_dataset_manifest.py results/steganalysis/external_dataset_manifest.json
+```
+
+The checker rejects missing or hash-mismatched files, repeated files across splits, and host/secret source IDs crossing train/validation/test. Its unit tests use temporary fixtures only; they do not claim a benchmark on the external corpus.
+
+### Blue 3 upstream comparison
+
+BYUCTF reference source is pinned at commit `18c8f246756e79069c1cb1753c8bfea5e73e31f5`. Run:
+
+```bash
+python src/blue3/reference_comparison.py data/blue3/blue.png
+```
+
+The script writes `results/blue3/reference_comparison/comparison.json` and `.log`; it compares candidate output and length, not speed. The committed source review is marked NOT_RUN until this command is executed on the official artifact.
+
+### Submission package manifest
+
+After final source/report changes, build with `python scripts/build_submission.py --max-main-pages 20`, visually inspect the PDF, and follow `results/submission/README.md`. A package is not VERIFIED until manifest, hashes, PDF checks and ZIP integrity pass.

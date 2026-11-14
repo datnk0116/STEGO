@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "status": "NOT_COLLECTED",
+  "dataset_source": {
+    "title": "Speech steganography based on scrambling and hiding (Spanish audios)",
+    "url": "https://data.mendeley.com/datasets/7c5p4xzttz/1",
+    "doi": "10.17632/7c5p4xzttz.1",
+    "license": "CC BY 4.0"
+  },
+  "samples": [],
+  "required_sample_fields": [
+    "relative_path",
+    "source_url",
+    "license",
+    "modality",
+    "label",
+    "carrier",
+    "transformation",
+    "host_source_id",
+    "secret_source_id",
+    "bh_parameter",
+    "split",
+    "bytes",
+    "sha256"
+  ],
+  "proposed_split_policy": {
+    "host_source_id": "disjoint across train/validation/test",
+    "secret_source_id": "disjoint across train/validation/test",
+    "pair_variants": "all six BH variants for one host-secret pair stay within a single split"
+  },
+  "note": "Empty discovery template only. The dataset has not been downloaded; do not use this file as a collected dataset manifest."
+}

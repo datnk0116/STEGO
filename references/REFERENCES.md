@@ -36,3 +36,5 @@ The challenge repositories and technical documentation [1]–[8] were consulted 
 [12] Paweł Kaczmarek and Zbigniew Piotrowski, “The A-Files — Research toolkit for evaluating audio steganography and watermarking,” README, repository The-A-Files. https://github.com/pawel-kaczmarek/The-A-Files (accessed 14 November 2026).
 
 [13] ragibson, “Steganography — Least Significant Bit Steganography for bitmap images, WAV sound files, and byte sequences,” repository README. https://github.com/ragibson/Steganography (accessed 14 November 2026).
+
+[14] D. M. Ballesteros L. and D. Renza, “Speech steganography based on scrambling and hiding (Spanish audios),” Mendeley Data, Version 1, 14 Nov. 2018, DOI: 10.17632/7c5p4xzttz.1, CC BY 4.0. https://data.mendeley.com/datasets/7c5p4xzttz/1. Dataset record inspected 14 November 2026; archive not downloaded or hash-verified in this project.

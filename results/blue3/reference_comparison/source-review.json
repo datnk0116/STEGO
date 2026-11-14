@@ -1,0 +1,32 @@
+{
+  "status": "SOURCE_REVIEW_ONLY_RUNTIME_NOT_RUN",
+  "upstream": {
+    "repository": "https://github.com/BYU-CSA/old-ctf-challenges",
+    "path": "forensics-steganography/blue-3/solve.py",
+    "commit": "18c8f246756e79069c1cb1753c8bfea5e73e31f5"
+  },
+  "input": {
+    "path": "data/blue3/blue.png",
+    "sha256": "009dab85bf6ccc5b42b8efa5f959ab6efa0c556b37eb6b4a77a21ec3356b721e",
+    "bytes": 9406,
+    "dimensions": [
+      512,
+      512
+    ],
+    "mode": "RGB"
+  },
+  "local_recorded_candidate": "byuctf{more_blue_steganography_da_ba_dee_nkiY9CyP}",
+  "local_recorded_attempts": 49,
+  "upstream_runtime_status": "NOT_RUN",
+  "upstream_runtime_output": null,
+  "exact_runtime_match": null,
+  "reason": "Source and image metadata were inspected through the GitHub connector, but this session could not execute local repository code on the binary PNG. No upstream runtime or output is fabricated.",
+  "source_findings": [
+    "Both solvers infer the modal RGB triplet.",
+    "Both sum signed differences across all RGB channels in diagonal square regions.",
+    "Upstream loops candidate lengths through image width; local code caps at min(width,height).",
+    "Upstream uses re.match; local code uses full-string matching.",
+    "Runtime agreement remains pending on the official artifact."
+  ],
+  "command": "python src/blue3/reference_comparison.py data/blue3/blue.png"
+}

@@ -18,7 +18,7 @@ def page_with_heading(pages: list[str], heading: str, start: int = 0) -> int | N
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("pdf", type=Path)
-    parser.add_argument("--max-main-pages", type=int, default=17)
+    parser.add_argument("--max-main-pages", type=int, default=20)
     args = parser.parse_args()
     if not args.pdf.is_file():
         parser.error(f"PDF not found: {args.pdf}")

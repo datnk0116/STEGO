@@ -1,0 +1,4 @@
+window,variant,tp,tn,fp,fn,precision,recall,f1,false_positive_rate,sample_count
+whole_file,carrier_only,0,8,0,5,0,0,0,0,13
+whole_file,block_rms_only,5,8,0,0,1,1,1,0,13
+whole_file,combined_AND,0,8,0,5,0,0,0,0,13

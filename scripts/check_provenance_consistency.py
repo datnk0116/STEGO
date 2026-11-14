@@ -5,6 +5,8 @@ import argparse, hashlib, json, re, subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from check_submission_manifest import validate_submission_manifest
+
 PROVENANCE = "results/verification/provenance.json"
 GATE_JSON = "results/verification/quality-gate.json"
 GATE_LOG = "results/logs/quality-gate-tests.log"
@@ -17,7 +19,7 @@ OLD_REFS = ("a040e3863145038b786ba6719629e636fdf2e565", "a040e38", "3bb2b57790d1
 GATE_OUTPUTS = {PROVENANCE, GATE_JSON, GATE_LOG}
 TECH_EXACT = {"requirements.txt", "pyproject.toml", "uv.lock", "poetry.lock", "Pipfile", "Pipfile.lock", "setup.cfg", "tox.ini", "pytest.ini", ".python-version", "Dockerfile", "Makefile", "setup.py", "environment.yml", ".gitmodules", MANIFEST, "scripts/verify_reproducibility.py", "scripts/check_provenance_consistency.py"}
 TECH_PREFIX = ("src/", "tests/", "data/", ".github/workflows/")
-PACKAGE_EXACT = {"README.md", "requirements.txt", "pyproject.toml", "uv.lock", "poetry.lock", "Pipfile", "Pipfile.lock", "Dockerfile", "Makefile", "setup.py", "environment.yml", "scripts/build_submission.py", "report/REPORT.md"}
+PACKAGE_EXACT = {".gitignore", "README.md", "requirements.txt", "pyproject.toml", "uv.lock", "poetry.lock", "Pipfile", "Pipfile.lock", "Dockerfile", "Makefile", "setup.py", "environment.yml", "scripts/build_submission.py", "report/REPORT.md"}
 PACKAGE_PREFIX = ("src/", "tests/", "scripts/", "data/", "docs/", "references/", "report/")
 RESULT_PREFIX = ("results/blue3/", "results/sleepy_alarm/", "results/steganalysis/")
 
@@ -233,16 +235,38 @@ def validate_repository(root, pre_commit=False, require_submission_package=False
         fresh = not classes["technical_gate"]
         report.add("Technical gate freshness", fresh, "no technical changes after tested commit" if fresh else f"stale: {classes['technical_gate']}")
         report.add("Experiment result freshness", not classes["experiment_results"], "unchanged" if not classes["experiment_results"] else f"changed: {classes['experiment_results']}", warning=True)
-        pkg = prov.get("submission_package", {})
-        built = pkg.get("built_from_commit")
-        pkg_paths = []
-        if isinstance(built, str) and commit_exists(root, built) and ancestor(root, built, head):
-            c = classify(changed(root, built, head))
-            pkg_paths = c["technical_gate"] + c["submission_package"]
-        package_ok = pkg.get("status") == "verified" and isinstance(built, str) and not pkg_paths
-        package_state = "FRESH" if package_ok else ("STALE" if pkg_paths else "NOT_VERIFIED")
+        package_manifest_path = root / "results/submission/package-manifest.json"
+        if package_manifest_path.is_file():
+            # New schema: validate real binaries, hashes, build-input revision and visual check.
+            package_result = validate_submission_manifest(root)
+            package_ok = package_result["passed"]
+            package_state = package_result["derived"]["freshness"]
+            package_detail = (
+                "manifest, SHA-256, DOCX/PDF/ZIP checks verified; build inputs unchanged"
+                if package_ok else "; ".join(package_result["errors"]) or package_state
+            )
+        else:
+            # Backward compatibility for historical provenance fixtures/runs created
+            # before package-manifest.json existed. Preserve the legacy stale/fresh
+            # classification instead of collapsing changed outputs to NOT_VERIFIED.
+            pkg = prov.get("submission_package", {})
+            built = pkg.get("built_from_commit")
+            pkg_paths = []
+            if isinstance(built, str) and commit_exists(root, built) and ancestor(root, built, head):
+                package_classes = classify(changed(root, built, head))
+                pkg_paths = package_classes["technical_gate"] + package_classes["submission_package"]
+            package_ok = pkg.get("status") == "verified" and isinstance(built, str) and not pkg_paths
+            package_state = "FRESH" if package_ok else ("STALE" if pkg_paths else "NOT_VERIFIED")
+            package_detail = (
+                "legacy submission package verified and unchanged"
+                if package_ok else
+                ("legacy package inputs changed: " + ", ".join(pkg_paths) if pkg_paths else package_state)
+            )
         report.derived["submission_package_freshness"] = package_state
-        report.add("Submission package", package_ok or not require_submission_package, "verified and unchanged" if package_ok else package_state, warning=not require_submission_package)
+        report.add(
+            "Submission package", package_ok or not require_submission_package,
+            package_detail, warning=not require_submission_package
+        )
         relevant = [p for p in dirty_paths(root) if p in GATE_OUTPUTS or p in DOCS or p.startswith(("src/", "tests/", "data/", "scripts/", "report/", "docs/", "results/submission/"))]
         report.add("Working tree", not relevant, "relevant files committed" if not relevant else f"uncommitted: {relevant}")
     return report

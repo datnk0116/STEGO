@@ -123,7 +123,7 @@ jobs:
       - name: Build draft or verified PDF and source ZIP
         if: always() && !cancelled() && steps.blue3.outcome == 'success' && steps.audio_analysis.outcome == 'success'
         run: |
-          python scripts/build_submission.py --max-main-pages 15
+          python scripts/build_submission.py --max-main-pages 20
 
       - name: Upload all run evidence
         if: always()

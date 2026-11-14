@@ -9,7 +9,7 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
-from steganalysis import analyze
+from steganalysis import analyze, audio_features
 from solve_challenges import solve_sleepy
 
 
@@ -37,12 +37,31 @@ def main():
         if not path.is_file(): p.error(f"missing challenge artifact: {path}")
     args.out.mkdir(parents=True,exist_ok=True)
     rows=[]
+    audio_ablation_rows=[]
     def add(path,kind,label,source):
         result=analyze(path,kind)
         rows.append({"sample":path.name,"kind":kind,"label":label,
                      "predicted":result["flagged"],"source":source,
                      "features_json":json.dumps(result["features"],sort_keys=True),
                      "reasons":";".join(result["reasons"])})
+        if kind == "audio":
+            for window_name, seconds in (("whole_file", None), ("first_7_seconds", 7.0)):
+                features = audio_features(path, analysis_seconds=seconds)
+                predictions = {
+                    "carrier_only": features["carrier_band_energy_ratio"] >= 0.02,
+                    "block_rms_only": features["symbol_block_rms_cv"] >= 0.15,
+                    "combined_AND": (
+                        features["carrier_band_energy_ratio"] >= 0.02
+                        and features["symbol_block_rms_cv"] >= 0.15
+                    ),
+                }
+                for variant, predicted in predictions.items():
+                    audio_ablation_rows.append({
+                        "sample": path.name, "label": label, "source": source,
+                        "window": window_name, "variant": variant,
+                        "predicted": predicted,
+                        "features_json": json.dumps(features, sort_keys=True),
+                    })
     with tempfile.TemporaryDirectory(prefix="stego-benchmark-") as tmp:
         d=Path(tmp)
         # Deterministic synthetic controls. These are not real-world benign data.
@@ -93,6 +112,36 @@ def main():
           "note":"Reference-free and reference-assisted results are kept separate; expected text is used only for exact-match validation, never extraction."}
         with (args.out/"reference_comparison.json").open("w",encoding="utf-8") as f:
             json.dump(trial_result,f,indent=2,ensure_ascii=False)
+    audio_ablation = {}
+    for window_name in ("whole_file", "first_7_seconds"):
+        window_rows = [row for row in audio_ablation_rows if row["window"] == window_name]
+        audio_ablation[window_name] = {}
+        for variant in ("carrier_only", "block_rms_only", "combined_AND"):
+            subset = [row for row in window_rows if row["variant"] == variant]
+            audio_ablation[window_name][variant] = {
+                **confusion(subset),
+                "sample_count": len(subset),
+                "benign_count": sum(row["label"] == "benign" for row in subset),
+                "stego_count": sum(row["label"] == "stego" for row in subset),
+            }
+    with (args.out/"audio_ablation.csv").open("w",newline="",encoding="utf-8") as f:
+        w=csv.DictWriter(f,fieldnames=list(audio_ablation_rows[0]))
+        w.writeheader(); w.writerows(audio_ablation_rows)
+    ablation_result={
+        "status":"COMPUTED_WHEN_BENCHMARK_RUN",
+        "thresholds_unchanged":{"carrier_band_energy_ratio_min":0.02,"symbol_block_rms_cv_min":0.15},
+        "windows":{
+            "whole_file":"All decoded samples; preserves the historical baseline definition.",
+            "first_7_seconds":"First 7 seconds only, matching the source-described ASK transmission interval."
+        },
+        "metrics":audio_ablation,
+        "dataset_note":"Same constructed rows as benchmark.csv: one official audio source, gain derivatives and synthetic benign controls. Not independent validation.",
+        "csv":"audio_ablation.csv"
+    }
+    (args.out/"audio_ablation.json").write_text(
+        json.dumps(ablation_result,indent=2,ensure_ascii=False)+"\n",encoding="utf-8"
+    )
+
     summaries={}
     for kind in ("image","audio"):
         subset=[r for r in rows if r["kind"]==kind]
@@ -104,7 +153,7 @@ def main():
     result={"dataset_note":"Only two positive official challenge artifacts; benign controls are deterministic synthetic samples, not a representative real-world corpus.",
             "seed":20261114,"thresholds":"fixed heuristics in src/steganalysis.py; not learned or calibrated",
             "metrics":summaries,"reference_comparison":"reference_comparison.json",
-            "csv":"benchmark.csv"}
+            "audio_ablation":"audio_ablation.json","csv":"benchmark.csv"}
     (args.out/"benchmark.json").write_text(json.dumps(result,indent=2,ensure_ascii=False)+"\n",encoding="utf-8")
     print(json.dumps(result,indent=2,ensure_ascii=False))
 

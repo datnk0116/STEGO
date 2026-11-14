@@ -1,0 +1,132 @@
+{
+  "status": "IDENTIFIED_NOT_DOWNLOADED",
+  "dataset": {
+    "title": "Speech steganography based on scrambling and hiding (Spanish audios)",
+    "authors": [
+      "Dora Maria Ballesteros L",
+      "Diego Renza"
+    ],
+    "repository": "Mendeley Data",
+    "doi": "10.17632/7c5p4xzttz.1",
+    "version": 1,
+    "published": "2018-11-14",
+    "url": "https://data.mendeley.com/datasets/7c5p4xzttz/1",
+    "license": "CC BY 4.0",
+    "described_contents": {
+      "host_signals": 10,
+      "host_duration_seconds": 2,
+      "secret_messages": 10,
+      "secret_duration_seconds": 1,
+      "stego_signals": 600,
+      "recovered_messages_without_key": 600,
+      "recovered_messages_with_key": 600,
+      "sample_rate_hz": 8000,
+      "source_domain": "Female speech recordings, as described by the dataset page.",
+      "method": "Scrambling and hiding; each secret is embedded in each host with six BH (bits-to-hold) settings.",
+      "listed_archives": {
+        "host.rar": "525 KB",
+        "secret.rar": "283 KB",
+        "stego.rar": "14.6 MB",
+        "recovered with key.rar": "4.72 MB",
+        "recovered without key.rar": "5.52 MB"
+      }
+    }
+  },
+  "relevance": {
+    "positive": "Independent audio steganography samples using a method different from the Sleepy Alarm ASK carrier.",
+    "benign": "Original host signals are candidate benign references.",
+    "limitation": "Not ASK 8 kHz; detector features specific to Sleepy Alarm may not transfer. Dataset description indicates a narrow Spanish-speech source."
+  },
+  "verification": {
+    "landing_page_and_license_inspected": true,
+    "archives_downloaded": false,
+    "file_hashes_verified": false,
+    "files_decoded": false,
+    "train_validation_test_split_created": false,
+    "benchmark_run": false,
+    "sha256_manifest": null,
+    "sample_level_manifest_created": false
+  },
+  "proposed_split": {
+    "unit": "disjoint host_source_id AND secret_source_id groups; keep all six BH variants of each host-secret pair in the same split",
+    "rationale": "Separating only hosts would still allow a secret recording to appear in both train and test; both source axes must be disjoint to reduce source leakage.",
+    "source_id_assignment": {
+      "train_host_ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "validation_host_ids": [
+        7,
+        8
+      ],
+      "test_host_ids": [
+        9,
+        10
+      ],
+      "train_secret_ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "validation_secret_ids": [
+        7,
+        8
+      ],
+      "test_secret_ids": [
+        9,
+        10
+      ]
+    },
+    "retained_within_split_pairs": {
+      "train_stego_samples": 216,
+      "validation_stego_samples": 24,
+      "test_stego_samples": 24,
+      "excluded_cross_split_pairs": 336
+    },
+    "benign_host_samples": {
+      "train": 6,
+      "validation": 2,
+      "test": 2
+    },
+    "caveat": "Only 10 host and 10 secret recordings are described; the source domain is narrow female speech. Validation/test sets are very small and results would remain exploratory."
+  },
+  "note": "Dataset discovery is not equivalent to collected/verified independent data. No archive has been downloaded, so no per-file manifest records or hash values are invented. Do not report metrics until archives are downloaded, license and integrity rechecked, sample records extracted and a source-disjoint split is frozen.",
+  "required_sample_manifest_fields": [
+    "relative_path",
+    "source_url",
+    "license",
+    "modality",
+    "label",
+    "carrier",
+    "transformation",
+    "host_source_id",
+    "secret_source_id",
+    "bh_parameter",
+    "split",
+    "bytes",
+    "sha256"
+  ],
+  "validation_implementation": {
+    "implemented": true,
+    "checker": "scripts/check_steganalysis_dataset_manifest.py",
+    "template": "results/steganalysis/external_dataset_manifest.template.json",
+    "tests": "tests/test_steganalysis_dataset_manifest.py",
+    "test_cases": [
+      "valid sample manifest",
+      "incorrect SHA-256",
+      "missing sample file",
+      "host_source_id appears in multiple splits",
+      "secret_source_id appears in multiple splits",
+      "same SHA-256 appears in multiple splits"
+    ],
+    "executed_on_real_corpus": false,
+    "note": "Unit-test fixtures validate checker logic only; no external corpus samples have been downloaded or checked."
+  }
+}

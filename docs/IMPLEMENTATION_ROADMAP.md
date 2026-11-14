@@ -13,11 +13,15 @@
 | Git-history provenance checker | Implemented | `scripts/check_provenance_consistency.py`; strict and pre-commit modes |
 | Provenance regression suite | Implemented | `tests/test_provenance_consistency.py`; validate positive/negative Git-history cases |
 | Quality gate integration | Implemented in code | `scripts/verify_reproducibility.py` captures pre-run state, emits provenance and calls pre-commit checker |
-| Full gate for the new implementation | **Completed — evidence committed** | `results/verification/quality-gate.json` and matching log: 38/38 tests, exit 0, 5.358 s; 3/3 artifacts; both documented decoders exact-match; tested commit `38fbecab7aea8c241243fb50d044aea90ab657f7` |
+| Historical reproducibility gate | **Completed on historical source only** | 38/38 tests, 3/3 artifacts and exact-match at tested commit `38fbecab...`; current improvement branch changes source/tests/gate and requires a new local full gate |
 | Evidence snapshot | **Committed** | Evidence JSON/log/provenance stored at `29c7e9e8e98d96e20e5172a63a359cfefd22edcc`; historical 22/22 baseline retained separately |
-| Strict checker on final docs checkout | **Needs local confirmation** | Documentation-only changes should preserve technical freshness; run `python scripts/check_provenance_consistency.py` after pulling this documentation commit |
-| New detector/decoder research | Not started in this revision | Do not present proposed experiments as completed results |
-| Submission-package inspection | Not verified | Rebuild and inspect binaries after report/package inputs are finalized |
+| Current technical gate freshness | **STALE pending local run** | Blue 3 harness, audio feature window, benchmark and tests changed; run `python scripts/verify_reproducibility.py`, then `python scripts/check_provenance_consistency.py` on a clean checkout |
+| Blue 3 reference comparison | **Harness implemented; official run pending** | `src/blue3/reference_comparison.py` fetches and executes pinned upstream `solve.py`; source-level comparison committed; execute on official `blue.png` to obtain JSON/log |
+| Audio detector ablation | **Whole-file post-hoc analysis recorded; 7-second run pending** | `results/steganalysis/audio_ablation_posthoc.json/.csv` recompute stored feature rows; benchmark code now emits whole-file and first-7-second ablations at frozen thresholds |
+| Independent audio corpus | **Candidate identified, not collected** | Mendeley DOI 10.17632/7c5p4xzttz.1, CC BY 4.0; archive/file hashes and source-group split not yet verified |
+| Dataset integrity/leakage validator | **Implemented; only fixture-tested by design** | `scripts/check_steganalysis_dataset_manifest.py` and `tests/test_steganalysis_dataset_manifest.py`; no real corpus files are present yet |
+| Defense/reflection updates | **Draft implemented; personal confirmation pending** | Report sections 9.2–9.3 and 11.6 updated; logbook avoids unconfirmed duration/learning claims |
+| Submission package verification | **NOT_VERIFIED** | Manifest checker/build flow implemented; tracked binaries not rebuilt, PDF not visually inspected, ZIP integrity not run in this session |
 
 ## P0 — Close the provenance and reproducibility loop
 
