@@ -116,6 +116,25 @@ python -m unittest discover -s tests -v
 
 The GitHub Actions workflow provides an optional CI check. For local submission work, use `python scripts/build_submission.py`; this does not start a remote workflow. It repairs DOCX table geometry, validates the main-body page limit and creates a source ZIP.
 
+
+### Steganalysis triage and expanded experiments
+
+The first-pass detector is intentionally explainable and challenge-oriented; it is **not** a universal or calibrated classifier. It extracts modal RGB concentration/channel dispersion for images and 8 kHz band-energy ratio/50-baud block-RMS variation for audio. Thresholds are fixed heuristics in `src/steganalysis.py`.
+
+```bash
+python -m unittest discover -s tests -v
+python src/experiments/steganalysis_benchmark.py
+python src/experiments/blue3_extended_robustness.py data/blue3/blue.png
+python src/experiments/sleepy_alarm_robustness_matrix.py \
+  data/sleepy_alarm/morning_n_breakfast.mp3 \
+  --reference data/sleepy_alarm/morning_n_breakfast_original.mp3 \
+  --expected 'ictf{1_sl33py_NaYuKi_alarm_2a634dc1bb2}'
+```
+
+The benchmark includes deterministic **synthetic benign controls** (seed 20261114) and one official positive artifact per modality. Its precision/recall/F1/FPR are descriptive of this small constructed set only; they are not estimates of real-world detection performance. The benchmark also records a reference-free Sleepy Alarm extraction trial. The solver already supports this mode by omitting `--reference`; the trial must be treated as failed if the signal cannot be separated without the cover track.
+
+The expanded Blue 3 matrix tests brightness, contrast, blur, crop and seeded Gaussian noise. The audio matrix tests one-sided gain, additive noise at several SNRs, band-pass filtering and resampling round-trip. These scripts write per-trial CSV/JSON under `results/`; run them locally before quoting any new numeric result in the report.
+
 ## Evidence conventions
 
 Each result must include the source artifact, SHA-256, command, parameters, outputs and runtime where measured. Original files under `data/` are immutable. Transformed variants are written under `results/`; they must never overwrite source artifacts.
