@@ -1,0 +1,2 @@
+date,start_time,end_time,duration_hours,task,hypothesis_or_goal,command_or_action,observed_result,error_or_blocker,fix_or_next_step,evidence_path
+YYYY-MM-DD,HH:MM,HH:MM,,Blue 3,,,"","","",results/
