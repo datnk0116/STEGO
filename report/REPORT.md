@@ -157,7 +157,7 @@ Bằng chứng cần có: ảnh đầu vào và SHA-256; metadata; histogram; lo
 
 **Bước 4 — FFT/STFT:** source mô tả sóng mang 8 kHz và 50 baud (0,02 s/bit). Dùng band-pass quanh 8 kHz, tính analytic signal/envelope bằng Hilbert transform, lấy trung vị biên độ ở phần giữa mỗi symbol để tránh chuyển tiếp. Phân loại gần 0,002 thành 0, gần 0,005 thành 1, mức gần 0 thành dấu phân cách byte. Script độc lập: `python src/solve_challenges.py sleepy-alarm data/sleepy_alarm/morning_n_breakfast.mp3`. Tham số lọc và ngưỡng là lựa chọn triển khai cần đánh giá độ nhạy, không phải một phần được nguyên văn xác định đầy đủ trong mô tả challenge.
 
-**Bước 5 — Kiểm thử giả thuyết:** challenge được phân phối là bản alarm đã trộn tín hiệu ASK với nhạc nền; repository upstream có bản original tương ứng. So sánh hai tín hiệu khi đã xác minh cùng sample rate, frame count và căn chỉnh, sau đó phân tích residual để giảm ảnh hưởng nhạc nền. Nếu không dùng reference, lọc quanh sóng mang và kiểm tra envelope; tách kênh nếu stereo. Mọi xử lý tạo file mới và ghi tham số.
+**Bước 5 — Kiểm thử giả thuyết:** challenge được phân phối là bản alarm đã trộn tín hiệu ASK với nhạc nền; repository upstream có bản original tương ứng. Bản triển khai đồng bộ reference bằng resampling khi cần, ước lượng độ lệch mẫu qua cross-correlation rồi chỉ so sánh phần overlap. Phải lưu lag, overlap duration và normalized correlation. Nếu không dùng reference, lọc quanh sóng mang và kiểm tra envelope. Mọi xử lý tạo file mới và ghi tham số.
 
 **Bước 6 — Xác minh:** giải mã ASK theo khung 0,02 giây/symbol, đọc 8 bit thành một byte và xem mức 0 là dấu phân cách/hoàn tất byte theo source. Dùng gợi ý độ dài flag 39 ký tự để kiểm tra tính đầy đủ, không dùng hint làm bằng chứng duy nhất. Đối chiếu chuỗi với cơ chế tạo trong `createsignal.m`.
 
@@ -172,7 +172,7 @@ Bằng chứng cần có: metadata âm thanh; waveform; spectrogram có trục t
 - Upstream image: `blue.png`, 9,406 bytes; Git blob `1dc26a1dde421a6ed0a553c89256e0ad75394c6b`.
 - Upstream challenge source explains the diagonal-region character encoding; the independent decoder is in `src/solve_challenges.py`.
 - Artifact filename: [CẦN THỰC NGHIỆM]
-- SHA-256: [CẦN THỰC NGHIỆM]
+- SHA-256: `009dab85bf6ccc5b42b8efa5f959ab6efa0c556b37eb6b4a77a21ec3356b721e` (local run).
 - Kích thước ảnh/mode: [CẦN THỰC NGHIỆM]
 - Số pixel: [CẦN THỰC NGHIỆM]
 - Số pixel có sai khác so với base RGB (64,77,205): [CẦN THỰC NGHIỆM]
@@ -189,7 +189,9 @@ Bằng chứng cần có: metadata âm thanh; waveform; spectrogram có trục t
 - Official description specifies an 8 kHz ASK carrier, 50 baud, amplitude levels 0.002 (bit 0), 0.005 (bit 1), and zero as byte separator; official source also contains an original audio track and MATLAB signal-generation script.
 - Artifact filename: [CẦN THỰC NGHIỆM]
 - SHA-256: [CẦN THỰC NGHIỆM]
-- Codec/container: [CẦN THỰC NGHIỆM]
+- Distributed MP3: 179,283 bytes; local SHA-256 `bd181876c2d28152b9c3982fd88945d4e681fd93d49477622ea5841a3ff25ae2`.
+- Original MP3: 160,495 bytes; local SHA-256 `d0c283834955e54d68b0bba723ccd194142a428d2de74722e5f1dff3ccbd94ad2`.
+- Codec/container: [CẦN THỰC NGHIỆM — re-run analyzer after alignment update].
 - Sample rate / channels / frame count: [CẦN THỰC NGHIỆM]
 - Thời lượng: [CẦN THỰC NGHIỆM]
 - Sóng mang/baud/chu kỳ bit theo mô tả chính thức: 8.000 Hz / 50 baud / 0,02 s mỗi bit.
