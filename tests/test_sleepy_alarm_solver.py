@@ -52,11 +52,13 @@ class SleepyAlarmSolverTests(unittest.TestCase):
             0.04 * np.sin(2 * np.pi * 333 * lead_t),
             0.03 * np.sin(2 * np.pi * 777 * lead_t),
         ])
-        shifted_background = np.vstack([lead, background[:-lead_samples]])
-        distributed = shifted_background.copy()
+        # Simulate MP3 encoder priming: the distributed stream has a leading
+        # delay, then the same source audio. The ASK payload is inserted into
+        # the first 7 seconds of the source timeline, i.e. after the priming.
+        distributed = np.vstack([lead, background])
         # The upstream MATLAB generator writes the ASK signal to column 1
         # (the first/left channel) only.
-        distributed[:sample_count, 0] += carrier
+        distributed[lead_samples:lead_samples + sample_count, 0] += carrier
 
         with tempfile.TemporaryDirectory() as temp_dir:
             temp = Path(temp_dir)
@@ -65,7 +67,7 @@ class SleepyAlarmSolverTests(unittest.TestCase):
             sf.write(reference_path, background, sample_rate, subtype="PCM_24")
             sf.write(distributed_path, distributed, sample_rate, subtype="PCM_24")
             result = solve_sleepy(
-                distributed_path, reference=reference_path
+                distributed_path, reference=reference_path, expected_text=flag
             )
 
         self.assertTrue(result["success"], result)
@@ -74,7 +76,11 @@ class SleepyAlarmSolverTests(unittest.TestCase):
         self.assertEqual(result["byte_count"], 39)
         self.assertEqual(result["symbol_counts"]["separator"], 38)
         self.assertEqual(result["analysis_channel"], 0)
-        self.assertGreater(result["reference_prefix_samples_preserved"], 0)
+        self.assertEqual(
+            result["reference_alignment"]["target_start_sample"], lead_samples
+        )
+        self.assertEqual(result["expected_text_provided"], True)
+        self.assertTrue(result["ground_truth_match"])
         self.assertEqual(result["errors"], [])
 
 
