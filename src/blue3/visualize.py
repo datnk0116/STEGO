@@ -39,7 +39,7 @@ def main() -> int:
         contributions.append(int(region.sum()))
     args.out_dir.mkdir(parents=True,exist_ok=True)
 
-    fig,axes=plt.subplots(1,3,figsize=(15,4.6))
+    fig,axes=plt.subplots(1,3,figsize=(16,4.8))
     for c,name in enumerate(("R","G","B")):
         axes[0].hist(rgb[:,:,c].ravel(),bins=np.arange(-0.5,256.5,1),
                      histtype="step",label=name)
@@ -52,13 +52,15 @@ def main() -> int:
     axes[1].set_title("Maximum absolute RGB delta")
     axes[1].set_xlabel("x (pixel)"); axes[1].set_ylabel("y (pixel)")
     fig.colorbar(im,ax=axes[1],fraction=0.046,pad=0.04)
-    axes[1].set_xticks(np.arange(0,rgb.shape[1]+1,cell_w))
-    axes[1].set_yticks(np.arange(0,rgb.shape[0]+1,cell_h))
-    axes[1].grid(color="cyan",linewidth=0.25,alpha=0.7)
+    # Avoid one tick per region: dense labels make the heatmap unreadable.
+    axes[1].set_xticks(np.linspace(0, rgb.shape[1] - 1, 5, dtype=int))
+    axes[1].set_yticks(np.linspace(0, rgb.shape[0] - 1, 5, dtype=int))
+    axes[1].set_aspect("equal")
 
     axes[2].bar(np.arange(args.length),contributions,width=0.85)
     axes[2].set_title("Diagonal-region RGB delta sums")
     axes[2].set_xlabel("Character-region index"); axes[2].set_ylabel("Summed delta")
+    axes[2].set_xticks(np.arange(0, args.length, 5))
     axes[2].axhline(0,linewidth=0.7)
     fig.suptitle("Blue 3 — image steganalysis diagnostics",fontsize=14)
     fig.tight_layout()
