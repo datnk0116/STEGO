@@ -1,0 +1,67 @@
+{
+  "file": "data/sleepy_alarm/morning_n_breakfast.mp3",
+  "analysis_channel": 0,
+  "symbol_clock_phase_samples_after_alignment": 0,
+  "discarded_encoder_delay_samples": 1729,
+  "expected_ask_symbols": 350,
+  "sha256": "bd181876c2d28152b9c3982fd88945d4e681fd93d49477622ea5841a3ff25ae2",
+  "format": "MP3",
+  "subtype": "MPEG_LAYER_III",
+  "samplerate_hz": 44100,
+  "channels": 2,
+  "frames": 441840,
+  "duration_seconds": 10.019047619047619,
+  "analysis_frames": 308700,
+  "analysis_duration_seconds": 7.0,
+  "peak_amplitude": 0.9792888164520264,
+  "rms_amplitude": 0.1548071988928898,
+  "clipped_sample_fraction": 0.0,
+  "stft": {
+    "nperseg": 2048,
+    "noverlap": 1536,
+    "frequency_bins": 1025,
+    "time_frames": 604
+  },
+  "reference_comparison": {
+    "file": "data/sleepy_alarm/morning_n_breakfast_original.mp3",
+    "sha256": "d0c283834955e54d68b0bba723ccd194142a428d2de74722e5f1dff3ccbd94ad",
+    "target_sample_rate_hz": 44100,
+    "reference_sample_rate_hz_original": 44100,
+    "reference_resampling": null,
+    "alignment_lag_samples": 1729,
+    "alignment_lag_seconds": 0.0392063492063492,
+    "target_start_sample": 1729,
+    "reference_start_sample": 0,
+    "overlap_frames": 438912,
+    "overlap_duration_seconds": 9.95265306122449,
+    "normalized_abs_correlation": 0.9998734358023295,
+    "channel_handling": "channelwise",
+    "truncated_to_overlap": true,
+    "discarded_encoder_delay_samples": 1729,
+    "difference_rms": 0.0026928802128644343,
+    "difference_peak": 0.05262431129813194,
+    "carrier_envelope_median": 0.0023834247876148773,
+    "carrier_envelope_p99": 0.005780178886551963
+  },
+  "ask": {
+    "carrier_hz": 8000.0,
+    "baud": 50,
+    "symbol_duration_seconds": 0.02,
+    "transmission_seconds": 7.0,
+    "envelope_symbol_median_min": 4.577802495727109e-05,
+    "envelope_symbol_median_max": 0.005570808108570093,
+    "envelope_symbol_quantiles_05_50_95": [
+      0.0002742162042657508,
+      0.0021437833344449195,
+      0.005173987415414905
+    ],
+    "envelope_symbol_count": 350
+  },
+  "plots": [
+    "results/sleepy_alarm/waveform.png",
+    "results/sleepy_alarm/spectrogram.png",
+    "results/sleepy_alarm/ask_envelope.png",
+    "results/sleepy_alarm/reference_difference.png"
+  ],
+  "note": "Plots are exploratory evidence, not proof of steganography by themselves."
+}

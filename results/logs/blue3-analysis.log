@@ -1,0 +1,38 @@
+{
+  "file": "data/blue3/blue.png",
+  "sha256": "009dab85bf6ccc5b42b8efa5f959ab6efa0c556b37eb6b4a77a21ec3356b721e",
+  "format": "PNG",
+  "mode": "RGB",
+  "size": [
+    512,
+    512
+  ],
+  "metadata_keys": [],
+  "pixel_count": 262144,
+  "channels": {
+    "R": {
+      "min": 64,
+      "max": 68,
+      "mean": 64.00663375854492,
+      "std": 0.09345379422886371,
+      "unique_values": 5,
+      "histogram_nonzero_bins": 5
+    },
+    "G": {
+      "min": 77,
+      "max": 81,
+      "mean": 77.00653076171875,
+      "std": 0.09425359809012815,
+      "unique_values": 5,
+      "histogram_nonzero_bins": 5
+    },
+    "B": {
+      "min": 205,
+      "max": 209,
+      "mean": 205.00653457641602,
+      "std": 0.09423309511716214,
+      "unique_values": 5,
+      "histogram_nonzero_bins": 5
+    }
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "baseline_candidate": "byuctf{more_blue_steganography_da_ba_dee_nkiY9CyP}",
+  "results": [
+    {
+      "variant": "original",
+      "candidate": "byuctf{more_blue_steganography_da_ba_dee_nkiY9CyP}",
+      "matches_baseline": true,
+      "attempts": 49,
+      "elapsed_seconds": 0.2013222219999875
+    },
+    {
+      "variant": "jpeg_q95",
+      "candidate": null,
+      "matches_baseline": false,
+      "attempts": 511,
+      "elapsed_seconds": 0.4333417279999878
+    },
+    {
+      "variant": "jpeg_q85",
+      "candidate": null,
+      "matches_baseline": false,
+      "attempts": 511,
+      "elapsed_seconds": 0.43498972300000105
+    },
+    {
+      "variant": "jpeg_q70",
+      "candidate": null,
+      "matches_baseline": false,
+      "attempts": 511,
+      "elapsed_seconds": 0.4383144180000045
+    },
+    {
+      "variant": "resize_0.75",
+      "candidate": null,
+      "matches_baseline": false,
+      "attempts": 383,
+      "elapsed_seconds": 0.2460540950000052
+    },
+    {
+      "variant": "resize_0.5",
+      "candidate": null,
+      "matches_baseline": false,
+      "attempts": 255,
+      "elapsed_seconds": 0.10179903599998852
+    }
+  ],
+  "csv": "results/blue3/robustness/blue3_robustness.csv"
+}
+Interpretation: a failure after lossy recompression/resizing demonstrates sensitivity of this pixel-sum encoding, not a universal property of all image steganography.
