@@ -51,7 +51,19 @@ Assignment yêu cầu chọn một chủ đề CTF chính và khuyến nghị m�
 
 Blue 3 được ưu tiên vì source mô tả thuật toán cụ thể, ảnh đầu vào có sẵn và có thể tự kiểm tra từ dữ liệu. Sleepy Alarm bổ sung một bài toán tín hiệu khác hẳn, đồng thời tạo điều kiện phân tích sự khác nhau giữa dữ liệu gốc, tín hiệu đã trộn và tín hiệu sau nén MP3. Việc chọn hai bài không nhằm tăng số lượng flag mà nhằm tạo phép so sánh có cùng chủ đề nhưng khác miền biểu diễn.
 
-### 1.3. Câu hỏi nghiên cứu và giả thuyết
+### 1.3. Đối chiếu với các repository mã nguồn mở
+
+Để xác định vị trí của đồ án trong hệ sinh thái công cụ hiện có, báo cáo khảo sát README và tài liệu công khai của ba repository liên quan. Đây là đối chiếu phạm vi/chức năng trên tài liệu, **không phải benchmark**: các repository bên ngoài không được cài đặt hoặc chạy trên cùng bộ dữ liệu trong đồ án này.
+
+| Repository | Phạm vi được mô tả công khai | Hàm ý đối với STEGO |
+|---|---|---|
+| **Aperi'Solve** [11] | Nền tảng steganalysis ảnh; trực quan hóa bit-plane theo kênh R/G/B/Alpha và tích hợp zsteg, steghide, outguess, exiftool, binwalk, foremost, pngcheck, strings | Forensic ảnh thực tế cần nhiều detector độc lập; decoder Blue 3 chuyên biệt không thay thế pipeline đa công cụ |
+| **The-A-Files** [12] | Framework đánh giá audio steganography/watermarking; README mô tả 30 phương pháp, 26 nhóm attack và 25 metric, tách payload recovery, chất lượng tín hiệu, robustness, capacity và detectability | Đánh giá robustness nên bao phủ nhiều phép biến đổi và metric, không chỉ exact-match |
+| **ragibson/Steganography** [13] | Cài đặt LSB cho BMP/PNG, WAV và byte sequence; có LSB steganalysis đơn giản cho ảnh bitmap | Detector theo họ LSB không mặc nhiên giải được phép tổng sai khác RGB của Blue 3 hoặc ASK của Sleepy Alarm |
+
+Đối chiếu này cho thấy đóng góp phù hợp của STEGO là nghiên cứu tái hiện có kiểm soát trên hai challenge: giải thích cơ chế, tự triển khai decoder, giữ lại lỗi trung gian và lưu bằng chứng có thể tái chạy. Khoảng trống so với các framework rộng hơn nằm ở số họ thuật toán, quy mô corpus, detector, metric chất lượng và độ đa dạng của attack. Không có cơ sở để tuyên bố STEGO vượt trội các dự án trên khi chưa có benchmark trực tiếp.
+
+### 1.4. Câu hỏi nghiên cứu và giả thuyết
 
 - **RQ1:** Tổng sai khác RGB theo từng vùng có đủ thông tin để khôi phục ký tự đã nhúng trong Blue 3 hay không?
 - **RQ2:** Phân tích phổ và envelope có thể tách tín hiệu ASK 8 kHz khỏi âm thanh nền trong Sleepy Alarm hay không?
@@ -63,7 +75,7 @@ Các giả thuyết:
 - **H2 — Sleepy Alarm:** Nếu tách được thành phần quanh 8 kHz, giữ đúng đồng hồ symbol 50 baud và phân biệt được ba trạng thái biên độ, có thể phục hồi 350 symbol tương ứng 39 byte và 38 dấu phân cách.
 - **H3 — Độ bền:** JPEG recompression/resize có thể phá hủy quan hệ pixel tuyệt đối của Blue 3; resampling, filtering hoặc clipping có thể làm sai biên độ/thời điểm symbol của Sleepy Alarm.
 
-### 1.4. Tiêu chí xác nhận thành công
+### 1.5. Tiêu chí xác nhận thành công
 
 | Challenge | Điều kiện xác nhận | Kết quả đã đo |
 |---|---|---|
@@ -71,7 +83,7 @@ Các giả thuyết:
 | Sleepy Alarm | 350 symbol, 38 separator, 39 byte; không byte lỗi; exact-match ground truth | Đạt: 39/39 ký tự; prefix/suffix hợp lệ; errors rỗng; ground_truth_match=true |
 | Robustness | Chạy decoder trên biến thể và ghi tham số | Đạt trong phạm vi đã thử: 5 biến thể ảnh; 4/4 phép audio theo cặp target/reference PASS; thí nghiệm bất đối xứng có 3/6 phép thử PASS và 3/6 FAIL |
 
-### 1.5. Liên hệ trực tiếp với rubric
+### 1.6. Liên hệ trực tiếp với rubric
 
 | Tiêu chí | Điểm tối đa | Minh chứng chính |
 |---|---:|---|
@@ -525,11 +537,27 @@ Blue 3 có cơ chế xác định và ổn định hơn vì PNG bảo toàn giá
 5. Blue 3 là thuật toán đặc thù; việc decoder thất bại sau JPEG/resize không chứng minh payload bị xóa và không thể suy rộng cho mọi phương pháp steganography.
 6. Runtime được đo trong CI và một lần chạy local; chưa phải benchmark hiệu năng tổng quát.
 
-### 11.3. Phản biện và hướng cải tiến
+### 11.3. Phản biện, đối chiếu hệ sinh thái và hướng cải tiến
 
-Cần phân biệt **giải được challenge** với **phát hiện steganography trong tình huống thực tế**. Blue 3 có thể giải bằng tổng sai khác vì creator cố ý thiết kế phép cộng tuyến tính theo từng vùng. Trong một hệ thống thực, người phân tích có thể không biết màu nền, kích thước phân vùng, thuật toán nhúng hoặc định dạng flag. Chế độ black-box trong decoder là một bước gần hơn với tình huống này, nhưng vẫn dựa trên giả định màu nền xuất hiện phổ biến nhất.
+Cần phân biệt ba nhiệm vụ thường bị gộp làm một: (i) phát hiện file có dấu hiệu chứa dữ liệu ẩn (steganalysis), (ii) nhận dạng họ thuật toán/định dạng nhúng, và (iii) trích xuất đúng payload (decoding). Hai decoder trong đồ án chủ yếu giải quyết nhiệm vụ (iii) khi đã có giả thuyết cụ thể về cơ chế; các heuristic ở mục 9 mới hỗ trợ nhiệm vụ (i), chưa phải detector được hiệu chuẩn. Vì vậy, exact-match trên challenge không chứng minh hệ thống có thể phát hiện steganography trên file tùy ý.
 
-Với Sleepy Alarm, việc dùng file gốc để trừ nền là một lợi thế white-box. Nếu không có reference, người phân tích phải tách tín hiệu yếu khỏi nhạc nền chỉ bằng đặc trưng phổ và envelope; đây là bài toán khó hơn. Hướng mở rộng là xây dựng bộ phát hiện ASK không dùng reference, so sánh kết quả với cách trừ reference và đo tỷ lệ byte phục hồi đúng. Cần tạo thêm mẫu âm thanh đối chứng để ước lượng false positive trước khi đề xuất triển khai phòng thủ.
+Đối chiếu tài liệu công khai làm rõ khoảng cách này. Aperi'Solve tổ chức phân tích ảnh theo bit-plane và gọi nhiều công cụ chuyên biệt như zsteg, steghide, outguess, exiftool, binwalk và foremost [11]. Điều đó gợi ý quy trình forensic thực tế nên dùng nhiều detector độc lập, sau đó hợp nhất bằng chứng thay vì kết luận từ một dấu hiệu. Tuy nhiên, các detector này nhắm đến các họ kỹ thuật khác nhau; chúng không phải baseline trực tiếp cho phép tổng sai khác RGB đặc thù của Blue 3. Tương tự, ragibson/Steganography tập trung vào LSB trên BMP/PNG/WAV và LSB steganalysis [13], nên chỉ có thể dùng làm đối chiếu theo họ thuật toán, không thể xem là decoder thay thế cho Blue 3 hoặc ASK.
+
+Với audio, The-A-Files mô tả khung đánh giá rộng hơn, tách payload recovery, signal quality, robustness, capacity và detectability; README liệt kê nhiều phương pháp, attack và metric [12]. So với khung đó, đồ án hiện mới khảo sát hai challenge và một số phép biến đổi cụ thể. Các phép gain bất đối xứng cho thấy lỗi phân loại xảy ra dù correlation vẫn cao; nhưng chưa có dữ liệu để suy ra xác suất thất bại theo từng mức gain, chưa có BER trên nhiều payload và chưa đánh giá chất lượng tín hiệu bằng các metric chuyên dụng. Đây là giới hạn của thiết kế đánh giá, không phải kết quả cần diễn giải quá mức.
+
+**Giới hạn của Blue 3.** Chế độ black-box ước lượng nền bằng RGB mode dựa trên giả định nền chiếm đa số pixel. Giả định này có thể hỏng với cover có texture, crop, resize hoặc payload chiếm tỷ lệ lớn. Thí nghiệm JPEG/resize chỉ cho biết decoder hiện tại không tìm được candidate ở năm biến thể đã thử; không chứng minh dữ liệu ẩn không thể phục hồi bằng detector khác hoặc phân tích forensic sâu hơn.
+
+**Giới hạn của Sleepy Alarm.** Decoder dùng track gốc làm reference, do đó có thông tin phụ mà người phân tích ngoài thực tế có thể không có. Bốn phép gain một phía thất bại cho thấy pipeline nhạy với mismatch biên độ giữa target và reference. Hai phép resampling một phía PASS chỉ áp dụng cho đúng round-trip đã thử; không đại diện cho clock drift, time stretch, crop, codec khác, lọc thông dải hoặc truyền qua kênh âm học.
+
+**Kế hoạch cải tiến có thể kiểm chứng:**
+1. **Mở rộng corpus:** bổ sung file lành tính và file stego từ nhiều nguồn; tách tập phát triển và tập kiểm thử để tránh điều chỉnh ngưỡng trên chính dữ liệu đánh giá.
+2. **Đánh giá detection:** báo cáo confusion matrix, precision, recall, F1 và false-positive rate ở các ngưỡng đã công bố; không chỉ báo cáo flag decode thành công/thất bại.
+3. **Đánh giá extraction:** với audio, báo cáo bit error rate (BER), byte exact-match và tỷ lệ payload phục hồi; lặp nhiều seed/biến thể nếu generator có thành phần ngẫu nhiên.
+4. **Đánh giá robustness:** xây ma trận cường độ cho gain, clipping, resampling, crop, filtering và codec; phân biệt biến đổi đồng bộ với bất đối xứng.
+5. **Giảm phụ thuộc reference:** thử detector không-reference dựa trên peak/spectrogram và mô hình nhiễu nền; so sánh trực tiếp với reference-assisted decoder trên cùng corpus.
+6. **Tăng khả năng tái lập:** cố định seed, ghi phiên bản thư viện, hash input, tham số, runtime và output máy đọc được cho từng trial.
+
+Các bước trên là kế hoạch nghiên cứu tiếp theo, không phải kết quả đã thực hiện trong phiên bản hiện tại.
 
 ### 11.4. Nhật ký và bằng chứng
 
@@ -539,9 +567,11 @@ Bằng chứng có thể tái kiểm tra được lưu theo từng lớp: artifa
 
 Quá trình giải Sleepy Alarm cho thấy một giả thuyết ban đầu có thể sai dù một chỉ số trung gian có vẻ tốt. Lần chạy đầu dùng cross-correlation cao (0,999873) nhưng vẫn giải mã sai: solver lấy trung bình hai kênh stereo, xử lý 497 symbol trên toàn bộ clip thay vì 350 symbol của payload và tạo ra các byte NUL. Vì vậy, correlation được xem là bằng chứng căn chỉnh nền, không phải bằng chứng đúng payload.
 
-Các sửa đổi tiếp theo xuất phát từ source generator và log lỗi: bảo toàn 1.729 mẫu đầu bị cắt khi căn chỉnh; chỉ phân tích kênh trái vì generator chèn ASK vào channel thứ nhất; giới hạn cửa sổ 7 giây; và thay Hilbert-envelope có transient bằng coherent sine/cosine projection trên từng khối 882 mẫu. Việc kiểm chứng sau sửa không dừng ở prefix/suffix mà đối chiếu toàn bộ 39 ký tự với bitmap ground truth độc lập. Đây là bước chuyển từ “kết quả có vẻ hợp định dạng” sang “kết quả có thể kiểm chứng chính xác”.
+Các sửa đổi tiếp theo xuất phát từ source generator và log lỗi: bảo toàn 1.729 mẫu đầu bị cắt khi căn chỉnh; chỉ phân tích kênh trái vì generator chèn ASK vào channel thứ nhất; giới hạn cửa sổ 7 giây; và thay Hilbert-envelope có transient bằng coherent sine/cosine projection trên từng khối 882 mẫu. Việc kiểm chứng sau sửa không dừng ở prefix/suffix mà đối chiếu toàn bộ 39 ký tự với bitmap ground truth độc lập.
 
-Để thể hiện phần tự học cá nhân đúng yêu cầu học phần, sinh viên cần bổ sung 3–5 câu bằng trải nghiệm thật: giả thuyết nào bản thân từng tin nhưng phải sửa; bằng chứng nào làm thay đổi quyết định; kiến thức/công cụ nào đã tự học thêm; và lần sau sẽ thiết kế thí nghiệm khác đi thế nào. Không dùng đoạn mô tả kỹ thuật này thay cho trải nghiệm cá nhân.
+Bài học kỹ thuật rút ra từ bằng chứng gồm: chọn đúng miền dữ liệu trước khi tối ưu thuật toán; không dùng một metric trung gian thay cho tiêu chí đầu-cuối; tách ground truth khỏi đầu vào decoder; và thiết kế phép thử có khả năng bác bỏ giả thuyết thay vì chỉ tìm ví dụ PASS. Việc chuyển từ Hilbert-envelope sang coherent projection không chỉ là thay thuật toán mà còn thay đổi cách kiểm chứng: từng symbol được đo trên cửa sổ có số chu kỳ xác định, sau đó kiểm tra cấu trúc 350 symbol, 38 separator, 39 byte và exact-match toàn chuỗi.
+
+Phần trên chỉ mô tả quyết định có log/bằng chứng kỹ thuật trong repository; nó không thay thế nhật ký cảm nhận, thời gian làm việc hoặc trải nghiệm cá nhân của sinh viên. Người thực hiện cần bổ sung ngắn gọn trải nghiệm thật của mình trước khi nộp, đặc biệt điều bản thân trực tiếp làm, nội dung tự học từ tài liệu nào và quyết định nào do mình đưa ra.
 
 ## 12. Kết luận
 
