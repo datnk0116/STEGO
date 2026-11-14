@@ -22,13 +22,11 @@ class SleepyAlarmSolverTests(unittest.TestCase):
         rng = np.random.default_rng(2026)
         n = int(duration * sample_rate)
         t = np.arange(n) / sample_rate
+        # Use a broadband, non-periodic stereo bed so cross-correlation has
+        # one well-defined encoder-delay peak instead of repeated tone peaks.
         background = np.column_stack([
-            0.05 * np.sin(2 * np.pi * 440 * t)
-            + 0.02 * np.sin(2 * np.pi * 1700 * t)
-            + rng.normal(0, 0.0005, n),
-            0.04 * np.sin(2 * np.pi * 550 * t)
-            + 0.02 * np.sin(2 * np.pi * 2200 * t)
-            + rng.normal(0, 0.0005, n),
+            rng.normal(0, 0.035, n),
+            rng.normal(0, 0.030, n),
         ])
         amplitudes = np.asarray([
             0.0 if bit == " " else (2e-3 if bit == "0" else 5e-3)
@@ -45,12 +43,9 @@ class SleepyAlarmSolverTests(unittest.TestCase):
 
         # Model the encoder priming delay before the original track begins.
         lead_samples = 1729
-        # MP3 encoder delay is modeled as leading padding, not unrelated
-        # audio content. The shared source track begins exactly after padding.
         lead = np.zeros((lead_samples, 2), dtype=np.float64)
-        # Simulate MP3 encoder priming: the distributed stream has a leading
-        # delay, then the same source audio. The ASK payload is inserted into
-        # the first 7 seconds of the source timeline, i.e. after the priming.
+        # The distributed stream has a leading encoder delay; ASK is inserted
+        # into the first 7 seconds of the original source timeline after it.
         distributed = np.vstack([lead, background])
         # The upstream MATLAB generator writes the ASK signal to column 1
         # (the first/left channel) only.
