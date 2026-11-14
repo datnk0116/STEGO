@@ -171,15 +171,16 @@ Bằng chứng cần có: metadata âm thanh; waveform; spectrogram có trục t
 
 - Upstream image: `blue.png`, 9,406 bytes; Git blob `1dc26a1dde421a6ed0a553c89256e0ad75394c6b`.
 - Upstream challenge source explains the diagonal-region character encoding; the independent decoder is in `src/solve_challenges.py`.
-- Artifact filename: [CẦN THỰC NGHIỆM]
-- SHA-256: `009dab85bf6ccc5b42b8efa5f959ab6efa0c556b37eb6b4a77a21ec3356b721e` (local run).
-- Kích thước ảnh/mode: [CẦN THỰC NGHIỆM]
-- Số pixel: [CẦN THỰC NGHIỆM]
-- Số pixel có sai khác so với base RGB (64,77,205): [CẦN THỰC NGHIỆM]
-- Giả thuyết cuối cùng: [CẦN THỰC NGHIỆM]
-- Lệnh và phiên bản script: [CẦN THỰC NGHIỆM]
-- Kết quả trích xuất đã xác minh: [CẦN THỰC NGHIỆM]
-- Thời gian chạy và số lần thử: [CẦN THỰC NGHIỆM]
+- Artifact filename: `data/blue3/blue.png`.
+- Kích thước: 9,406 bytes; PNG, RGB, 512×512; 262,144 pixel; Pillow báo không có metadata keys.
+- SHA-256 local: `009dab85bf6ccc5b42b8efa5f959ab6efa0c556b37eb6b4a77a21ec3356b721e`.
+- R channel: min=64, max=68, mean=64.00663375854492, std=0.09345379422886371, 5 unique values.
+- G channel: min=77, max=81, mean=77.00653076171875, std=0.09425359809012815, 5 unique values.
+- B channel: min=205, max=209, mean=205.00653457641602, std=0.09423309511716214, 5 unique values.
+- Giả thuyết đã xác nhận theo solver: màu nền RGB (64,77,205); tổng sai khác RGB trong từng vùng vuông đường chéo cho mã ký tự.
+- Lệnh: `python src/blue3/analyze.py data/blue3/blue.png` và `python src/solve_challenges.py blue3 data/blue3/blue.png`.
+- Kết quả terminal: `byuctf{more_blue_steganography_da_ba_dee_nkiY9CyP}`; solver thử 49 candidate lengths và báo `Format validated: True`.
+- Thời gian chạy: chưa được đo/ghi lại.
 
 **Diễn giải:** [Giải thích dựa trên log và dữ liệu thực tế; phân biệt suy luận, quan sát và xác minh.]
 
@@ -187,10 +188,10 @@ Bằng chứng cần có: metadata âm thanh; waveform; spectrogram có trục t
 
 - Official distributed audio: `morning_n_breakfast.mp3`, 179,283 bytes; Git blob `5140f9652af9848374263dca3fdfcd9469903c4d`.
 - Official description specifies an 8 kHz ASK carrier, 50 baud, amplitude levels 0.002 (bit 0), 0.005 (bit 1), and zero as byte separator; official source also contains an original audio track and MATLAB signal-generation script.
-- Artifact filename: [CẦN THỰC NGHIỆM]
-- SHA-256: [CẦN THỰC NGHIỆM]
+- Artifact filename: `data/sleepy_alarm/morning_n_breakfast.mp3`; reference: `data/sleepy_alarm/morning_n_breakfast_original.mp3`.
 - Distributed MP3: 179,283 bytes; local SHA-256 `bd181876c2d28152b9c3982fd88945d4e681fd93d49477622ea5841a3ff25ae2`.
 - Original MP3: 160,495 bytes; local SHA-256 `d0c283834955e54d68b0bba723ccd194142a428d2de74722e5f1dff3ccbd94ad2`.
+- Initial analyzer run failed because it required identical sample rate/frame/channel dimensions. The updated analyzer now resamples and aligns by cross-correlation; successful run and alignment metrics are still pending.
 - Codec/container: [CẦN THỰC NGHIỆM — re-run analyzer after alignment update].
 - Sample rate / channels / frame count: [CẦN THỰC NGHIỆM]
 - Thời lượng: [CẦN THỰC NGHIỆM]
