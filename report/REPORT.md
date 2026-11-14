@@ -155,11 +155,11 @@ Bằng chứng cần có: ảnh đầu vào và SHA-256; metadata; histogram; lo
 
 **Bước 3 — Waveform:** vẽ biên độ theo thời gian; kiểm tra khoảng lặng, clipping, đoạn lặp và thay đổi năng lượng.
 
-**Bước 4 — FFT/STFT:** source mô tả sóng mang 8 kHz và 50 baud (0,02 s/bit). Dùng band-pass quanh 8 kHz, tính analytic signal/envelope bằng Hilbert transform, lấy trung vị biên độ ở phần giữa mỗi symbol để tránh chuyển tiếp. Phân loại gần 0,002 thành 0, gần 0,005 thành 1, mức gần 0 thành dấu phân cách byte. Script độc lập: `python src/solve_challenges.py sleepy-alarm data/sleepy_alarm/morning_n_breakfast.mp3`. Tham số lọc và ngưỡng là lựa chọn triển khai cần đánh giá độ nhạy, không phải một phần được nguyên văn xác định đầy đủ trong mô tả challenge.
+**Bước 4 — FFT/STFT:** source mô tả sóng mang 8 kHz và 50 baud (0,02 s/bit). Generator MATLAB tạo vector ASK dài đúng 7 giây và cộng tín hiệu vào cột audio thứ nhất (left channel). Do đó, decoder chỉ lấy 350 symbol đầu và phân tích channel 0; không lấy trung bình hai kênh vì thao tác đó làm giảm một nửa biên độ ASK. Dùng band-pass quanh 8 kHz, tính analytic signal/envelope bằng Hilbert transform, lấy trung vị biên độ trong phần giữa mỗi symbol để tránh chuyển tiếp. Sau khi trừ reference, decoder khôi phục pha symbol clock bằng độ lệch mẫu do quá trình căn chỉnh. Thay vì áp ngưỡng cứng lên tín hiệu MP3 đã nén, decoder ước lượng ba cụm biên độ thấp/trung bình/cao, tương ứng dấu phân cách/bit 0/bit 1; cần kiểm tra tâm cụm có phù hợp mức lý thuyết hay không.
 
-**Bước 5 — Kiểm thử giả thuyết:** challenge được phân phối là bản alarm đã trộn tín hiệu ASK với nhạc nền; repository upstream có bản original tương ứng. Bản triển khai đồng bộ reference bằng resampling khi cần, ước lượng độ lệch mẫu qua cross-correlation rồi chỉ so sánh phần overlap. Phải lưu lag, overlap duration và normalized correlation. Nếu không dùng reference, lọc quanh sóng mang và kiểm tra envelope. Mọi xử lý tạo file mới và ghi tham số.
+**Bước 5 — Kiểm thử giả thuyết:** challenge được phân phối là bản alarm đã trộn tín hiệu ASK với nhạc nền; repository upstream có bản original tương ứng. Bản triển khai đồng bộ reference bằng resampling khi cần, ước lượng độ lệch mẫu qua cross-correlation rồi chỉ so sánh phần overlap. Sau khi crop, pha symbol phải được dịch theo `(-target_start_sample) mod 882`; bỏ qua bước này sẽ làm lệch ranh giới bit. Phân tích 350 symbol đầu (7 giây) vì generator chỉ tạo payload trong khoảng thời gian đó; phần audio còn lại không phải ASK payload. Phải lưu lag, overlap duration, normalized correlation, channel được phân tích và tâm ba cụm biên độ.
 
-**Bước 6 — Xác minh:** giải mã ASK theo khung 0,02 giây/symbol, đọc 8 bit thành một byte và xem mức 0 là dấu phân cách/hoàn tất byte theo source. Dùng gợi ý độ dài flag 39 ký tự để kiểm tra tính đầy đủ, không dùng hint làm bằng chứng duy nhất. Đối chiếu chuỗi với cơ chế tạo trong `createsignal.m`.
+**Bước 6 — Xác minh:** giải mã ASK theo khung 0,02 giây/symbol, đọc từng nhóm 8 bit thành một byte; mức thấp nhất là dấu phân cách byte theo source. Kết quả đúng phải có 350 symbol, 38 dấu phân cách, 39 byte, độ dài 39 ký tự, tiền tố `ictf{` và hậu tố `}`. Đối chiếu với generator `createsignal.m` nhưng phân biệt source-derived ground truth với nội dung thực sự khôi phục từ file âm thanh.
 
 Bằng chứng cần có: metadata âm thanh; waveform; spectrogram có trục thời gian/tần số; cấu hình FFT/STFT; log; đầu ra trung gian; kết quả xác minh.
 
@@ -191,7 +191,7 @@ Bằng chứng cần có: metadata âm thanh; waveform; spectrogram có trục t
 - Artifact filename: `data/sleepy_alarm/morning_n_breakfast.mp3`; reference: `data/sleepy_alarm/morning_n_breakfast_original.mp3`.
 - Distributed MP3: 179,283 bytes; local SHA-256 `bd181876c2d28152b9c3982fd88945d4e681fd93d49477622ea5841a3ff25ae2`.
 - Original MP3: 160,495 bytes; local SHA-256 `d0c283834955e54d68b0bba723ccd194142a428d2de74722e5f1dff3ccbd94ad2`.
-- Initial analyzer run failed because it required identical sample rate/frame/channel dimensions. The updated analyzer now resamples and aligns by cross-correlation; successful run and alignment metrics are still pending.
+- Initial analyzer run failed because the two MP3s had mismatched sample rate/frame/channel metadata. The first decoder then aligned the tracks but incorrectly averaged stereo channels and decoded the full 9.95-second clip, which includes about 3 seconds after the 7-second ASK transmission. A later revision selects the left channel, applies the crop-dependent 50-baud phase, limits extraction to 350 symbols, and clusters the three observed amplitude levels. The latest revision still requires a user-run end-to-end check.
 - Codec/container: [CẦN THỰC NGHIỆM — re-run analyzer after alignment update].
 - Sample rate / channels / frame count: [CẦN THỰC NGHIỆM]
 - Thời lượng: [CẦN THỰC NGHIỆM]
@@ -201,7 +201,7 @@ Bằng chứng cần có: metadata âm thanh; waveform; spectrogram có trục t
 - Kết quả trích xuất đã xác minh: [CẦN THỰC NGHIỆM]
 - Thời gian chạy: [CẦN THỰC NGHIỆM]
 
-**Diễn giải:** [Giải thích vì sao cấu trúc phát hiện tương ứng kết quả, tham số quan trọng và cách loại trừ giải thích thay thế.]
+**Diễn giải:** [Sau lần chạy tiếp theo, ghi tâm cụm 0/0.002/0.005 đo được; xác nhận số symbol, số dấu phân cách, số byte và flag. Nêu rõ sai lệch còn lại do MP3 encoding/filtering nếu có.]
 
 ### 5.3. Tổng hợp
 
