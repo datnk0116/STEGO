@@ -471,6 +471,31 @@ python src/experiments/sleepy_alarm_asymmetric_robustness.py \
   --expected 'ictf{1_sl33py_NaYuKi_alarm_2a634dc1bb2}'
 ~~~
 
+### 8.4. Mở rộng thí nghiệm và đánh giá không dùng reference
+
+Repository bổ sung ba nhánh kiểm tra có thể chạy độc lập:
+
+1. `src/experiments/steganalysis_benchmark.py` tạo tập đối chứng lành tính tổng hợp có seed cố định, ghép với hai artifact stego chính thức, sau đó xuất confusion matrix cùng Precision, Recall, F1 và False-positive rate theo từng modality. Các mẫu benign được sinh bằng code (ảnh texture/graphic và audio noise), **không phải corpus thực tế**; chỉ có một mẫu positive chính thức cho mỗi modality. Vì vậy metric chỉ mô tả tập kiểm thử nhỏ này, không đại diện hiệu năng detector ngoài thực tế.
+2. `src/experiments/blue3_extended_robustness.py` mở rộng phép thử ảnh với brightness, contrast, blur, crop và Gaussian noise ở nhiều mức.
+3. `src/experiments/sleepy_alarm_robustness_matrix.py` kiểm tra biến đổi một phía trên target/reference: gain nhiều mức, AWGN theo SNR, band-pass và resampling round-trip.
+
+Decoder Sleepy Alarm đã có chế độ không reference bằng cách bỏ tham số `--reference`. Benchmark ghi riêng kết quả thử này vào `reference_free_trial.json`; không mặc định xem là thành công. Nếu không tách được tín hiệu, đó là bằng chứng về giới hạn của phương pháp khi thiếu cover track, không được thay bằng kết quả reference-assisted.
+
+Các lệnh tái hiện:
+
+~~~bash
+python src/experiments/steganalysis_benchmark.py
+python src/experiments/blue3_extended_robustness.py data/blue3/blue.png
+python src/experiments/sleepy_alarm_robustness_matrix.py \
+  data/sleepy_alarm/morning_n_breakfast.mp3 \
+  --reference data/sleepy_alarm/morning_n_breakfast_original.mp3 \
+  --expected 'ictf{1_sl33py_NaYuKi_alarm_2a634dc1bb2}'
+python src/solve_challenges.py sleepy-alarm \
+  data/sleepy_alarm/morning_n_breakfast.mp3
+~~~
+
+Kết quả mới chỉ được đưa vào báo cáo sau khi chạy trên artifact và kiểm tra các file JSON/CSV. Ngưỡng detector hiện là heuristic cố định, không được học từ tập test; cần tập benign/stego độc lập lớn hơn và chia train/validation/test trước khi tuyên bố khả năng tổng quát hóa.
+
 ## 9. Phân tích an ninh: góc nhìn tấn công và phòng thủ
 
 ### 9.1. Góc nhìn tấn công
