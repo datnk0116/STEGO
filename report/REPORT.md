@@ -436,7 +436,20 @@ python src/experiments/blue3_robustness.py data/blue3/blue.png
 | Resampling | Round-trip | 44,1 kHz → 48 kHz → 44,1 kHz |
 | Gain | Thay đổi amplitude | 0,5× và 1,5× có clipping |
 
-Script `src/experiments/sleepy_alarm_robustness.py` chạy baseline trước; nếu baseline không khôi phục đúng toàn bộ ground truth thì dừng và không báo cáo robustness như kết quả. Khi baseline đạt, script áp dụng resampling round-trip và gain 0,5×/1,5× đồng thời cho target/reference, sau đó chạy lại decoder và ghi tâm cụm, alignment, số byte lỗi, trạng thái exact-match, clipping fraction và runtime vào JSON/CSV. Các phép biến đổi theo cặp tránh tạo sai lệch giả do chỉ thay đổi một phía của phép trừ tham chiếu.
+Thí nghiệm được thực hiện sau khi baseline đã exact-match. Mỗi phép biến đổi được áp dụng đồng thời lên target và reference, sau đó chạy lại toàn bộ quy trình alignment và decoding. Kết quả:
+
+| Biến thể | Exact-match | Separator | Clipping |
+|---|---|---:|---:|
+| MP3 gốc | PASS | 38 | 0% |
+| Resampling round-trip 44,1→48→44,1 kHz | PASS | 38 | 0% |
+| Gain 0,5× trên cả hai file | PASS | 38 | 0% |
+| Gain 1,5× trên cả hai file | PASS | 38 | ~0,44% |
+
+Tâm cụm biên độ sau resampling là 0,0001038 / 0,0019980 / 0,0049741; sau gain 0,5× là 0,0000517 / 0,0009987 / 0,0024864; sau gain 1,5× là 0,0001544 / 0,0029818 / 0,0074037. Với gain 1,5×, clipped-sample fraction được đo là 0,441% ở target và 0,442% ở reference, nhưng decoder vẫn khôi phục đúng 39 ký tự.
+
+**Diễn giải:** decoder còn phục hồi được payload khi cùng một phép resampling/gain được áp dụng lên cả distributed track và reference. Kết quả không chứng minh khả năng chịu được biến đổi bất đối xứng (chỉ sửa target hoặc chỉ sửa reference), và không thể khái quát cho codec hoặc bộ lọc khác. Kết quả chi tiết được lưu trong results/sleepy_alarm/robustness/sleepy_alarm_robustness.csv.
+
+Lệnh tái hiện:
 
 ~~~bash
 python src/experiments/sleepy_alarm_robustness.py \\
@@ -523,9 +536,11 @@ Log ban đầu được lưu tại results/2026-11-14/initial-run.md. GitHub Act
 
 ## 12. Kết luận
 
-Đồ án đã chứng minh được quy trình trích xuất dữ liệu ẩn trong ảnh bằng phân tích pixel: Blue 3 được giải bằng tổng sai khác RGB theo vùng đường chéo và kết quả trùng flag chính thức. Đối với âm thanh, decoder khôi phục 39 byte từ 350 symbol ASK 8 kHz/50 baud trên MP3 phân phối và exact-match với bitmap creator. Các lần thất bại ban đầu làm rõ tầm quan trọng của việc chọn đúng kênh, giới hạn đúng payload 7 giây, giữ prefix bị cắt bởi alignment và đo biên độ đúng theo symbol.
+Đồ án đã tái hiện thành công hai challenge cùng chủ đề Steganography nhưng khác miền dữ liệu. Blue 3 được giải bằng tổng sai khác RGB theo vùng đường chéo; Sleepy Alarm được giải bằng ASK 8 kHz/50 baud sau khi đồng bộ reference, bảo toàn prefix và dùng coherent I/Q projection theo từng symbol. Cả hai chuỗi trích xuất đều exact-match với ground truth từ nguồn chính thức.
 
-Đồ án có hai decoder tự triển khai, sáu regression tests, hình phân tích, Blue 3 robustness và bốn phép thử audio theo cặp target/reference. Kết quả cho thấy decoder pixel-sum nhạy với JPEG/resize; ASK decoder vẫn exact-match với resampling round-trip và gain theo cặp đã thử. Các kết luận được giới hạn trong hai challenge và pipeline cụ thể. Hướng mở rộng tiếp theo là giải Sleepy Alarm không cần reference, thử biến đổi bất đối xứng và đo false positives trên dữ liệu lành tính.
+Các thí nghiệm cho thấy decoder Blue 3 không còn tìm được candidate sau JPEG quality 95/85/70 hoặc resize 0,75×/0,5×; Sleepy Alarm vẫn giải đúng trong ba phép biến đổi audio theo cặp đã thử. Kết quả được giới hạn ở hai challenge và đúng pipeline thực nghiệm này, không suy rộng thành nhận định cho mọi thuật toán steganography.
+
+Giá trị kỹ thuật của đồ án nằm ở việc tự triển khai hai decoder, giữ lại và phân tích lần giải mã thất bại, kiểm chứng bằng sáu regression tests, dùng artifact có SHA-256 và lượng hóa robustness bằng CSV/JSON. Hướng tiếp theo là xây dựng decoder Sleepy Alarm không cần reference, thử biến đổi bất đối xứng và đánh giá false positives trên tập ảnh/audio lành tính.
 
 ## Tài liệu tham khảo
 
