@@ -43,9 +43,7 @@ class SleepyAlarmSolverTests(unittest.TestCase):
             2 * np.pi * 8000 * sample_index / sample_rate
         )
 
-        # Simulate a small encoder-delay/track-alignment lead-in: the target
-        # track's background begins later than the reference. The ASK payload
-        # itself still starts at sample zero of the distributed target.
+        # Model the encoder priming delay before the original track begins.
         lead_samples = 1729
         lead_t = np.arange(lead_samples) / sample_rate
         lead = np.column_stack([
