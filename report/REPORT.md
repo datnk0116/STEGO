@@ -6,6 +6,8 @@
 **Sinh viên:** ______________________________ — **MSSV:** __________________  
 **Lớp:** __________________ — **Ngày nộp:** ____ / ____ / 2026 — **Hạn nộp:** ____ / ____ / 2026
 
+> **Sidenote hành chính:** Các trường thông tin cá nhân trên trang bìa hiện chưa được điền trong repository. Theo phạm vi rà soát kỹ thuật hiện tại, các trường này được xem là phần hành chính cần bổ sung khi xuất bản nộp bài, không dùng để đánh giá mức độ hoàn thành kỹ thuật của đồ án.
+
 > **Trạng thái bằng chứng:** Blue 3 và Sleepy Alarm đều đã được giải từ artifact chính thức, đối chiếu với ground truth của ban tổ chức. Sleepy Alarm khôi phục đúng 39 ký tự, 350 symbol và 38 separator; sáu regression tests pass. Thí nghiệm robustness Blue 3 và bốn thí nghiệm audio theo cặp target/reference đã có kết quả đo trong results/. Nhật ký thời lượng làm việc cá nhân vẫn cần được người thực hiện điền theo thời gian thực tế.
 
 ---
@@ -403,7 +405,7 @@ Kết quả cho thấy **decoder cụ thể của Blue 3** không còn tìm đư
 python src/experiments/blue3_robustness.py data/blue3/blue.png
 ~~~
 
-### 8.2. Sleepy Alarm
+### 8.2. Sleepy Alarm — biến đổi đồng bộ target/reference
 
 | Nhóm | Phép biến đổi | Tham số |
 |---|---|---|
@@ -430,6 +432,17 @@ Lệnh tái hiện:
 python src/experiments/sleepy_alarm_robustness.py \
   data/sleepy_alarm/morning_n_breakfast.mp3 \
   --reference data/sleepy_alarm/morning_n_breakfast_original.mp3 \
+  --expected 'ictf{1_sl33py_NaYuKi_alarm_2a634dc1bb2}'
+~~~
+
+### 8.3. Thí nghiệm bất đối xứng — phạm vi bổ sung
+
+Các kết quả ở mục 8.2 chưa trả lời câu hỏi quan trọng: decoder có còn hoạt động khi chỉ một phía (target hoặc reference) bị biến đổi hay không. Repository bổ sung script `src/experiments/sleepy_alarm_asymmetric_robustness.py` để đo riêng sáu trường hợp: target-only và reference-only với gain 0,5×, gain 1,5×, và resampling round-trip 44,1→48→44,1 kHz. Script luôn chạy baseline trước, không ghi đè artifact gốc, lưu exact-match, số symbol, số separator, lỗi giải mã, hệ số clipping và runtime vào JSON/CSV. Đây là phép đo bổ sung; **không đưa ra kết luận trước khi script được chạy trên artifact chính thức**. Lệnh chạy:
+
+~~~bash
+python src/experiments/sleepy_alarm_asymmetric_robustness.py \\
+  data/sleepy_alarm/morning_n_breakfast.mp3 \\
+  --reference data/sleepy_alarm/morning_n_breakfast_original.mp3 \\
   --expected 'ictf{1_sl33py_NaYuKi_alarm_2a634dc1bb2}'
 ~~~
 
