@@ -6,7 +6,7 @@ All committed results must be produced by a recorded run. Use a dated folder suc
 
 - `environment.json`: OS, architecture, Python and dependency versions.
 - `artifact_manifest.json`: upstream URL, filename, byte size and SHA-256 for every input.
-- `logs/unit-tests.log`: synthetic regression test output.
+- `logs/unit-tests.log`: historical synthetic regression output (six tests); rerun and replace/append a fresh full-suite log after the five new steganalysis tests are included.
 - `blue3/analysis.json`: image metadata and channel statistics.
 - `blue3/figures/`: RGB histograms, pixel-difference heatmap and diagonal-region totals.
 - `blue3/robustness/blue3_robustness.csv`: measured decoder results after JPEG/resize.
@@ -16,9 +16,9 @@ All committed results must be produced by a recorded run. Use a dated folder suc
 - `sleepy_alarm/robustness/sleepy_alarm_robustness.csv` and `.json`: paired target/reference transform tests, only after baseline succeeds.
 - `sleepy_alarm/asymmetric_robustness/asymmetric_robustness.csv` and `.json`: target-only/reference-only transform tests, including decoded text, errors, clipping and alignment correlation.
 - `steganalysis/benchmark.csv` and `.json`: first-pass image/audio detector benchmark, fixed seed and confusion-matrix metrics; benign controls are synthetic and must not be described as a representative corpus.
-- `steganalysis/reference_comparison.json`: paired comparison of Sleepy Alarm extraction with and without the original/reference track; failure is a valid experimental outcome.
-- `blue3/extended_robustness/`: brightness, contrast, blur, crop and seeded-noise trials.
-- `sleepy_alarm/robustness_matrix/`: one-sided gain, AWGN/SNR, band-pass and resampling trials.
+- `steganalysis/reference_comparison.json`: paired comparison of Sleepy Alarm extraction with and without the original/reference track; failure is a valid experimental outcome. This file is pending until the benchmark script is run.
+- `blue3/extended_robustness/`: brightness, contrast, blur, crop and seeded-noise trials; pending until the expanded script is run.
+- `sleepy_alarm/robustness_matrix/`: one-sided gain, AWGN/SNR, band-pass and resampling trials; pending until the matrix script is run.
 - Per-experiment command lines and outputs are recorded in the corresponding `results/logs/*.log`, JSON metadata and dated run notes. A consolidated `logs/commands.log` is not currently committed.
 - `logbook-template.csv`: blank template; copy it to a dated logbook and record actual work sessions.
 
