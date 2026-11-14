@@ -1,75 +1,102 @@
 # Steganography CTF Study — UET.CN3124
 
-A reproducible study of image and audio steganography using two public CTF challenges:
+A reproducible study of two public CTF challenges in one academic topic:
 
-1. **Blue 3 (BYUCTF)** — image/pixel-difference steganography.
-2. **Sleepy Alarm (ImaginaryCTF 2024)** — audio signal analysis.
+1. **Blue 3 (BYUCTF)** — image-domain pixel-difference steganography.
+2. **Sleepy Alarm (ImaginaryCTF 2024)** — audio-domain ASK steganography.
 
-## Academic integrity and evidence status
+## Evidence and verification policy
 
-This repository is a research workspace and reproducibility package. Do not treat an upstream write-up as personal experimental work. Run the supplied scripts, preserve your own terminal output/screenshots, and replace all `[TO BE RECORDED]` fields in the report with measured results before submission.
+This repository distinguishes three kinds of evidence:
 
-No flag, runtime, metric, or successful experiment is claimed unless it is produced locally and recorded in `results/`.
+- **Official-source facts:** challenge descriptions, creator source and official challenge artifacts.
+- **Locally reproduced results:** outputs accompanied by command logs, input hashes and generated files under `results/`.
+- **Pending work:** explicitly marked items without a successful run on the official artifact.
 
-## Structure
+A passing synthetic unit test does not prove that the official challenge artifact has been solved. Sleepy Alarm is considered solved only when the decoded 39-character text exactly matches the expected value extracted independently from the official `createsignal.m` bitmap.
 
-- `report/REPORT.md`: report aligned with UET.CN3124 rubric.
-- `src/blue3/`: image inspection, pixel-difference analysis, and diagnostic figures.
-- `src/blue3/visualize.py`: creates RGB histograms, pixel-difference heatmap and diagonal-region contribution plot.
-- `src/solve_challenges.py`: independent Blue 3 and Sleepy Alarm solvers.
-- `src/audio_alignment.py`: reference resampling and cross-correlation alignment.
-- `tests/`: synthetic regression tests for both decoders/alignment.
-- `src/experiments/robustness.py`: controlled image/audio perturbation generation.
-- `src/experiments/blue3_robustness.py`: executes the Blue 3 decoder against JPEG and resized variants and writes a CSV.
-- `tests/`: synthetic regression tests for Blue 3, reference alignment and ASK decoding.
-- `src/sleepy_alarm/`: audio inspection and frequency-domain analysis.
-- `scripts/`: deterministic setup and integrity checks.
-- `data/README.md`: upstream artifact acquisition instructions.
-- `results/README.md`: evidence and experiment record template.
-- `references/REFERENCES.md`: primary sources and citation notes.
+## Repository structure
 
-## Quick start
+- `data/`: the three official challenge artifacts and provenance notes.
+- `src/solve_challenges.py`: Blue 3 and Sleepy Alarm decoders.
+- `src/audio_alignment.py`: reference resampling and time alignment.
+- `src/blue3/`: image inspection and visualization.
+- `src/sleepy_alarm/`: waveform, spectrogram and ASK-envelope analysis.
+- `src/experiments/`: Blue 3 and audio robustness experiments.
+- `tests/`: synthetic regression tests; these complement, not replace, artifact tests.
+- `results/`: machine-readable outputs, plots, CSVs and execution logs.
+- `report/REPORT.md`: report aligned to the UET.CN3124 assignment rubric.
+- `references/REFERENCES.md`: cited primary sources and technical documentation.
 
-Requirements: Python 3.10+.
+## Environment setup
+
+Python 3.14 is the recorded environment. Use uv:
 
 ```bash
+uv python install 3.14
 uv venv --python 3.14
 source .venv/bin/activate
 uv pip install -r requirements.txt
 python scripts/check_environment.py
 ```
 
-Download the pinned official artifacts (byte-size checked) with `python scripts/download_artifacts.py all`. Then run:
+## Run the complete local workflow
+
+The challenge artifacts are already committed to `data/`. The downloader verifies official byte sizes and skips existing files:
 
 ```bash
-python src/blue3/analyze.py data/blue3/blue.png
-python src/solve_challenges.py blue3 data/blue3/blue.png
-python src/sleepy_alarm/analyze.py data/sleepy_alarm/morning_n_breakfast.mp3 --reference data/sleepy_alarm/morning_n_breakfast_original.mp3
-python src/solve_challenges.py sleepy-alarm data/sleepy_alarm/morning_n_breakfast.mp3 --reference data/sleepy_alarm/morning_n_breakfast_original.mp3
+python scripts/download_artifacts.py all
+python -m unittest discover -s tests -v
 ```
 
-The original MP3 reference is downloaded by the same script. When `--reference` is supplied, the analyzer and solver resample the reference to the challenge sample rate if needed, estimate sample offset by cross-correlation, and analyze only the aligned overlap. The printed alignment metadata (lag, preserved prefix length, overlap duration and normalized correlation) must be recorded; a low correlation means the subtraction may not be trustworthy. The solver only analyzes the first 7-second payload on the left channel and estimates the three amplitude clusters from the decoded samples.
+### Blue 3
 
-## Tests
+```bash
+python src/blue3/analyze.py data/blue3/blue.png \
+  --output results/blue3/analysis.json
 
-Run synthetic regression tests (no challenge artifacts required). The suite now covers Blue 3 modal-background decoding, audio sample alignment, channel handling and synthetic ASK decoding:
+python src/solve_challenges.py blue3 data/blue3/blue.png
+
+python src/blue3/visualize.py data/blue3/blue.png \
+  --length 50 --out-dir results/blue3/figures
+
+python src/experiments/blue3_robustness.py data/blue3/blue.png
+```
+
+### Sleepy Alarm
+
+The official MATLAB generator specifies a 8 kHz carrier, 50 baud, 0.02 s per symbol and a 7-second ASK transmission on the first/left channel. The optional reference file is resampled and aligned by cross-correlation; the unaligned MP3 encoder-delay prefix is discarded.
+
+```bash
+python src/sleepy_alarm/analyze.py \
+  data/sleepy_alarm/morning_n_breakfast.mp3 \
+  --reference data/sleepy_alarm/morning_n_breakfast_original.mp3
+
+python src/solve_challenges.py sleepy-alarm \
+  data/sleepy_alarm/morning_n_breakfast.mp3 \
+  --reference data/sleepy_alarm/morning_n_breakfast_original.mp3 \
+  --expected 'ictf{1_sl33py_NaYuKi_alarm_2a634dc1bb2}'
+
+python src/experiments/sleepy_alarm_robustness.py \
+  data/sleepy_alarm/morning_n_breakfast.mp3 \
+  --reference data/sleepy_alarm/morning_n_breakfast_original.mp3 \
+  --expected 'ictf{1_sl33py_NaYuKi_alarm_2a634dc1bb2}'
+```
+
+The expected flag is taken from the official creator bitmap solely for exact validation. The decoder must reconstruct the text from the distributed MP3; it must not read the expected text as its extraction input. A structural-only run without `--expected` reports `success: null` and `format_valid` separately.
+
+## Tests and continuous integration
 
 ```bash
 python -m unittest discover -s tests -v
 ```
 
-## Evidence and report
+The GitHub Actions workflow runs synthetic tests and the two official challenge workflows on pushes to `main`. It stores logs, JSON, visualizations and experiment CSVs as repository evidence. An official Sleepy Alarm run is marked successful only when exact ground-truth comparison passes.
 
-The report at `report/REPORT.md` maps the work to the four UET.CN3124 rubric criteria. Record measured results only; the current Sleepy Alarm decoder requires a fresh run on the official MP3 before its final result can be claimed. Keep all terminal logs, generated plots and experiment CSVs under `results/`.
+## Evidence conventions
 
-## Reproducibility
-
-Record OS, Python version, dependency versions, input SHA-256, commands, outputs, elapsed time, and screenshots. Keep original challenge files immutable. Generated files belong in `results/`.
+Each result must include the source artifact, SHA-256, command, parameters, outputs and runtime where measured. Original files under `data/` are immutable. Transformed variants are written under `results/`; they must never overwrite source artifacts.
 
 ## Scope
 
-The work is limited to offline analysis of challenge-provided files. It does not scan, exploit, or collect data from third-party systems.
-
-## Status
-
-Analysis scripts and independent solver logic are committed. Download and run the official artifacts locally; record generated evidence before making final experimental claims.
+All analysis is offline and limited to the two public challenge artifacts. No external target is scanned, exploited or contacted.
