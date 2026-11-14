@@ -452,9 +452,9 @@ Tâm cụm biên độ sau resampling là 0,0001038 / 0,0019980 / 0,0049741; sau
 Lệnh tái hiện:
 
 ~~~bash
-python src/experiments/sleepy_alarm_robustness.py \\
-  data/sleepy_alarm/morning_n_breakfast.mp3 \\
-  --reference data/sleepy_alarm/morning_n_breakfast_original.mp3 \\
+python src/experiments/sleepy_alarm_robustness.py \
+  data/sleepy_alarm/morning_n_breakfast.mp3 \
+  --reference data/sleepy_alarm/morning_n_breakfast_original.mp3 \
   --expected 'ictf{1_sl33py_NaYuKi_alarm_2a634dc1bb2}'
 ~~~
 
