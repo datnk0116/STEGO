@@ -1,34 +1,45 @@
 # Results and evidence
 
-All committed results must be produced by a recorded run. Use a dated folder such as `results/2026-11-14/` or the stable challenge folders below.
+This directory contains committed technical outputs. The binary submission files and logbook are outside the scope of the current technical audit.
 
-## Required files
+## Current verification outputs
 
-- `environment.json`: OS, architecture, Python and dependency versions.
-- `artifact_manifest.json`: upstream URL, filename, byte size and SHA-256 for every input.
-- `logs/unit-tests.log`: historical synthetic regression output (six tests); rerun and replace/append a fresh full-suite log after the five new steganalysis tests are included.
-- `blue3/analysis.json`: image metadata and channel statistics.
-- `blue3/figures/`: RGB histograms, pixel-difference heatmap and diagonal-region totals.
-- `blue3/robustness/blue3_robustness.csv`: measured decoder results after JPEG/resize.
-- `sleepy_alarm/analysis.json`: audio metadata, alignment, STFT and ASK envelope measurements.
-- `sleepy_alarm/*.png`: waveform, spectrogram, carrier envelope and aligned residual plots.
-- `sleepy_alarm/solver.json`: decoded text, symbol counts, cluster centers, byte errors and exact expected-text comparison.
-- `sleepy_alarm/robustness/sleepy_alarm_robustness.csv` and `.json`: paired target/reference transform tests, only after baseline succeeds.
-- `sleepy_alarm/asymmetric_robustness/asymmetric_robustness.csv` and `.json`: target-only/reference-only transform tests, including decoded text, errors, clipping and alignment correlation.
-- `steganalysis/benchmark.csv` and `.json`: first-pass image/audio detector benchmark, fixed seed and confusion-matrix metrics; benign controls are synthetic and must not be described as a representative corpus.
-- `steganalysis/reference_comparison.json`: paired comparison of Sleepy Alarm extraction with and without the original/reference track; failure is a valid experimental outcome. This file is pending until the benchmark script is run.
-- `blue3/extended_robustness/`: brightness, contrast, blur, crop and seeded-noise trials; pending until the expanded script is run.
-- `sleepy_alarm/robustness_matrix/`: one-sided gain, AWGN/SNR, band-pass and resampling trials; pending until the matrix script is run.
-- Per-experiment command lines and outputs are recorded in the corresponding `results/logs/*.log`, JSON metadata and dated run notes. A consolidated `logs/commands.log` is not currently committed.
-- `logbook-template.csv`: blank template; copy it to a dated logbook and record actual work sessions.
+- verification/quality-gate.json: latest quality-gate record. It records 22/22 tests passed, three artifact integrity checks, Blue 3 exact-match and Sleepy Alarm reference-assisted exact-match.
+- logs/quality-gate-tests.log: full 22-test run corresponding to the source commit recorded in the JSON.
+- logs/unit-tests.log: historical six-test log from an older revision; retain for historical debugging only and never cite as current full-suite evidence.
+- artifact_manifest.json: upstream source, byte size and SHA-256 for each of the three pinned official artifacts.
+- environment.json: environment captured by an earlier run. For the environment associated with the latest gate, use the environment object in verification/quality-gate.json.
 
-## Integrity and interpretation
+## Challenge outputs
 
-Do not label a run successful because a string merely matches a flag prefix/suffix. For Sleepy Alarm, the verified run must match the full independently extracted 39-character value from the official generator bitmap. Keep both failed and successful attempts.
+### Blue 3
+- blue3/analysis.json: PNG metadata and RGB statistics.
+- blue3/figures/: diagnostics and visualizations.
+- blue3/robustness/: JPEG and resize experiments.
+- blue3/extended_robustness/extended_robustness.json and CSV: nine brightness, contrast, blur, crop and Gaussian-noise transformations, with exact-match and partial character metrics.
 
-Never invent runtimes, metrics, screenshots or activity durations. If a metric has not been measured, mark it pending. The historical failed attempt in `2026-11-14/initial-run.md` must not be confused with the later verified final solver output.
+The extended matrix has 1/9 exact-match. Brightness 0.9 still produces a 50-character candidate with 47/50 matching positions and edit distance 3. Brightness 1.1 has 28/50 matching positions and edit distance 20. Two Gaussian-noise cases have no candidate at the baseline length; edit distance is therefore null.
 
+### Sleepy Alarm
+- sleepy_alarm/analysis.json: metadata, reference alignment, STFT and ASK measurements.
+- sleepy_alarm/solver.json: reference-assisted decoded stream, cluster centers, byte errors and exact-match.
+- sleepy_alarm/robustness/: paired target/reference transformations.
+- sleepy_alarm/asymmetric_robustness/: one-sided target/reference transformations.
+- sleepy_alarm/robustness_matrix/robustness_matrix.json and CSV: 23 one-sided trials, including per-trial BER, symbol error rate and separator precision/recall.
 
-## Interpretation of new experiments
+The extended matrix has 7/23 exact-match. Across the 23 trials, the unweighted arithmetic means (including baseline) are symbol error rate 12.31%, bit error rate 12.97%, separator precision 77.07% and separator recall 93.14%. These figures describe only this challenge artifact and the exact tested transformations.
 
-The detector in `src/steganalysis.py` is an explainable heuristic baseline, not a trained classifier. Report its fixed thresholds and the synthetic nature of benign controls. Do not claim real-world precision/recall from this constructed sample set. The reference-free audio trial must be reported separately from reference-assisted exact-match. Extended robustness CSV/JSON files describe only the exact artifact and transform parameters used.
+## Steganalysis benchmark
+
+- steganalysis/benchmark.json and CSV: image TP=5/TN=12/FP=0/FN=0; audio TP=0/TN=8/FP=0/FN=5.
+- steganalysis/reference_comparison.json: reference-free Sleepy Alarm fails exact decoding (26 characters, 49 separators); reference-assisted mode succeeds.
+
+Positive samples are derived from one official challenge artifact per modality, while benign controls are synthetic. The image score is not evidence of generalization. The audio heuristic detector's recall is zero on this benchmark. Do not hide or tune away these results.
+
+## Interpretation and integrity
+
+Do not label a run successful because a string matches only a flag prefix/suffix. Sleepy Alarm success requires exact-match of the full 39-character ground truth, 350 symbols, 38 separators and no byte errors under the documented reference-assisted setup.
+
+Never invent runtimes, metrics or experimental activity. Each robustness result applies only to the input artifact and parameters recorded in its JSON/CSV. Do not modify the original inputs under data/.
+
+The historical failed attempt is preserved in 2026-11-14/initial-run.md; it must not be confused with the later exact-match solver output.
