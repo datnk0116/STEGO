@@ -16,7 +16,7 @@ def main() -> int:
     extracted=subprocess.run(["pdftotext","-layout",str(args.pdf),"-"],capture_output=True,text=True,check=True).stdout
     pages=extracted.split("\f")
     summary_page=next((i for i,p in enumerate(pages) if "Tóm tắt" in p),None)
-    refs_page=next((i for i,p in enumerate(pages) if "Tài liệu tham khảo" in p),None)
+    refs_page=next((i for i,p in enumerate(pages) if summary_page is not None and i>summary_page and "Tài liệu tham khảo" in p),None)
     main_pages=(refs_page-summary_page) if summary_page is not None and refs_page is not None else None
     print(f"PDF total pages: {total}")
     print(f"Main-body pages (from Tóm tắt to before Tài liệu tham khảo): {main_pages}")
