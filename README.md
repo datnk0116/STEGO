@@ -14,11 +14,13 @@ No flag, runtime, metric, or successful experiment is claimed unless it is produ
 ## Structure
 
 - `report/REPORT.md`: report aligned with UET.CN3124 rubric.
-- `src/blue3/`: image inspection and pixel-difference analysis.
+- `src/blue3/`: image inspection, pixel-difference analysis, and diagnostic figures.
+- `src/blue3/visualize.py`: creates RGB histograms, pixel-difference heatmap and diagonal-region contribution plot.
 - `src/solve_challenges.py`: independent Blue 3 and Sleepy Alarm solvers.
 - `src/audio_alignment.py`: reference resampling and cross-correlation alignment.
 - `tests/`: synthetic regression tests for both decoders/alignment.
-- `src/experiments/robustness.py`: controlled perturbation generation for robustness tests.
+- `src/experiments/robustness.py`: controlled image/audio perturbation generation.
+- `src/experiments/blue3_robustness.py`: executes the Blue 3 decoder against JPEG and resized variants and writes a CSV.
 - `tests/`: synthetic regression tests for Blue 3, reference alignment and ASK decoding.
 - `src/sleepy_alarm/`: audio inspection and frequency-domain analysis.
 - `scripts/`: deterministic setup and integrity checks.
@@ -50,11 +52,15 @@ The original MP3 reference is downloaded by the same script. When `--reference` 
 
 ## Tests
 
-Run synthetic regression tests (no challenge artifacts required):
+Run synthetic regression tests (no challenge artifacts required). The suite now covers Blue 3 modal-background decoding, audio sample alignment, channel handling and synthetic ASK decoding:
 
 ```bash
 python -m unittest discover -s tests -v
 ```
+
+## Evidence and report
+
+The report at `report/REPORT.md` maps the work to the four UET.CN3124 rubric criteria. Record measured results only; the current Sleepy Alarm decoder requires a fresh run on the official MP3 before its final result can be claimed. Keep all terminal logs, generated plots and experiment CSVs under `results/`.
 
 ## Reproducibility
 
