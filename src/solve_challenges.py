@@ -91,13 +91,17 @@ def solve_sleepy(path: Path, carrier_hz: float = 8000.0,
             raw_target, int(sr), original, int(original_sr)
         )
         residual = aligned_target - aligned_reference
-        # The distributed MP3 is a re-encoded copy of the original track.
-        # The cross-correlation offset includes MP3 encoder delay/priming.
-        # Therefore the aligned residual starts at the original signal time
-        # zero, which is also where the ASK payload begins. Do NOT prepend
-        # the unaligned encoder-delay samples: they are not part of the
-        # generator's 7-second transmission.
-        signal = residual
+        # The ASK payload begins at sample zero of the distributed stream.
+        # Cross-correlation may crop its leading encoder-delay/preamble samples
+        # because they do not overlap the original reference. Preserve those
+        # target samples, then append the aligned residual. This reconstructs
+        # the distributed timeline without discarding the first ASK symbols.
+        if alignment_info["channel_handling"] == "downmixed_to_mono":
+            raw_prefix = raw_target.mean(axis=1, keepdims=True)
+        else:
+            raw_prefix = raw_target
+        prefix = raw_prefix[:target_start] if target_start > 0 else raw_prefix[:0]
+        signal = np.concatenate((prefix, residual), axis=0)
 
     if not 0 < baud <= 1000:
         raise ValueError("baud must be in (0, 1000]")
@@ -195,8 +199,11 @@ def solve_sleepy(path: Path, carrier_hz: float = 8000.0,
         "symbol_clock_phase_samples_after_alignment": phase_offset,
         "reference_alignment": alignment_info,
         "alignment_interpretation": (
-            "ASK payload starts at aligned overlap sample zero; leading MP3 encoder-delay samples were discarded."
+            "Preserved the unaligned distributed-stream prefix, then appended the aligned residual to restore the complete ASK timeline."
             if alignment_info else "No reference alignment was requested."
+        ),
+        "preserved_prefix_samples": (
+            int(alignment_info["target_start_sample"]) if alignment_info else 0
         ),
         "amplitude_measurement": "coherent sine/cosine projection per symbol",
         "amplitude_cluster_centers": [float(x) for x in centers],
