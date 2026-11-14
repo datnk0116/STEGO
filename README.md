@@ -19,6 +19,7 @@ No flag, runtime, metric, or successful experiment is claimed unless it is produ
 - `src/audio_alignment.py`: reference resampling and cross-correlation alignment.
 - `tests/`: synthetic regression tests for both decoders/alignment.
 - `src/experiments/robustness.py`: controlled perturbation generation for robustness tests.
+- `tests/`: synthetic regression tests for Blue 3, reference alignment and ASK decoding.
 - `src/sleepy_alarm/`: audio inspection and frequency-domain analysis.
 - `scripts/`: deterministic setup and integrity checks.
 - `data/README.md`: upstream artifact acquisition instructions.
