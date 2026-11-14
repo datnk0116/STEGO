@@ -11,7 +11,9 @@ The committed gate evidence records:
 - Sleepy Alarm decoded the full 39-character payload exactly with the supplied reference: 350 symbols, 38 separators, 39 bytes and no byte errors.
 - Reference-free Sleepy Alarm was measured separately and failed exact decoding (26 characters, 49 separators); that limitation does not fail the quality gate.
 
-The quality-gate JSON identifies the source revision tested: 11cd5e3216e779b6101b22cd891689ecdf9b8e54. Commit 3015d5ddcab12fb99d53158c4029750d7b8805b3 subsequently committed the generated logs and current robustness JSON/CSV. That evidence-packaging commit did not change source or test files. This distinction matters: a run records the source commit before its own output files are committed, so the JSON's tested commit is not expected to be the later commit that stores the JSON.
+The quality-gate JSON records repository revision `a040e3863145038b786ba6719629e636fdf2e565` at the time of the run. Commit `3bb2b57790d164a6997ee1afe157a0fc7a8a8807` is the immediately following evidence-packaging commit. A compare of the two revisions shows exactly two changed files: `results/logs/quality-gate-tests.log` and `results/verification/quality-gate.json`; no source or test files changed. The tested revision and the later commit that stores the generated evidence are therefore intentionally different.
+
+The JSON field `git.status_short` shows `M results/logs/quality-gate-tests.log`. This is expected: the gate rewrites its test log before it queries Git status, so this field reflects the gate's own generated output and is not a record of the working-tree state before the run.
 
 Files:
 - results/logs/quality-gate-tests.log
