@@ -380,19 +380,16 @@ Output JSON ghi sample rate, alignment, tâm cụm, phân bố symbol, byte gi�
 
 ## 7. Công cụ tự viết và kiểm thử
 
-| Thành phần | Vai trò | Bằng chứng cần lưu |
-|---|---|---|
-| src/solve_challenges.py | Decoder Blue 3 và ASK | stdout JSON/text, tham số chạy |
-| src/blue3/analyze.py | Metadata, histogram thống kê RGB | JSON đầu ra |
-| src/blue3/visualize.py | Histogram, heatmap sai khác, tổng vùng đường chéo | blue3_diagnostics.png |
-| src/sleepy_alarm/analyze.py | Waveform, spectrogram, ASK envelope | Các hình PNG và JSON |
-| src/audio_alignment.py | Resample và căn chỉnh reference | Lag, overlap, correlation |
-| src/experiments/robustness.py | Sinh biến thể ảnh/audio | Danh sách artifact biến đổi |
-| src/experiments/blue3_robustness.py | Chạy decoder qua JPEG/resize | CSV thành công/thất bại |
-| src/experiments/sleepy_alarm_robustness.py | Chạy baseline và phép biến đổi audio theo cặp target/reference | JSON và CSV |
-| tests/ | Kiểm thử decoder, CLI và alignment bằng dữ liệu tổng hợp | Log unittest |
+| Thành phần | Chức năng và bằng chứng |
+|---|---|
+| src/solve_challenges.py | Hai decoder; stdout/JSON, thông số và exact-match |
+| src/blue3/analyze.py, visualize.py | Metadata, RGB histogram, heatmap pixel và tổng delta theo vùng chéo |
+| src/sleepy_alarm/analyze.py | Waveform, spectrogram, envelope và alignment metadata |
+| src/audio_alignment.py | Resampling, cross-correlation và đoạn overlap |
+| src/experiments/*_robustness.py | Biến thể ảnh/audio; CSV/JSON kết quả và trạng thái giải mã |
+| tests/ | Sáu regression tests; log tại results/logs/unit-tests.log |
 
-Bộ test hiện tại bao gồm ba kiểm thử căn chỉnh audio, kiểm thử decoder Blue 3, kiểm thử CLI Blue 3 ở chế độ black-box và kiểm thử ASK tổng hợp có encoder delay cùng đối chiếu ground truth. Synthetic test kiểm tra thuật toán và hồi quy, nhưng không thay thế cho lần chạy trên MP3 chính thức.
+GitHub Actions run 43543218421 ghi nhận 6/6 regression tests pass trên Python 3.14.10/Linux. Bộ test gồm ba kiểm thử căn chỉnh audio, decoder Blue 3, CLI Blue 3 ở chế độ black-box và decoder ASK tổng hợp có encoder delay cùng kiểm tra exact-match dương/âm. Đây là kiểm thử hồi quy trên dữ liệu tổng hợp; bằng chứng giải Sleepy Alarm trên MP3 thật được báo cáo ở mục 6.5.
 
 ~~~bash
 python -m unittest discover -s tests -v
@@ -414,14 +411,14 @@ Mục tiêu là xác định mức độ nhạy của hai cơ chế nhúng trư�
 
 Kết quả chạy trên GitHub Actions (Ubuntu 26.04, Python 3.14.10; runtime tính bằng giây trong một lượt CI):
 
-| Biến thể | Candidate | Khớp baseline | Số độ dài đã thử | Runtime (s) |
-|---|---|---:|---:|---:|
-| PNG gốc | Flag chính thức | Có | 49 | 0,293 |
-| JPEG quality 95 | Không tìm thấy | Không | 511 | 0,756 |
-| JPEG quality 85 | Không tìm thấy | Không | 511 | 0,758 |
-| JPEG quality 70 | Không tìm thấy | Không | 511 | 0,757 |
-| Resize 0,75× | Không tìm thấy | Không | 383 | 0,422 |
-| Resize 0,5× | Không tìm thấy | Không | 255 | 0,178 |
+| Biến thể | Kết quả decoder | Số ứng viên / runtime (s) |
+|---|---|---:|
+| PNG gốc | Khôi phục đúng flag | 49 / 0,293 |
+| JPEG quality 95 | Không tìm thấy candidate | 511 / 0,756 |
+| JPEG quality 85 | Không tìm thấy candidate | 511 / 0,758 |
+| JPEG quality 70 | Không tìm thấy candidate | 511 / 0,757 |
+| Resize 0,75× | Không tìm thấy candidate | 383 / 0,422 |
+| Resize 0,5× | Không tìm thấy candidate | 255 / 0,178 |
 
 CSV đầy đủ: `results/blue3/robustness/blue3_robustness.csv`. Ảnh tổng hợp chẩn đoán: `results/blue3/figures/blue3_diagnostics.png`.
 
@@ -489,9 +486,9 @@ Các dấu hiệu trên chỉ là heuristic. Một ảnh đồ họa có màu n�
 | Miền biểu diễn | Không gian/pixel | Thời gian/tần số |
 | Cơ chế | Tổng sai khác RGB theo vùng | ASK ba mức biên độ |
 | Thông tin cần suy luận | Độ dài L, màu nền, ranh giới vùng | Carrier, baud, symbol clock, channel, biên độ |
-| Phép phân tích chính | Histogram, pixel sum | FFT/STFT, band-pass, Hilbert envelope |
+| Phép phân tích chính | Histogram, pixel sum | FFT/STFT, coherent I/Q projection |
 | Ảnh hưởng của biến đổi | JPEG/resize thay đổi pixel và vùng | MP3/resampling ảnh hưởng biên độ và thời điểm |
-| Kết quả hiện tại | Đã khôi phục đúng flag | Decoder cũ thất bại; bản sửa cần chạy xác minh |
+| Kết quả thực nghiệm | Flag 50 ký tự khớp nguồn chính thức | Flag 39 ký tự exact-match; 4/4 trường hợp audio robustness theo cặp vẫn giải đúng |
 
 Blue 3 có cơ chế xác định và ổn định hơn vì PNG bảo toàn giá trị pixel; tổng sai khác có quan hệ trực tiếp với mã ký tự. Sleepy Alarm khó hơn ở khâu tách tín hiệu vì dữ liệu nằm trên âm thanh nền và file đã qua mã hóa MP3. Hai challenge cho thấy “đọc được dữ liệu ẩn” phụ thuộc không chỉ vào thuật toán nhúng mà còn vào loại vật mang tin và chuỗi xử lý file.
 
@@ -500,19 +497,19 @@ Blue 3 có cơ chế xác định và ổn định hơn vì PNG bảo toàn giá
 ### 11.1. Điểm mạnh
 
 - Cặp challenge giữ chung một chủ đề CTF chính nhưng có hai miền dữ liệu khác nhau.
-- Blue 3 đã được tái hiện trên artifact chính thức và đối chiếu với flag của ban tổ chức.
+- Blue 3 và Sleepy Alarm đều đã được tái hiện trên artifact chính thức và exact-match với giá trị do ban tổ chức công bố.
 - Decoder được tự triển khai; có chế độ suy luận màu nền và chế độ biết màu nền từ source để so sánh.
-- Quá trình thất bại ở Sleepy Alarm được giữ lại, giúp giải thích vì sao một kết quả có correlation cao vẫn có thể giải mã sai.
+- Các lần giải mã Sleepy Alarm thất bại ban đầu được giữ lại để giải thích vì sao correlation cao chưa đủ; phiên bản cuối exact-match trên MP3 thật.
 - Repository có script kiểm thử, công cụ trực quan hóa và kịch bản robustness.
 
 ### 11.2. Hạn chế hiện tại
 
-1. Kết quả Sleepy Alarm của decoder mới chưa được xác minh trên MP3 thật.
-2. Các thí nghiệm robustness mới có script tạo biến thể; chưa có bảng kết quả thành công/thất bại.
-3. Chưa đo runtime có hệ thống cho từng lệnh.
-4. Chưa thực hiện đánh giá false positive trên tập ảnh/audio lành tính; do đó các dấu hiệu phát hiện mới ở mức phân tích định tính.
-5. Mẫu nghiên cứu chỉ gồm hai challenge, không đại diện cho toàn bộ kỹ thuật steganography.
-6. Blue 3 là challenge có thuật toán đặc thù; kết quả không thể suy rộng thành decoder dùng chung cho mọi ảnh.
+1. Sleepy Alarm được giải bằng file tham chiếu gốc; đây là lợi thế white-box. Decoder không-reference chưa được triển khai/đánh giá.
+2. Các phép audio robustness được áp dụng đồng thời lên target và reference; chưa thử trường hợp chỉ một phía bị biến đổi.
+3. Chưa xây dựng tập ảnh/audio lành tính để đo false-positive rate; dấu hiệu phát hiện hiện mới ở mức heuristic.
+4. Mẫu nghiên cứu chỉ gồm hai challenge, không đại diện cho toàn bộ kỹ thuật steganography.
+5. Blue 3 là thuật toán đặc thù; việc decoder thất bại sau JPEG/resize không chứng minh payload bị xóa và không thể suy rộng cho mọi phương pháp steganography.
+6. Runtime được đo trong CI và một lần chạy local; chưa phải benchmark hiệu năng tổng quát.
 
 ### 11.3. Phản biện và hướng cải tiến
 
@@ -522,13 +519,13 @@ Với Sleepy Alarm, việc dùng file gốc để trừ nền là một lợi th
 
 ### 11.4. Nhật ký và bằng chứng
 
-Log thực nghiệm đầu tiên được lưu tại results/2026-11-14/initial-run.md. Log ghi lại môi trường macOS, phiên bản thư viện, hash ba artifact, kết quả Blue 3 và lần giải mã Sleepy Alarm thất bại. Trước khi nộp, cần bổ sung các phiên làm việc thực tế, thời lượng, giả thuyết, lệnh, lỗi, cách khắc phục và ảnh chụp màn hình theo yêu cầu assignment. Không tự điền thời gian làm việc nếu không có ghi nhận thực tế.
+Log ban đầu được lưu tại results/2026-11-14/initial-run.md. GitHub Actions run 43543218421 lưu môi trường, SHA-256, 6/6 regression tests, output solver, waveform/spectrogram và Blue 3 robustness. Sleepy Alarm exact-match được lưu trong results/sleepy_alarm/solver.json; bốn kết quả audio robustness được lưu trong CSV. Logbook thời gian cá nhân vẫn là template; sinh viên phải tự ghi phiên làm việc, giả thuyết, thao tác và thời lượng thực tế, không điền số giờ ước lượng.
 
 ## 12. Kết luận
 
-Đồ án đã chứng minh được quy trình trích xuất dữ liệu ẩn trong ảnh bằng phân tích pixel: Blue 3 được giải bằng tổng sai khác RGB theo vùng đường chéo và kết quả trùng flag chính thức. Đối với âm thanh, source challenge cho thấy payload dùng ASK 8 kHz/50 baud trong 7 giây; lần giải mã đầu tiên thất bại, qua đó làm rõ tầm quan trọng của việc chọn đúng kênh, đúng khoảng thời gian và hiệu chỉnh biên độ sau MP3 encoding.
+Đồ án đã chứng minh được quy trình trích xuất dữ liệu ẩn trong ảnh bằng phân tích pixel: Blue 3 được giải bằng tổng sai khác RGB theo vùng đường chéo và kết quả trùng flag chính thức. Đối với âm thanh, decoder khôi phục 39 byte từ 350 symbol ASK 8 kHz/50 baud trên MP3 phân phối và exact-match với bitmap creator. Các lần thất bại ban đầu làm rõ tầm quan trọng của việc chọn đúng kênh, giới hạn đúng payload 7 giây, giữ prefix bị cắt bởi alignment và đo biên độ đúng theo symbol.
 
-Giá trị kỹ thuật của đồ án nằm ở việc tự triển khai decoder, giữ lại bằng chứng thất bại, bổ sung kiểm thử và thiết kế thí nghiệm độ bền. Để kết luận Sleepy Alarm hoàn thành, cần chạy phiên bản decoder hiện tại trên MP3 chính thức, khôi phục đủ 39 byte và đối chiếu độc lập. Để hoàn thiện đánh giá, cần chạy thí nghiệm robustness và lưu hình phân tích từ artifact gốc. Những bước chưa thực hiện không được trình bày như kết quả đã đạt.
+Đồ án có hai decoder tự triển khai, sáu regression tests, hình phân tích, Blue 3 robustness và bốn phép thử audio theo cặp target/reference. Kết quả cho thấy decoder pixel-sum nhạy với JPEG/resize; ASK decoder vẫn exact-match với resampling round-trip và gain theo cặp đã thử. Các kết luận được giới hạn trong hai challenge và pipeline cụ thể. Hướng mở rộng tiếp theo là giải Sleepy Alarm không cần reference, thử biến đổi bất đối xứng và đo false positives trên dữ liệu lành tính.
 
 ## Tài liệu tham khảo
 
