@@ -1,12 +1,17 @@
 # Results and evidence
 
+<!-- PROVENANCE_STATUS_START -->
+**Verification provenance:** The canonical run record is results/verification/provenance.json. tested_commit identifies the source revision actually executed. The evidence-packaging commit and current HEAD are derived from Git history by scripts/check_provenance_consistency.py; they are not copied into this snapshot. Documentation-only changes do not stale the technical gate. Changes to source, tests, challenge data, dependencies, artifact manifest, or gate implementation do. Submission-package freshness is assessed separately.
+<!-- PROVENANCE_STATUS_END -->
+
+
 This directory contains committed technical outputs and experiment evidence. Final DOCX/PDF/ZIP files are generated locally under `results/submission/` and are intentionally excluded from the source ZIP to avoid nesting generated submission artifacts. The logbook template is included as a separate record and must only be filled from actual work.
 
 ## Current verification outputs
 
-The latest gate was run at revision `a040e3863145038b786ba6719629e636fdf2e565` and its log/JSON were packaged by commit `3bb2b57790d164a6997ee1afe157a0fc7a8a8807`. The compare between those two revisions contains only the two verification-output files; source and tests are unchanged.
+The previously recorded baseline is a historical verification snapshot. Its tested commit is stored in results/verification/provenance.json; the evidence-packaging commit and current HEAD are derived dynamically from Git history. The baseline did not capture pre-run working-tree state. New provenance checker/tests must be covered by a new full local gate before the evidence is current.
 
-- verification/quality-gate.json: latest quality-gate record. It records 22/22 tests passed, three artifact integrity checks, Blue 3 exact-match and Sleepy Alarm reference-assisted exact-match.
+- verification/quality-gate.json: gate result for the run identified by canonical provenance. The prior baseline recorded 22/22 tests, three artifact checks, Blue 3 exact-match and Sleepy Alarm reference-assisted exact-match; do not reuse that count as the result of a newer run.
 - logs/quality-gate-tests.log: full 22-test run corresponding to the source commit recorded in the JSON.
 - logs/unit-tests.log: historical six-test log from an older revision; retain for historical debugging only and never cite as current full-suite evidence.
 - artifact_manifest.json: upstream source, byte size and SHA-256 for each of the three pinned official artifacts.

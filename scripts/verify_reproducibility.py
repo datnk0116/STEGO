@@ -15,6 +15,7 @@ import platform
 import re
 import subprocess
 import sys
+import uuid
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -60,6 +61,58 @@ def _git_value(*args: str) -> str | None:
         return completed.stdout.strip()
     except (OSError, subprocess.CalledProcessError):
         return None
+
+
+def _working_tree_snapshot() -> dict:
+    status = _git_value("status", "--porcelain", "--untracked-files=all") or ""
+    changed_paths = []
+    for line in status.splitlines():
+        match = re.match(r"^.{2}\s+(.*)$", line)
+        if match:
+            changed_paths.append(match.group(1).strip().strip('"').split(" -> ", 1)[-1])
+    return {"captured": True, "clean": not bool(status), "status_short": status, "changed_paths": changed_paths}
+
+
+def _write_provenance_snapshot(report: dict, tested_commit: str | None, branch: str | None, working_tree_before_run: dict) -> Path:
+    manifest_path = ROOT / "results" / "artifact_manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    artifact_records = []
+    for item in manifest:
+        path = ROOT / item["path"]
+        artifact_records.append({"path": item["path"], "bytes": path.stat().st_size, "sha256": _sha256(path), "source": item.get("source")})
+    gate_path = ROOT / "results" / "verification" / "quality-gate.json"
+    log_path = ROOT / "results" / "logs" / "quality-gate-tests.log"
+    artifacts_passed = all(item.get("passed", False) for item in report["artifact_integrity"].values())
+    decoders = report["official_decoder_verification"]
+    limitations = []
+    if not decoders.get("sleepy_alarm_reference_free", {}).get("currently_exact", False):
+        limitations.append("Sleepy Alarm reference-free extraction did not exact-match in this run.")
+    limitations.append("The quality gate validates pinned challenge artifacts and does not establish population-level robustness or general steganalysis.")
+    snapshot = {
+        "schema_version": 1, "snapshot_type": "generated_run", "verification_id": uuid.uuid4().hex,
+        "created_at_utc": report["created_at_utc"], "repository": "datnk0116/STEGO", "branch": branch,
+        "tested_commit": tested_commit, "working_tree_before_run": working_tree_before_run,
+        "evidence_files": {
+            "quality_gate_json": {"path": "results/verification/quality-gate.json", "sha256": _sha256(gate_path)},
+            "quality_gate_log": {"path": "results/logs/quality-gate-tests.log", "sha256": _sha256(log_path)},
+            "artifact_manifest": {"path": "results/artifact_manifest.json", "sha256": _sha256(manifest_path)},
+        },
+        "artifacts": artifact_records,
+        "quality_gate": {
+            "tests_passed": report["unit_tests"]["passed"], "tests_run": report["unit_tests"]["tests_run"],
+            "tests_expected": report["unit_tests"]["expected_test_methods"], "exit_code": report["unit_tests"]["exit_code"],
+            "artifact_integrity_passed": artifacts_passed,
+            "blue3_exact_match": decoders.get("blue3", {}).get("exact_match", False),
+            "sleepy_alarm_reference_assisted_exact_match": decoders.get("sleepy_alarm_reference_assisted", {}).get("exact_match", False),
+            "overall_passed": report["overall_passed"],
+        },
+        "limitations": limitations,
+        "submission_package": {"status": "not_verified", "built_from_commit": None,
+            "note": "Rebuild and inspect the DOCX/PDF/ZIP after report and package inputs are finalized; package freshness is separate from the technical gate."},
+    }
+    output = ROOT / "results" / "verification" / "provenance.json"
+    output.write_text(json.dumps(snapshot, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    return output
 
 
 def _check_artifacts() -> dict:
@@ -202,6 +255,10 @@ def _run_official_decoders() -> dict:
 
 
 def main() -> int:
+    tested_commit = _git_value("rev-parse", "HEAD")
+    tested_branch = _git_value("branch", "--show-current")
+    working_tree_before_run = _working_tree_snapshot()
+
     results_dir = ROOT / "results" / "verification"
     logs_dir = ROOT / "results" / "logs"
     results_dir.mkdir(parents=True, exist_ok=True)
@@ -234,9 +291,9 @@ def main() -> int:
         "schema_version": 1,
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
         "git": {
-            "commit": _git_value("rev-parse", "HEAD"),
-            "branch": _git_value("branch", "--show-current"),
-            "status_short": _git_value("status", "--short"),
+            "commit": tested_commit,
+            "branch": tested_branch,
+            "working_tree_before_run": working_tree_before_run,
         },
         "environment": {
             "platform": platform.platform(),
@@ -258,6 +315,14 @@ def main() -> int:
         json.dumps(report, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
+    provenance_path = _write_provenance_snapshot(report, tested_commit, tested_branch, working_tree_before_run)
+    checker = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_provenance_consistency.py"), "--pre-commit", "--root", str(ROOT)],
+        cwd=ROOT, capture_output=True, text=True, check=False,
+    )
+    if checker.stdout: print(checker.stdout)
+    if checker.stderr: print(checker.stderr, file=sys.stderr)
+    provenance_precommit_passed = checker.returncode == 0
     print(json.dumps({
         "overall_passed": overall,
         "tests_run": tests["tests_run"],
@@ -269,8 +334,11 @@ def main() -> int:
         ).get("exact_match", False),
         "quality_gate_json": output_path.relative_to(ROOT).as_posix(),
         "unit_test_log": tests["log"],
+        "provenance_json": provenance_path.relative_to(ROOT).as_posix(),
+        "provenance_precommit_passed": provenance_precommit_passed,
+        "tested_commit": tested_commit,
     }, indent=2, ensure_ascii=False))
-    return 0 if overall else 1
+    return 0 if overall and provenance_precommit_passed else 1
 
 
 if __name__ == "__main__":

@@ -1,5 +1,10 @@
 # Steganography CTF Study — UET.CN3124
 
+<!-- PROVENANCE_STATUS_START -->
+**Verification provenance:** The canonical run record is results/verification/provenance.json. tested_commit identifies the source revision actually executed. The evidence-packaging commit and current HEAD are derived from Git history by scripts/check_provenance_consistency.py; they are not copied into this snapshot. Documentation-only changes do not stale the technical gate. Changes to source, tests, challenge data, dependencies, artifact manifest, or gate implementation do. Submission-package freshness is assessed separately.
+<!-- PROVENANCE_STATUS_END -->
+
+
 A reproducible study of two public CTF challenges in one academic topic:
 
 1. **Blue 3 (BYUCTF)** — image-domain pixel-difference steganography.
@@ -118,7 +123,7 @@ Run the one-command local evidence gate:
 python scripts/verify_reproducibility.py
 ```
 
-The gate runs the complete unittest suite, checks SHA-256 and byte sizes for all three official artifacts, verifies the Blue 3 flag and the 39-character Sleepy Alarm exact-match, and records the reference-free result as a limitation measurement. The committed gate evidence records **22/22 tests passed (exit code 0)**, all three artifact hashes passed, and both official decoders matched their expected payloads under the documented conditions. The JSON records revision `a040e3863145038b786ba6719629e636fdf2e565`. Commit `3bb2b57790d164a6997ee1afe157a0fc7a8a8807` subsequently packages the gate log and JSON. Comparing these two revisions shows that the packaging commit changes only `results/logs/quality-gate-tests.log` and `results/verification/quality-gate.json`; it does not change source or test files. `results/logs/unit-tests.log` remains a historical six-test log; use `results/logs/quality-gate-tests.log` as the current 22-test evidence.
+The local gate runs the discovered unittest suite, verifies SHA-256 and byte sizes for all pinned official artifacts, checks the Blue 3 and reference-assisted Sleepy Alarm decoders, and records reference-free failure as a limitation. The previous baseline reported 22/22 tests passed, 3/3 artifact checks passed, and both documented decoder checks exact-matched. That run is a historical snapshot, not a fresh verification of the provenance checker and regression tests added in this revision. Read tested commit and run metadata from results/verification/provenance.json; derive evidence commit and current HEAD with python scripts/check_provenance_consistency.py. Run the full local gate after source/test changes before claiming current verification. The older results/logs/unit-tests.log remains a historical six-test log.
 
 The GitHub Actions workflow is optional. The quality gate does not start GitHub Actions or build DOCX/PDF/ZIP. For those local submission artifacts, the separate command is `python scripts/build_submission.py`.
 
@@ -157,7 +162,7 @@ The report includes a dedicated critical-evaluation section covering the threat 
 - The audio heuristic detector has recall=0 on the current small benchmark (TP=0, FN=5).
 - The image detector's perfect score is challenge-family-specific and based on synthetic controls plus derivatives of one source artifact.
 - Blue 3 extended robustness passes 1/9 variants; Sleepy Alarm's one-sided robustness passes 3/6 variants.
-- The old `unit-tests.log` covers six tests only. Current committed evidence is the separate quality-gate log with 22/22 tests passed on the recorded source commit; rerun it after any source/test change.
+- The old `unit-tests.log` covers six tests only. The previous 22/22 run is a historical baseline. Use the matching quality-gate JSON/log pair identified by canonical provenance and rerun the gate after source/test changes.
 
 See `report/REPORT.md` section 11.7–11.9, `docs/DEFENSE_QA.md`, and `docs/QUALITY_GATE.md` for the threat model, validity discussion, defense questions, and reproducible verification procedure. These findings describe the committed experiments only and are not claims about all steganography methods.
 

@@ -1,5 +1,10 @@
 # Kế hoạch bảo đảm chất lượng và nghiệm thu STEGO
 
+<!-- PROVENANCE_STATUS_START -->
+**Verification provenance:** The canonical run record is results/verification/provenance.json. tested_commit identifies the source revision actually executed. The evidence-packaging commit and current HEAD are derived from Git history by scripts/check_provenance_consistency.py; they are not copied into this snapshot. Documentation-only changes do not stale the technical gate. Changes to source, tests, challenge data, dependencies, artifact manifest, or gate implementation do. Submission-package freshness is assessed separately.
+<!-- PROVENANCE_STATUS_END -->
+
+
 ## 1. Phạm vi chấm và nguyên tắc
 
 Đối chiếu rubric UET.CN3124:
@@ -12,28 +17,32 @@ Kế hoạch này đặt tiêu chí nghiệm thu ở mức cao nhất của rubr
 
 Rubric mức Xuất sắc đòi hỏi: có tư duy thiết kế và so sánh phương án; tài liệu hóa sâu, quy trình đáng tin cậy và tái hiện được; phân tích chặt chẽ cả rủi ro/dấu hiệu phát hiện/biện pháp khắc phục; đánh giá chín chắn, có nguồn và chỉ ra hướng học tiếp.
 
-## 2. Trạng thái repository đã xác minh
+## 2. Trạng thái provenance và bằng chứng đã ghi nhận
 
 **Repository:** datnk0116/STEGO  
-**Branch:** main  
-**Revision được quality gate ghi nhận:** a040e3863145038b786ba6719629e636fdf2e565  
-**Commit đóng gói log/JSON verification:** 3bb2b57790d164a6997ee1afe157a0fc7a8a8807
+**Canonical record:** results/verification/provenance.json  
+**Historical tested revision:** lấy từ quality-gate.json.git.commit; evidence-packaging commit và current HEAD được suy ra bằng strict checker, không hardcode trong snapshot.
 
-Commit 3bb2b57 là commit duy nhất sau revision a040e38; diff chỉ gồm hai tệp bằng chứng quality gate (log và JSON), không thay đổi source hoặc tests. Vì vậy JSON ghi revision được kiểm thử trước khi chính các tệp kết quả được commit.
+Baseline trước khi bổ sung provenance tooling:
+- 22/22 test methods pass, exit code 0.
+- Ba artifact chính thức đúng byte size và SHA-256.
+- Blue 3 exact-match.
+- Sleepy Alarm reference-assisted exact-match.
+- Sleepy Alarm reference-free chưa exact-match (26 ký tự, 49 separator).
 
-| Hạng mục | Bằng chứng hiện hành | Trạng thái |
+Bản migration provenance đánh dấu pre-run working-tree status là **không được ghi nhận**; không suy diễn trạng thái ban đầu từ trường status được chụp sau khi gate đã ghi log. Đây là cách ghi nhận trung thực dữ liệu lịch sử.
+
+**Trạng thái sau thay đổi hiện tại:** checker và regression tests mới làm thay đổi gate implementation/test suite so với baseline; do đó baseline cũ không xác minh được các thay đổi mới. Sau khi commit patch này, phải chạy full local gate một lần trên working tree sạch. Chỉ khi pre-commit checker pass, evidence được commit và strict checker pass mới được coi là provenance hiện hành. Không cần GitHub Actions hoặc rerun các ma trận robustness nếu input/script/seed/parameters không đổi.
+
+| Hạng mục | Bằng chứng baseline | Trạng thái sau khi thêm provenance tooling |
 |---|---|---|
-| Unit/integration tests | 22/22 pass, exit code 0; log quality-gate-tests.log | Đã đạt |
-| Artifact integrity | 3/3 file đúng byte size và SHA-256 | Đã đạt |
-| Blue 3 chính thức | Exact-match flag 50 ký tự; 49 candidate attempts | Đã đạt |
-| Sleepy Alarm chính thức | Reference-assisted exact-match; 350 symbol, 38 separator, 39 byte, 0 byte errors | Đã đạt |
-| Sleepy Alarm reference-free | 350 symbol, 49 separator, 26 ký tự; format invalid, exact-match fail | Giới hạn đã đo và công khai |
-| Blue 3 extended robustness | 9 biến thể, 1 exact-match; partial character metrics có trong JSON/CSV | Đã đạt |
-| Sleepy Alarm robustness matrix | 23 trial, 7 exact-match; BER/SER/separator metrics có trong JSON/CSV | Đã đạt |
-| Steganalysis benchmark | Image TP=5/TN=12/FP=0/FN=0; audio TP=0/TN=8/FP=0/FN=5 | Đã đo; giới hạn rõ |
-| Phân tích và phản biện | Có RQ/giả thuyết, threat model, validity, tấn công/phòng thủ, limitations và next experiments | Đã đồng bộ với evidence |
+| Unit/integration tests | 22/22 pass | Cần rerun full suite để bao phủ tests mới |
+| Artifact integrity | 3/3 SHA-256 pass | Pinned inputs không đổi; checker xác minh lại trong gate mới |
+| Official decoders | Blue 3 và Sleepy Alarm reference-assisted exact-match | Cần chạy lại gate mới để đóng evidence |
+| Provenance | Gate JSON có tested commit, docs cũ chưa đồng bộ | Canonical snapshot + checker được bổ sung; cần strict validation sau commit |
+| Submission package | Có binary trong repo, chưa xác minh nội dung/build input | Tách riêng; rebuild/inspect ở giai đoạn đóng gói |
 
-Lưu ý: results/logs/unit-tests.log là log lịch sử sáu test, không phải bằng chứng hiện hành. Bằng chứng 22/22 nằm trong results/logs/quality-gate-tests.log và results/verification/quality-gate.json.
+results/logs/unit-tests.log chỉ là log sáu test lịch sử. Log full-suite baseline là results/logs/quality-gate-tests.log; số test trong các lần chạy tiếp theo phải lấy từ JSON/log tương ứng, không hardcode.
 
 ## 3. Các hạng mục đã triển khai
 
@@ -41,7 +50,7 @@ Lưu ý: results/logs/unit-tests.log là log lịch sử sáu test, không phả
 
 Quality gate scripts/verify_reproducibility.py đã:
 1. Chạy python -m unittest discover -s tests -v.
-2. Xác nhận 22 test methods đã chạy đúng số lượng và đều pass.
+2. Xác nhận test methods đã chạy đúng số lượng được đếm động từ source và đều pass.
 3. Kiểm tra kích thước và SHA-256 của ba artifact chính thức.
 4. Chạy Blue 3 và Sleepy Alarm reference-assisted trên artifact gốc.
 5. Ghi Git commit, branch, trạng thái working tree, hệ điều hành, Python và package versions.
@@ -63,7 +72,7 @@ Sleepy Alarm:
 - Ground truth chỉ được sử dụng sau extraction để chấm symbol stream; không được dùng để tạo payload trong decoder.
 - results/sleepy_alarm/robustness_matrix/robustness_matrix.json và CSV có đủ 23 trial và aggregate metrics.
 
-### P2 — Đồng bộ tài liệu với bằng chứng: HOÀN TẤT TRONG REVISION NÀY
+### P2 — Đồng bộ tài liệu với bằng chứng: status blocks đã chuẩn hóa; cần nghiệm thu bằng checker
 
 Các tài liệu đã được đồng bộ:
 - report/REPORT.md: summary, test evidence, robustness metrics, limitations, future work và conclusion.
@@ -131,7 +140,7 @@ Positive là các biến thể từ một artifact chính thức mỗi modality;
 | Tiêu chí | Bằng chứng hiện có | Điều kiện hoàn thiện cuối |
 |---|---|---|
 | Lập kế hoạch và biện minh | Phạm vi hai challenge cùng chủ đề; RQ/H1–H3; so sánh phương án; nguồn gốc artifact và lý do lựa chọn | Giữ các giả định và giới hạn lựa chọn nhất quán trong report/README |
-| Triển khai và tài liệu hóa | Decoder hai challenge; 22/22 test ở gate đã ghi nhận; 3/3 hash đúng; kết quả JSON/CSV và log | Chạy gate trên working copy cuối; build PDF/ZIP; kiểm tra ZIP có đủ source, tests, script, data, report Markdown và evidence |
+| Triển khai và tài liệu hóa | Decoder hai challenge; test count được ghi trong provenance của lần gate tương ứng; 3/3 hash đúng; kết quả JSON/CSV và log | Chạy gate trên working copy cuối; build PDF/ZIP; kiểm tra ZIP có đủ source, tests, script, data, report Markdown và evidence |
 | Phân tích kết quả | Exact-match, partial recovery, BER/SER, separator metrics, confusion matrix và phân tích failure | Không nâng kết luận vượt khỏi hai challenge và các phép biến đổi đã thử |
 | Đánh giá, phản biện và tự học | Threat model, validity, detector failure, reference dependency, robustness limits và hướng nghiên cứu tiếp | Phần phản tư cá nhân/logbook chỉ hoàn thiện từ ghi chú và trải nghiệm thật; không suy diễn từ commit hoặc tự tạo thời lượng |
 
@@ -141,7 +150,7 @@ Bảng này là checklist chất lượng dựa trên rubric, không phải tự
 
 | Ưu tiên | Công việc | Điều kiện nghiệm thu |
 |---|---|---|
-| P0 | Chạy `python scripts/verify_reproducibility.py` trên working copy cuối | Exit code 0; 22/22 test; ba hash đúng; hai decoder exact-match trong điều kiện đã mô tả |
+| P0 | Chạy `python scripts/verify_reproducibility.py` trên working copy cuối | Exit code 0; số test chạy bằng số test methods được phát hiện; ba hash đúng; hai decoder exact-match trong điều kiện đã mô tả |
 | P0 | Chạy `python scripts/build_submission.py` | DOCX/PDF được sinh từ report Markdown hiện tại; PDF qua kiểm tra số trang; ZIP được tạo và mở/kiểm tra được |
 | P0 | Kiểm tra nội dung ZIP | Có README, source, tests, scripts, workflow, dữ liệu gốc, kết quả, báo cáo Markdown, references và docs; không có .venv, .git, file tạm hoặc ZIP lồng |
 | P1 | Hoàn thiện trang bìa và tên file | Thay các trường hành chính bằng thông tin đúng; dùng tên file nhất quán theo hướng dẫn môn học |
@@ -182,7 +191,7 @@ print("Blue 3 exact:", decoders["blue3"]["exact_match"])
 print("Sleepy Alarm exact:", decoders["sleepy_alarm_reference_assisted"]["exact_match"])
 print("Overall:", data["overall_passed"])
 
-assert tests["tests_run"] == tests["expected_test_methods"] == 22
+assert tests["tests_run"] == tests["expected_test_methods"]
 assert tests["passed"]
 assert all(item["passed"] for item in artifacts.values())
 assert decoders["blue3"]["exact_match"]

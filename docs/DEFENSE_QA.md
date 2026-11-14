@@ -1,5 +1,10 @@
 # Hướng dẫn tự bảo vệ đồ án — UET.CN3124 Steganography
 
+<!-- PROVENANCE_STATUS_START -->
+**Verification provenance:** The canonical run record is results/verification/provenance.json. tested_commit identifies the source revision actually executed. The evidence-packaging commit and current HEAD are derived from Git history by scripts/check_provenance_consistency.py; they are not copied into this snapshot. Documentation-only changes do not stale the technical gate. Changes to source, tests, challenge data, dependencies, artifact manifest, or gate implementation do. Submission-package freshness is assessed separately.
+<!-- PROVENANCE_STATUS_END -->
+
+
 Tài liệu này dùng để ôn tập và diễn giải code của chính repository. Không học thuộc câu trả lời; hãy mở đúng file, chạy lệnh và giải thích bằng lời của mình.
 
 ## 1. Vì sao chọn hai challenge?
@@ -70,7 +75,7 @@ Kết quả đã đo: baseline PASS; target-only gain 0,5× FAIL (46 separator),
 ## 6. Bằng chứng cần mở khi vấn đáp
 
 - Manifest và SHA-256 của ba artifact.
-- Log unit-tests.log chỉ là lịch sử sáu regression tests; quality-gate-tests.log ghi 22/22 tests pass tại revision a040e38. Commit 3bb2b57 lưu các tệp bằng chứng, không đổi source/tests.
+- Log unit-tests.log chỉ là lịch sử sáu regression tests. Tested commit được đọc từ canonical provenance; evidence commit được suy ra bằng strict checker. Không dùng số test của baseline lịch sử để mô tả lần chạy mới.
 - Blue 3 solver log và hình diagnostics.
 - Sleepy Alarm solver JSON: số symbol, tâm cụm, byte lỗi, exact-match.
 - Hai file CSV robustness.
@@ -166,7 +171,7 @@ Quality gate P0 đã hoàn tất: 22/22 tests pass, ba artifact đúng hash và 
 
 **Những kết luận nào không được phép đưa ra?**
 
-Không được nói STEGO là detector steganography tổng quát; không nói Sleepy Alarm hoạt động blind; không nói Blue 3 payload chắc chắn bị xóa sau JPEG/resize; không dùng FPR=0 từ tám mẫu synthetic để khẳng định không có false positive. Có thể khẳng định 22/22 tests pass theo quality-gate log ở revision a040e38; nếu thay source hoặc tests thì phải chạy lại, không dùng log cũ sáu test.
+Không được nói STEGO là detector steganography tổng quát; không nói Sleepy Alarm hoạt động blind; không nói Blue 3 payload chắc chắn bị xóa sau JPEG/resize; không dùng FPR=0 từ tám mẫu synthetic để khẳng định không có false positive. Chỉ khẳng định số test pass theo cặp quality-gate JSON/log được provenance xác nhận. Baseline 22/22 là kết quả lịch sử; sau khi thay source/tests phải chạy lại gate và không dùng log cũ sáu test.
 
 ## 11. Trả lời ngắn gọn về điểm yếu
 
@@ -195,5 +200,5 @@ Script lấy candidate được tạo ở độ dài baseline flag, rồi so sá
 
 **Lệnh nào xác nhận revision có thể tái lập?**
 
-Chạy `python scripts/verify_reproducibility.py`. Bằng chứng hiện có ghi 22/22 tests pass, hash ba artifact và hai decoder exact-match. JSON ghi source commit đã kiểm thử (`a040e38`); commit `3bb2b57` lưu các file kết quả sau lần chạy, không thay đổi source/tests. Nếu sửa source/tests, chạy gate lại trước khi nộp.
+Chạy `python scripts/verify_reproducibility.py`. Bằng chứng phải được kiểm tra qua results/verification/provenance.json. Tested commit nằm trong snapshot; evidence commit và HEAD được strict checker suy ra từ Git. Baseline 22/22 chỉ là lịch sử; khi sửa source/tests, chạy lại gate trước khi nộp.
 

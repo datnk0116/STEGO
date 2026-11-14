@@ -1,82 +1,74 @@
 # Quality gate and reproducible evidence
 
-This procedure validates the pinned official challenge artifacts, runs the full test suite, and verifies both official payloads. It does not invoke GitHub Actions and does not build DOCX/PDF/ZIP.
+<!-- PROVENANCE_STATUS_START -->
+**Verification provenance:** The canonical run record is results/verification/provenance.json. tested_commit identifies the source revision actually executed. The evidence-packaging commit and current HEAD are derived from Git history by scripts/check_provenance_consistency.py; they are not copied into this snapshot. Documentation-only changes do not stale the technical gate. Changes to source, tests, challenge data, dependencies, artifact manifest, or gate implementation do. Submission-package freshness is assessed separately.
+<!-- PROVENANCE_STATUS_END -->
 
-## Latest committed verification
+## Purpose
 
-The committed gate evidence records:
-- **22/22 unittest methods passed**, exit code 0.
-- All three pinned artifact byte-size and SHA-256 checks passed.
-- Blue 3 decoded the official flag exactly.
-- Sleepy Alarm decoded the full 39-character payload exactly with the supplied reference: 350 symbols, 38 separators, 39 bytes and no byte errors.
-- Reference-free Sleepy Alarm was measured separately and failed exact decoding (26 characters, 49 separators); that limitation does not fail the quality gate.
+This local procedure validates the pinned official challenge artifacts, runs the complete discovered unittest suite, verifies both documented official payloads, and checks provenance consistency. It does not invoke GitHub Actions and does not rebuild DOCX/PDF/ZIP.
 
-The quality-gate JSON records repository revision `a040e3863145038b786ba6719629e636fdf2e565` at the time of the run. Commit `3bb2b57790d164a6997ee1afe157a0fc7a8a8807` is the immediately following evidence-packaging commit. A compare of the two revisions shows exactly two changed files: `results/logs/quality-gate-tests.log` and `results/verification/quality-gate.json`; no source or test files changed. The tested revision and the later commit that stores the generated evidence are therefore intentionally different.
+## Canonical evidence
 
-The JSON field `git.status_short` shows `M results/logs/quality-gate-tests.log`. This is expected: the gate rewrites its test log before it queries Git status, so this field reflects the gate's own generated output and is not a record of the working-tree state before the run.
+- results/verification/provenance.json is the canonical run snapshot.
+- results/verification/quality-gate.json stores the actual gate result and tested commit.
+- results/logs/quality-gate-tests.log stores the test output for that same run.
+- results/artifact_manifest.json records upstream source, byte size and SHA-256 for each pinned official challenge artifact.
+- The strict checker derives the evidence-packaging commit from Git history by matching the committed Git blobs for the gate JSON and log. It derives current HEAD at check time. Neither value is embedded in the provenance snapshot, avoiding a self-referential commit hash.
 
-Files:
-- results/logs/quality-gate-tests.log
-- results/verification/quality-gate.json
+The existing 22/22 test result is a historical baseline. Its original run did not capture the pre-run working-tree state, so that fact is explicitly unknown; the old post-generation status field cannot be used to reconstruct it. The canonical migration snapshot preserves this uncertainty. New runs capture the working-tree status before the gate writes any output.
 
-The older results/logs/unit-tests.log contains six tests from a previous revision. It is historical evidence only; do not cite it as the current full-suite result.
+## Local verification
 
-## Re-run locally after source, test or artifact changes
-
-From the repository root, with the project environment active:
+Run from a clean checkout after committing source, tests, data, dependencies and documentation:
 
 ~~~bash
 python scripts/verify_reproducibility.py
 ~~~
 
-The command:
-1. Runs python -m unittest discover -s tests -v.
-2. Verifies byte sizes and SHA-256 of the three pinned official artifacts.
-3. Runs the Blue 3 decoder against the official PNG.
-4. Runs Sleepy Alarm with the official reference and validates all 39 bytes.
-5. Records the reference-free result as a limitation measurement; this does not fail the gate by itself.
-6. Captures the tested Git commit, branch, working-tree status, OS, Python/package versions, test output and decoder details.
+The gate:
+1. Captures HEAD, branch and git status before creating or rewriting output files.
+2. Runs python -m unittest discover -s tests -v; expected test count is calculated from checked-in test methods, not hardcoded.
+3. Checks byte size and SHA-256 for all pinned official artifacts.
+4. Runs Blue 3 and Sleepy Alarm reference-assisted decoding against the official files.
+5. Records reference-free Sleepy Alarm as a limitation measurement; its failure does not get relabeled as success.
+6. Writes quality-gate JSON, test log and canonical provenance snapshot.
+7. Runs the fast provenance checker in --pre-commit mode. The process exits non-zero if either the gate or pre-commit consistency check fails.
 
-The gate exits 0 only when all 22 discovered test methods pass, all three artifact checks pass, and both documented official decoder checks exact-match. A passing gate does not establish blind decoding, robustness on other files, or population-level steganalysis performance.
+Before committing generated gate evidence, the expected working-tree changes are limited to:
+- results/logs/quality-gate-tests.log
+- results/verification/quality-gate.json
+- results/verification/provenance.json
 
-## Committed robustness experiments
-
-The updated scripts have already been run and their JSON/CSV results are committed. Do not mark these outputs pending.
+Then commit those outputs and run the strict checker:
 
 ~~~bash
-python src/experiments/blue3_extended_robustness.py data/blue3/blue.png
-
-python src/experiments/sleepy_alarm_robustness_matrix.py \
-  data/sleepy_alarm/morning_n_breakfast.mp3 \
-  --reference data/sleepy_alarm/morning_n_breakfast_original.mp3 \
-  --expected 'ictf{1_sl33py_NaYuKi_alarm_2a634dc1bb2}'
+git add results/logs/quality-gate-tests.log results/verification/quality-gate.json results/verification/provenance.json
+git commit -m "test: record local provenance verification"
+python scripts/check_provenance_consistency.py
 ~~~
 
-Run them again only after changing source, input artifacts, seed or parameters. Current committed results:
-- Blue 3: 9 transformations, 1 exact-match; partial character metrics included in every row.
-- Sleepy Alarm: 23 trials, 7 exact-match; BER, symbol error rate and separator precision/recall are recorded per trial.
+## Freshness semantics
 
-### Metric interpretation
+The checker distinguishes three classes:
 
-Blue 3:
-- Position accuracy compares matching character positions at the baseline flag length.
-- Levenshtein edit distance counts minimum insertions, deletions and substitutions.
-- Normalized edit similarity is 1 - edit_distance / max(expected_length, observed_length, 1).
-- If no candidate exists at the baseline length, edit distance is null; it is not a measured zero.
+- **Technical gate stale:** changes to src/, tests/, data/, dependencies, artifact manifest, workflow/configuration, or gate implementation after tested_commit. The strict checker fails this state.
+- **Documentation-only:** does not invalidate unit/integration evidence, but each of the six documentation status blocks must match the canonical statement.
+- **Submission-package stale/unverified:** report or package-input changes require rebuilding DOCX/PDF/ZIP. This is tracked separately; use --require-submission-package when that validation is required.
 
-Sleepy Alarm:
-- BER is bit errors divided by 312 expected payload bits.
-- Symbol error rate compares all 350 positions, including separator positions.
-- Separator precision and recall separately count false-positive and false-negative separators.
-- Aggregate metrics in the committed JSON are arithmetic means across 23 trials, including baseline. They are not pooled estimates over a population.
+A synthetic test is not a substitute for official-artifact integration checks. A passing gate verifies only the pinned artifacts and the tested revision; it does not establish blind decoding, robustness on other files, or population-level steganalysis performance.
 
-The expected text is used only after extraction to score measured symbols and for the exact-match validator; it is not used by the decoder to construct the payload.
+## Existing experiment outputs
 
-## Evidence integrity rules
+The committed robustness scripts and JSON/CSV outputs are historical experiment evidence. Do not rerun them merely to refresh provenance. Rerun those experiments only when their source, input artifacts, seed or parameters change. Keep original files under data/ immutable and transformed outputs under results/.
 
-- Do not overwrite original files in data/.
-- Keep transformed files and generated outputs under results/.
-- Record the source commit actually tested in the quality-gate JSON.
-- A synthetic unit test is not a substitute for official-artifact integration tests.
-- Do not tune detector thresholds on the same test data used to report final metrics.
-- A successful gate verifies this revision and these fixed artifacts; it does not establish blind decoding or general steganalysis.
+## Interpretation reminders
+
+- Blue 3 extended robustness: 9 transformations, 1 exact-match; retain partial-character metrics.
+- Sleepy Alarm extended robustness: 23 trials, 7 exact-match; aggregate means are unweighted arithmetic means including baseline, not population estimates.
+- Sleepy Alarm reference-free decoding failed in the recorded baseline; do not describe it as blind decoding.
+- The audio steganalysis benchmark recall of zero is a measured failure on the constructed set, not a universal claim about audio steganalysis.
+
+## Submission package check
+
+The technical gate does not rebuild submission binaries. After the report and source-package inputs are final, run python scripts/build_submission.py --max-main-pages 15, inspect the generated PDF, and inspect the ZIP contents. The strict provenance checker reports the package as NOT_VERIFIED until an independently verifiable package build record exists.

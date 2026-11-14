@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "snapshot_type": "retrospective_migration",
+  "verification_id": null,
+  "created_at_utc": "2026-11-14T08:48:11.032042+00:00",
+  "repository": "datnk0116/STEGO",
+  "branch": "main",
+  "tested_commit": "766b4bc209faee944a1949b7021c79b239866e05",
+  "working_tree_before_run": {
+    "captured": false,
+    "clean": null,
+    "status_short": null,
+    "changed_paths": [],
+    "note": "The historical run did not record pre-run status. Existing git.status_short was captured after the gate rewrote its test log and cannot reconstruct the pre-run state."
+  },
+  "working_tree_after_gate_generation": {
+    "status_short": "M results/logs/quality-gate-tests.log"
+  },
+  "evidence_files": {
+    "quality_gate_json": {
+      "path": "results/verification/quality-gate.json",
+      "sha256": "be1d24859a4c202eb4ca6d4dbf3877284db6b800b80a6d097e6c9719418658f9"
+    },
+    "quality_gate_log": {
+      "path": "results/logs/quality-gate-tests.log",
+      "sha256": "a7bd99c3715ae816dcf6db9c04ed1173ff1536b7c26b8e1ba06f51c9c3b1c84f"
+    },
+    "artifact_manifest": {
+      "path": "results/artifact_manifest.json",
+      "sha256": "955c8b671ae83b0033ce0da9e456be33924e1bebe301ca3355994a5f74194a9c"
+    }
+  },
+  "artifacts": [
+    {
+      "path": "data/blue3/blue.png",
+      "bytes": 9406,
+      "sha256": "009dab85bf6ccc5b42b8efa5f959ab6efa0c556b37eb6b4a77a21ec3356b721e",
+      "source": "https://github.com/BYU-CSA/old-ctf-challenges/tree/master/forensics-steganography/blue-3"
+    },
+    {
+      "path": "data/sleepy_alarm/morning_n_breakfast.mp3",
+      "bytes": 179283,
+      "sha256": "bd181876c2d28152b9c3982fd88945d4e681fd93d49477622ea5841a3ff25ae2",
+      "source": "https://github.com/ImaginaryCTF/ImaginaryCTF-2024-Challenges/tree/main/Forensics/Sleepy%20Alarm"
+    },
+    {
+      "path": "data/sleepy_alarm/morning_n_breakfast_original.mp3",
+      "bytes": 160495,
+      "sha256": "d0c283834955e54d68b0bba723ccd194142a428d2de74722e5f1dff3ccbd94ad",
+      "source": "https://github.com/ImaginaryCTF/ImaginaryCTF-2024-Challenges/tree/main/Forensics/Sleepy%20Alarm"
+    }
+  ],
+  "quality_gate": {
+    "tests_passed": true,
+    "tests_run": 22,
+    "tests_expected": 22,
+    "exit_code": 0,
+    "artifact_integrity_passed": true,
+    "blue3_exact_match": true,
+    "sleepy_alarm_reference_assisted_exact_match": true,
+    "overall_passed": true
+  },
+  "limitations": [
+    "This is a retrospective migration of an existing verification run, not a new execution.",
+    "Sleepy Alarm reference-free extraction is not exact: the recorded run produced 26 characters and 49 separators.",
+    "The audio steganalysis benchmark has recall 0 on the small constructed benchmark; this is not a population-level performance estimate."
+  ],
+  "submission_package": {
+    "status": "not_verified",
+    "built_from_commit": null,
+    "note": "Binary submission files exist, but their contents and build-input revision have not been independently validated in this migration."
+  }
+}
