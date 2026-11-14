@@ -89,10 +89,10 @@ Steganalysis tìm dấu hiệu thống kê hoặc cấu trúc bất thường. K
 
 ### 3.1. Cấu hình
 
-- Hệ điều hành: [CẦN THỰC NGHIỆM]
-- Kiến trúc CPU: [CẦN THỰC NGHIỆM]
+- Hệ điều hành: macOS 15.7.4
+- Kiến trúc CPU: arm64
 - Python: [CẦN THỰC NGHIỆM]
-- Phiên bản thư viện: lưu bằng `python -m pip freeze`.
+- Pillow 13.0.0; NumPy 2.5.4; SciPy 1.18.1; Matplotlib 3.11.2; SoundFile 0.14.0 (theo log môi trường ngày 14-11-2026)..
 - Môi trường: virtual environment `.venv`.
 - Dữ liệu: bản sao artifact upstream, không chỉnh sửa bản gốc.
 
