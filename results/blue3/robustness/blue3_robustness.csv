@@ -1,7 +1,7 @@
 variant,candidate,matches_baseline,attempts,elapsed_seconds
-original,byuctf{more_blue_steganography_da_ba_dee_nkiY9CyP},True,49,0.18288686700000767
-jpeg_q95,,False,511,0.43576808299999925
-jpeg_q85,,False,511,0.4257553360000088
-jpeg_q70,,False,511,0.4231443209999952
-resize_0.75,,False,383,0.24222490799999719
-resize_0.5,,False,255,0.10208960000002776
+original,byuctf{more_blue_steganography_da_ba_dee_nkiY9CyP},True,49,0.2415618520000038
+jpeg_q95,,False,511,0.5710156580000074
+jpeg_q85,,False,511,0.5673170749999912
+jpeg_q70,,False,511,0.5641060260000046
+resize_0.75,,False,383,0.31630500300001074
+resize_0.5,,False,255,0.1333668410000115

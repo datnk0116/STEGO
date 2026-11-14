@@ -2,7 +2,7 @@
   "file": "data/sleepy_alarm/morning_n_breakfast.mp3",
   "analysis_channel": 0,
   "symbol_clock_phase_samples_after_alignment": 0,
-  "discarded_encoder_delay_samples": 1729,
+  "preserved_prefix_samples": 1729,
   "expected_ask_symbols": 350,
   "sha256": "bd181876c2d28152b9c3982fd88945d4e681fd93d49477622ea5841a3ff25ae2",
   "format": "MP3",
@@ -37,23 +37,23 @@
     "normalized_abs_correlation": 0.9998734358023295,
     "channel_handling": "channelwise",
     "truncated_to_overlap": true,
-    "discarded_encoder_delay_samples": 1729,
+    "preserved_prefix_samples": 1729,
     "difference_rms": 0.0026928802128644343,
     "difference_peak": 0.05262431129813194,
-    "carrier_envelope_median": 0.0023834247876148773,
-    "carrier_envelope_p99": 0.005780178886551963
+    "carrier_envelope_median": 0.0024003433263614475,
+    "carrier_envelope_p99": 0.005780150563565696
   },
   "ask": {
     "carrier_hz": 8000.0,
     "baud": 50,
     "symbol_duration_seconds": 0.02,
     "transmission_seconds": 7.0,
-    "envelope_symbol_median_min": 4.577802495727109e-05,
-    "envelope_symbol_median_max": 0.005570808108570093,
+    "envelope_symbol_median_min": 4.4314142791125105e-05,
+    "envelope_symbol_median_max": 0.005514302691803026,
     "envelope_symbol_quantiles_05_50_95": [
-      0.0002742162042657508,
-      0.0021437833344449195,
-      0.005173987415414905
+      0.000267926245981182,
+      0.0021939550261450415,
+      0.005176403076448196
     ],
     "envelope_symbol_count": 350
   },

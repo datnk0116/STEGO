@@ -6,6 +6,6 @@ test_decodes_with_modal_base_color_in_black_box_mode (test_blue3_solver.Blue3Sol
 test_decodes_39_byte_ask_message_from_first_stereo_channel (test_sleepy_alarm_solver.SleepyAlarmSolverTests.test_decodes_39_byte_ask_message_from_first_stereo_channel) ... ok
 
 ----------------------------------------------------------------------
-Ran 6 tests in 1.140s
+Ran 6 tests in 1.522s
 
 OK
