@@ -390,7 +390,20 @@ Mục tiêu là xác định mức độ nhạy của hai cơ chế nhúng trư�
 | Nén mất dữ liệu | JPEG recompression | Quality 95, 85, 70 |
 | Thay đổi hình học | Resize | 0,75× và 0,5× |
 
-Đầu ra cần đo: flag candidate, có khớp baseline hay không, số độ dài đã thử và thời gian chạy. Việc không giải mã được sau JPEG/resize cho thấy decoder tổng pixel nhạy với thay đổi mẫu và ranh giới vùng. Không được suy rộng điều này thành kết luận rằng mọi phương pháp steganography trên ảnh đều mất dữ liệu sau JPEG.
+Kết quả chạy trên GitHub Actions (Ubuntu 26.04, Python 3.14.10; runtime tính bằng giây trong một lượt CI):
+
+| Biến thể | Candidate | Khớp baseline | Số độ dài đã thử | Runtime (s) |
+|---|---|---:|---:|---:|
+| PNG gốc | Flag chính thức | Có | 49 | 0,293 |
+| JPEG quality 95 | Không tìm thấy | Không | 511 | 0,756 |
+| JPEG quality 85 | Không tìm thấy | Không | 511 | 0,758 |
+| JPEG quality 70 | Không tìm thấy | Không | 511 | 0,757 |
+| Resize 0,75× | Không tìm thấy | Không | 383 | 0,422 |
+| Resize 0,5× | Không tìm thấy | Không | 255 | 0,178 |
+
+CSV đầy đủ: `results/blue3/robustness/blue3_robustness.csv`. Ảnh tổng hợp chẩn đoán: `results/blue3/figures/blue3_diagnostics.png`.
+
+Kết quả cho thấy **decoder cụ thể của Blue 3** không còn tìm được chuỗi flag sau các biến đổi JPEG/resize đã thử. Điều này phù hợp với cơ chế tổng sai khác pixel tuyệt đối và phân vùng dựa trên kích thước gốc: JPEG thay đổi giá trị kênh, còn resize thay đổi ranh giới vùng và số pixel trong mỗi vùng. Đây không phải kết luận rằng payload chắc chắn bị xóa khỏi ảnh hay mọi phương pháp steganography đều thất bại sau các phép biến đổi này; thí nghiệm chỉ đo khả năng giải bằng decoder đang nghiên cứu.
 
 ~~~bash
 python src/experiments/blue3_robustness.py data/blue3/blue.png
