@@ -17,3 +17,14 @@
 ## Thông tin nộp bài
 
 Điền họ tên đầy đủ, MSSV, lớp, ngày nộp và hạn nộp vào trang bìa và metadata PDF. Các trường này chủ động để trống trong mẫu.
+
+## Các mốc kỹ thuật đã chuẩn bị từ repository
+
+Các mốc dưới đây có thể được kiểm tra trong source/commit/log và chỉ là dữ kiện kỹ thuật để người thực hiện đối chiếu, không phải lời tự thuật:
+- Blue 3: `results/logs/blue3-solver.log`, `results/blue3/analysis.json`.
+- Sleepy Alarm lần chạy đầu thất bại: `results/2026-11-14/initial-run.md`.
+- Sleepy Alarm exact-match: `results/sleepy_alarm/solver.json`.
+- Robustness: CSV/JSON dưới `results/blue3/` và `results/sleepy_alarm/`.
+- Unit/quality gate: log lịch sử và provenance ở `results/logs/` và `results/verification/`.
+
+Người thực hiện phải tự xác nhận kiến thức trước khi làm, kiến thức mới thực sự tiếp thu, quyết định/sai lầm của bản thân, thời lượng từng phiên và hướng học tiếp. Nếu chưa xác nhận, để trống; không suy ra trải nghiệm từ commit/log.

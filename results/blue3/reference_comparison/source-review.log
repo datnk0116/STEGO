@@ -1,0 +1,12 @@
+SOURCE REVIEW ONLY — NOT A RUNTIME CROSS-CHECK
+Upstream repository: https://github.com/BYU-CSA/old-ctf-challenges
+Upstream commit: 18c8f246756e79069c1cb1753c8bfea5e73e31f5
+Upstream path: forensics-steganography/blue-3/solve.py
+Official input: data/blue3/blue.png
+Input SHA-256: 009dab85bf6ccc5b42b8efa5f959ab6efa0c556b37eb6b4a77a21ec3356b721e
+Input dimensions: 512x512 RGB
+Local recorded output: byuctf{more_blue_steganography_da_ba_dee_nkiY9CyP}
+Local recorded attempts: 49
+Upstream runtime output: NOT RUN
+No runtime, elapsed time, or runtime equivalence is claimed.
+Run: python src/blue3/reference_comparison.py data/blue3/blue.png

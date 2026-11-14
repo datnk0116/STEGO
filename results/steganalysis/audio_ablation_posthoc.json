@@ -1,0 +1,58 @@
+{
+  "status": "POSTHOC_RECALCULATED_FROM_COMMITTED_FEATURE_ROWS",
+  "source_csv": "results/steganalysis/benchmark.csv",
+  "source_csv_git_blob_sha": "2e2bb54af33c42491cc74cb1fb5706b248be11d4",
+  "modality": "audio",
+  "analysis_window": "historical whole-file feature window; positive duration approximately 10.019 seconds",
+  "thresholds_unchanged": {
+    "carrier_band_energy_ratio_min": 0.02,
+    "symbol_block_rms_cv_min": 0.15
+  },
+  "sample_composition": {
+    "total": 13,
+    "benign": 8,
+    "stego": 5,
+    "source_note": "Five positive rows are one official Sleepy Alarm MP3 and four gain derivatives; eight benign rows are deterministic synthetic noise."
+  },
+  "metrics": {
+    "carrier_only": {
+      "tp": 0,
+      "tn": 8,
+      "fp": 0,
+      "fn": 5,
+      "precision": 0,
+      "recall": 0,
+      "f1": 0,
+      "false_positive_rate": 0,
+      "sample_count": 13
+    },
+    "block_rms_only": {
+      "tp": 5,
+      "tn": 8,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1,
+      "false_positive_rate": 0,
+      "sample_count": 13
+    },
+    "combined_AND": {
+      "tp": 0,
+      "tn": 8,
+      "fp": 0,
+      "fn": 5,
+      "precision": 0,
+      "recall": 0,
+      "f1": 0,
+      "false_positive_rate": 0,
+      "sample_count": 13
+    }
+  },
+  "limits": [
+    "These values were recomputed from already committed feature_json rows; they are not a fresh feature extraction.",
+    "They are not independent validation because the positive rows share one source artifact.",
+    "The first-7-second window ablation has not yet been run on the audio artifact.",
+    "No threshold was tuned or changed."
+  ]
+}

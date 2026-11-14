@@ -32,13 +32,20 @@ def image_features(path: Path) -> dict:
 
 
 def audio_features(path: Path, carrier_hz: float = 8000.0,
-                   baud: float = 50.0) -> dict:
+                   baud: float = 50.0,
+                   analysis_seconds: float | None = None) -> dict:
     audio, sample_rate = sf.read(path, always_2d=True, dtype="float64")
     if audio.size == 0 or not np.isfinite(audio).all():
         raise ValueError("audio must contain finite samples")
     if not 0 < carrier_hz < sample_rate / 2:
         raise ValueError("carrier must be below Nyquist")
     signal = audio[:, 0]
+    original_duration = len(signal) / sample_rate
+    if analysis_seconds is not None:
+        if not np.isfinite(analysis_seconds) or analysis_seconds <= 0:
+            raise ValueError("analysis_seconds must be finite and positive")
+        window_samples = min(len(signal), max(1, int(round(analysis_seconds * sample_rate))))
+        signal = signal[:window_samples]
     frequencies, power = periodogram(signal, fs=sample_rate, scaling="spectrum")
     total = float(power[(frequencies >= 100) & (frequencies < sample_rate / 2)].sum())
     band = (frequencies >= carrier_hz - 100) & (frequencies <= carrier_hz + 100)
@@ -55,7 +62,9 @@ def audio_features(path: Path, carrier_hz: float = 8000.0,
     return {
         "sample_rate_hz": int(sample_rate),
         "channels": int(audio.shape[1]),
-        "duration_seconds": float(len(audio) / sample_rate),
+        "duration_seconds": float(original_duration),
+        "analysis_window_seconds": float(len(signal) / sample_rate),
+        "analysis_samples": int(len(signal)),
         "carrier_band_energy_ratio": carrier_ratio,
         "symbol_block_rms_cv": level_cv,
     }

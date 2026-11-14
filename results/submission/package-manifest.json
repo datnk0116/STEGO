@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "status": "NOT_BUILT",
+  "inspected_repository_head": "a62c717f36d22e478b767c6917f2bc4362d75667",
+  "build_input_commit": null,
+  "built_at_utc": null,
+  "build_command": [
+    "python",
+    "scripts/build_submission.py",
+    "--max-main-pages",
+    "20"
+  ],
+  "tool_versions": {},
+  "max_main_pages": 20,
+  "artifacts": {
+    "docx": {
+      "path": "results/submission/STUDENT_UETCN3124_CTF_Report.docx",
+      "bytes": 222872,
+      "sha256": null,
+      "page_count": null,
+      "checks": {
+        "status": "PRESENT_UNVERIFIED"
+      }
+    },
+    "pdf": {
+      "path": "results/submission/STUDENT_UETCN3124_CTF_Report.pdf",
+      "bytes": 727110,
+      "sha256": null,
+      "page_count": null,
+      "checks": {
+        "status": "PRESENT_UNVERIFIED"
+      }
+    },
+    "zip": {
+      "path": "results/submission/STUDENT_UETCN3124_Scripts.zip",
+      "bytes": 2697114,
+      "sha256": null,
+      "page_count": null,
+      "checks": {
+        "status": "PRESENT_UNVERIFIED"
+      }
+    }
+  },
+  "checks": {
+    "pdf_page_check": "NOT_RUN",
+    "pdf_visual_inspection": "NOT_RUN",
+    "zip_integrity": "NOT_RUN",
+    "zip_contents": "NOT_RUN",
+    "unzip_t": "NOT_RUN"
+  },
+  "note": "The tracked DOCX/PDF/ZIP predate this manifest; no fresh build or binary hash was performed in this editing session. This record must be replaced by scripts/build_submission.py output."
+}

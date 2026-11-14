@@ -54,6 +54,10 @@ Assignment yêu cầu chọn một chủ đề CTF chính và khuyến nghị m�
 
 Blue 3 được ưu tiên vì source mô tả thuật toán cụ thể, ảnh đầu vào có sẵn và có thể tự kiểm tra từ dữ liệu. Sleepy Alarm bổ sung một bài toán tín hiệu khác hẳn, đồng thời tạo điều kiện phân tích sự khác nhau giữa dữ liệu gốc, tín hiệu đã trộn và tín hiệu sau nén MP3. Việc chọn hai bài không nhằm tăng số lượng flag mà nhằm tạo phép so sánh có cùng chủ đề nhưng khác miền biểu diễn.
 
+Với Blue 3, repository đã ghim nguồn đối chứng BYU-CSA ở commit `18c8f246756e79069c1cb1753c8bfea5e73e31f5`. Đọc trực tiếp `solve.py`, `create.py` và README cho thấy solver upstream lấy màu RGB xuất hiện nhiều nhất, thử độ dài từ 2 đến chiều rộng ảnh, chia ảnh thành các ô vuông theo chỉ số ký tự và cộng tổng sai khác của cả ba kênh trong từng vùng chéo. Solver cục bộ dùng cùng lõi toán học nhưng giới hạn độ dài đến `min(width,height)`, dùng NumPy để đếm màu modal và kiểm tra flag bằng regex full-match. Upstream dùng `Counter`/Pillow pixel access và `re.match` không neo cuối chuỗi. Trên ảnh 512×512, khác biệt giới hạn hình học/regex không được xem là khác biệt kết quả nếu candidate chính thức hợp lệ.
+
+Đây mới là **source-level comparison**, không phải runtime cross-check: phiên làm việc này không có working tree cục bộ để thực thi hai chương trình trên binary ảnh đã tải qua connector. Harness `src/blue3/reference_comparison.py` và test synthetic được bổ sung để chạy phép đối chứng tái lập; trạng thái chạy artifact chính thức được ghi tại `results/blue3/reference_comparison/README.md`. Không có runtime, môi trường hoặc output upstream nào được tự tạo.
+
 ### 1.3. Đối chiếu với các repository mã nguồn mở
 
 Để xác định vị trí của đồ án trong hệ sinh thái công cụ hiện có, báo cáo khảo sát README và tài liệu công khai của ba repository liên quan. Đây là đối chiếu phạm vi/chức năng trên tài liệu, **không phải benchmark**: các repository bên ngoài không được cài đặt hoặc chạy trên cùng bộ dữ liệu trong đồ án này.
@@ -91,7 +95,7 @@ Các giả thuyết:
 | Tiêu chí | Điểm tối đa | Minh chứng chính |
 |---|---:|---|
 | Lập kế hoạch và biện minh | 2,0 | Mục 1: RQ/H1–H3, so sánh phương án, lý do chọn hai challenge cùng chủ đề |
-| Triển khai và tài liệu hóa | 4,0 | Mục 3–8: artifact và SHA-256, lệnh, decoder; gate mới nhất 38/38 tests pass, baseline 22/22 được giữ riêng như lịch sử; hình và CSV/JSON đã lưu |
+| Triển khai và tài liệu hóa | 4,0 | Mục 3–8: artifact và SHA-256, lệnh, decoder; historical gate 38/38 ở tested commit `38fbecab...` (không bao phủ các patch source/tests trong nhánh cải tiến); hình và CSV/JSON đã lưu |
 | Phân tích kết quả | 2,0 | Mục 2, 5, 6, 9, 10: chứng minh toán học, 350 symbol ASK, lỗi và điều kiện giải |
 | Đánh giá, phản biện và tự học | 2,0 | Mục 11.1–11.9: hạn chế định lượng, threat model, validity, phản biện hai decoder, benchmark detector, ma trận khắc phục và kế hoạch học tiếp |
 
@@ -448,7 +452,19 @@ Benchmark seed 20261114 gồm các biến thể positive từ hai artifact chín
 | Image | 5 | 12 | 0 | 0 | 1,00 | 1,00 | 1,00 | 0,00 |
 | Audio | 0 | 8 | 0 | 5 | 0,00 | 0,00 | 0,00 | 0,00 |
 
-Điểm ảnh hoàn hảo không được diễn giải thành độ chính xác 100% trên ảnh nói chung: positive được tạo từ cùng một challenge và benign là dữ liệu tổng hợp. Ngược lại, detector audio **không phát hiện được bất kỳ positive nào** (FN=5, recall=0). Đối chiếu feature trong `benchmark.csv` với `src/steganalysis.py` cho thấy carrier-band energy ratio của positive xấp xỉ 0,000204, thấp hơn ngưỡng 0,02 khoảng 98 lần; block-RMS CV xấp xỉ 0,987, vượt ngưỡng 0,15. Hàm phân loại yêu cầu đồng thời cả hai điều kiện, nên carrier-band feature làm tất cả positive bị loại dù RMS CV đã cao. Đây là lời giải thích trực tiếp cho confusion matrix hiện tại, không chứng minh nguyên nhân phổ quát cho audio khác. FPR=0 trên tám benign audio cũng không chứng minh detector không báo động nhầm trong thực tế. Không điều chỉnh threshold trên chính tập benchmark này; cần corpus độc lập, split theo nguồn và validation để chọn feature/threshold trước khi đánh giá held-out test.
+**Ablation hậu kiểm trên feature rows đã commit (13 audio rows; positive dài khoảng 10,02 giây):**
+
+| Biến thể | TP | TN | FP | FN | Precision | Recall | F1 | FPR |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Carrier-band riêng (ngưỡng 0,02) | 0 | 8 | 0 | 5 | 0,00 | 0,00 | 0,00 | 0,00 |
+| Block-RMS riêng (ngưỡng 0,15) | 5 | 8 | 0 | 0 | 1,00 | 1,00 | 1,00 | 0,00 |
+| Kết hợp AND (baseline) | 0 | 8 | 0 | 5 | 0,00 | 0,00 | 0,00 | 0,00 |
+
+Bảng ablation được tính lại từ các feature đã lưu trong `results/steganalysis/benchmark.csv`; số liệu máy đọc được lưu tại `results/steganalysis/audio_ablation_posthoc.json` và `.csv`. Đây **không phải** lần trích feature mới. Nó xác nhận carrier feature là điều kiện chặn các positive trong benchmark dựng hiện tại. Kết quả RMS-only 1,00 không phải ước lượng hiệu năng thực tế vì 5 positive đều là cùng một artifact Sleepy Alarm hoặc biến thể gain của nó, còn 8 benign là tín hiệu nhiễu tổng hợp. Không dùng kết quả này để thay baseline, chọn threshold hoặc tuyên bố detector tốt hơn.
+
+Code benchmark mới ghi thêm `audio_ablation.json/.csv` với ba biến thể trên ở hai cửa sổ: toàn bộ file và 7 giây đầu theo thời lượng ASK mô tả trong source generator. Cả hai cửa sổ giữ nguyên threshold 0,02 và 0,15. **Kết quả cửa sổ 7 giây chưa được chạy trên artifact trong phiên chỉnh sửa này**; không suy diễn rằng cắt còn 7 giây sẽ làm detector cải thiện.
+
+Điểm ảnh hoàn hảo không được diễn giải thành độ chính xác 100% trên ảnh nói chung: positive được tạo từ cùng một challenge và benign là dữ liệu tổng hợp. Với audio, carrier-band energy ratio của positive xấp xỉ 0,000204, thấp hơn ngưỡng 0,02 khoảng 98 lần; block-RMS CV xấp xỉ 0,987, vượt ngưỡng 0,15. Hàm baseline yêu cầu đồng thời cả hai điều kiện. Không điều chỉnh threshold trên chính tập benchmark này; cần corpus độc lập, split theo nguồn và validation để chọn feature/threshold trước khi đánh giá held-out test.
 
 | Chế độ Sleepy Alarm | Reference | Symbol | Separator | Độ dài | Format hợp lệ | Exact-match |
 |---|---|---:|---:|---:|---|---|
@@ -477,28 +493,26 @@ Sleepy Alarm sử dụng sóng mang 8 kHz. Dữ liệu được biểu diễn b�
 
 ### 9.2. Dấu hiệu phát hiện
 
-**Đối với ảnh:**
-- Màu nền hoặc một màu chiếm ưu thế rất lớn.
-- Phân bố giá trị kênh chỉ tập trung quanh một mức hẹp.
-- Tổng sai khác trong các vùng đường chéo có thể cho ra chuỗi ký tự có cấu trúc.
-- Phần sai khác ảnh tập trung có quy luật không gian.
+Các chỉ dấu được tách theo đúng cơ chế, không gộp thành một detector tổng quát:
 
-**Đối với âm thanh:**
-- Peak phổ bất thường ở quanh 8 kHz.
-- Envelope có ba mức phân bố và lặp theo chu kỳ 0,02 giây.
-- Sau khi so sánh với bản tham chiếu, residual có thành phần hẹp băng quanh sóng mang.
-- Các symbol có thể nhóm thành byte 8 bit, ngăn cách bởi mức biên độ thấp.
+| Dấu hiệu phát hiện | Phương pháp kiểm tra | Biện pháp phòng thủ | False-positive risk | Giới hạn |
+|---|---|---|---|---|
+| **Pixel-pattern của Blue 3**: màu RGB trội, độ phân tán kênh thấp, tổng sai khác có cấu trúc theo các vùng chéo | Histogram/RGB statistics; tái tính tổng sai khác theo từng vùng khi có giả thuyết về L và cover color | Bảo toàn ảnh gốc và hash; kiểm tra nguồn gốc; đối chiếu vùng/pixel trên bản sao pháp chứng | Ảnh icon, logo, đồ họa nền phẳng hoặc ảnh màu đơn sắc có thể có histogram tương tự | Là dấu hiệu theo họ challenge; không phát hiện mọi kiểu nhúng ảnh và không tự chứng minh có payload |
+| **ASK carrier/envelope của Sleepy Alarm**: năng lượng quanh 8 kHz, biến thiên RMS theo block 50 baud, cấu trúc ba mức | Periodogram/STFT; đo envelope hoặc block-RMS trên kênh phù hợp; so sánh cửa sổ toàn file với 7 giây đầu | Giữ nguyên stereo; phân tích bản sao; ghi rõ sample rate, kênh, độ dài cửa sổ và tham số | Tone cao tần, nhạc cụ, nhiễu hẹp băng hoặc hiệu ứng modulation có thể tạo chỉ dấu tương tự | Detector baseline có recall=0 trên benchmark hiện tại; chưa có corpus độc lập hoặc detector ASK mù được xác nhận |
+| **Reference-assisted forensic analysis**: residual sau căn chỉnh/trừ track tham chiếu có ASK residual | Xác minh hash, alignment lag/correlation, scale, kênh và residual; chỉ sau đó mới đo symbol/byte và exact-match | Thu thập reference hợp pháp; bảo toàn target/reference; lập chain of custody và ghi rõ phép căn chỉnh | Sai khác codec, gain, time offset hoặc xử lý độc lập có thể tạo residual không liên quan payload | Cần reference tương ứng; không phải blind extraction và reference mismatch có thể gây kết luận sai |
+| **Blind detection**: chỉ quan sát carrier, không có source/reference | Triage thống kê, phổ và cấu trúc theo giả thuyết; phải đánh giá trên corpus tách nguồn | Kết hợp nhiều detector độc lập; giữ đầu ra ở mức cảnh báo cho đến khi có bằng chứng pháp chứng | Chưa định lượng trên dữ liệu đa nguồn; đặc trưng âm học tự nhiên có thể bị gắn nhãn nhầm | Repository chưa chứng minh khả năng phát hiện hoặc giải mã steganography tổng quát ở chế độ blind |
 
-Các dấu hiệu trên chỉ là heuristic. Một ảnh đồ họa có màu nền đơn giản hoặc một âm thanh có thành phần cao tần không mặc nhiên là steganography. Muốn giảm false positive, cần kết hợp nhiều dấu hiệu và kiểm tra tính nhất quán của cấu trúc thông điệp.
+Các feature của `src/steganalysis.py` hiện chỉ tạo **cảnh báo heuristic**. Cảnh báo không đồng nghĩa file có steganography hay độc hại. Với challenge này, kết luận xác nhận chỉ được đưa ra sau khi decoder khôi phục payload và đối chiếu exact-match trên đúng artifact; với Sleepy Alarm, xác nhận đó vẫn là **reference-assisted**. Không chuyển kết quả reference-assisted thành tuyên bố blind detection.
 
 ### 9.3. Biện pháp phòng thủ
 
 - Quản lý nguồn gốc file, hash và bản gốc để phục vụ so sánh.
 - Kiểm tra metadata, định dạng thật và sự nhất quán giữa phần mở rộng với cấu trúc file.
-- Với ảnh, dùng phân tích histogram, màu nền, phân bố vùng và mô hình steganalysis phù hợp; không chỉ dựa trên quan sát bằng mắt.
-- Với âm thanh, kiểm tra phổ, STFT, envelope, kênh stereo và các mẫu lặp bất thường.
+- Với ảnh, phân tích histogram và vùng pixel theo giả thuyết cụ thể; không dùng màu nền phẳng làm kết luận.
+- Với âm thanh, giữ nguyên stereo, kiểm tra phổ/envelope, ghi rõ cửa sổ thời gian và tách phép đo có/không có reference.
+- Reference-assisted forensic analysis chỉ được dùng khi reference có nguồn gốc và tính toàn vẹn xác minh được; ghi lại lag, gain, codec và residual.
 - Giữ bản gốc trước mọi bước normalize, resize, recompress hoặc resample.
-- Cảnh báo steganalysis nên được xem là tín hiệu điều tra tiếp, không tự động kết luận file độc hại.
+- Heuristic chỉ nên kích hoạt bước điều tra tiếp; kết luận cần có bằng chứng độc lập, cấu trúc thông điệp nhất quán và chain of custody.
 
 ## 10. So sánh kết quả hai challenge
 
@@ -543,7 +557,7 @@ Các câu hỏi phản biện trọng yếu được phân tích theo threat mod
 
 | Ưu tiên | Việc cần làm | Tiêu chí nghiệm thu |
 |---|---|---|
-| P0 — đã có evidence mới nhất | Quality gate | 38/38 tests pass; exit code 0; 3/3 artifact đúng hash; Blue 3 và Sleepy Alarm (có reference) exact-match; JSON/log/provenance đã commit |
+| P0 — historical evidence; cần chạy lại | Quality gate | Gate 38/38 là kết quả của tested commit `38fbecab...`; nhánh cải tiến đã đổi source/tests/gate nên phải chạy lại `python scripts/verify_reproducibility.py` tại checkout sạch trước khi xác nhận |
 | P1 | Phân tích feature và hiệu chuẩn detector audio trên validation độc lập | Recall/F1 báo cáo trên held-out test; không chọn ngưỡng từ test |
 | P1 | Mở rộng corpus benign/stego nhiều nguồn | Split theo artifact/challenge, không để biến thể cùng nguồn rơi vào nhiều tập |
 | P2 | Cải thiện reference-free Sleepy Alarm | Báo BER, byte exact-match và tỷ lệ payload phục hồi trên nhiều bản ghi |
@@ -554,19 +568,23 @@ Không điều chỉnh ngưỡng chỉ để biến năm positive hiện tại t
 
 ### 11.5. Nhật ký và bằng chứng
 
-Bằng chứng kỹ thuật có thể tái kiểm tra được lưu theo từng lớp: artifact và SHA-256 trong `data/` và `results/artifact_manifest.json`; log quality gate **38/38 tests** trong `results/logs/quality-gate-tests.log`; báo cáo gate tại `results/verification/quality-gate.json`; provenance tại `results/verification/provenance.json`; kết quả Blue 3 trong `results/blue3/`; kết quả audio exact-match trong `results/sleepy_alarm/solver.json`; các ma trận robustness trong CSV/JSON; và lần giải mã Sleepy Alarm thất bại ban đầu trong `results/2026-11-14/initial-run.md`. Log sáu test cũ chỉ giữ vai trò lịch sử; baseline 22/22 cũng được giữ riêng. `quality-gate.json` xác định source commit được kiểm tra (`38fbecab7aea8c241243fb50d044aea90ab657f7`); evidence snapshot đã được lưu tại commit `29c7e9e8e98d96e20e5172a63a359cfefd22edcc`.
+Bằng chứng kỹ thuật có thể tái kiểm tra được lưu theo từng lớp: artifact và SHA-256 trong `data/` và `results/artifact_manifest.json`; historical quality-gate log **38/38 tests** trong `results/logs/quality-gate-tests.log` tại tested commit `38fbecab...`; báo cáo gate tại `results/verification/quality-gate.json`; provenance tại `results/verification/provenance.json`. Do nhánh cải tiến đã thay đổi `src/`, `tests/` và gate implementation, kết quả 38/38 này không xác nhận code mới; technical gate hiện cần chạy lại trên checkout của nhánh trước khi nộp; kết quả Blue 3 trong `results/blue3/`; kết quả audio exact-match trong `results/sleepy_alarm/solver.json`; các ma trận robustness trong CSV/JSON; và lần giải mã Sleepy Alarm thất bại ban đầu trong `results/2026-11-14/initial-run.md`. Log sáu test cũ chỉ giữ vai trò lịch sử; baseline 22/22 cũng được giữ riêng. `quality-gate.json` xác định source commit được kiểm tra (`38fbecab7aea8c241243fb50d044aea90ab657f7`); evidence snapshot đã được lưu tại commit `29c7e9e8e98d96e20e5172a63a359cfefd22edcc`.
 
 ### 11.6. Tự đánh giá quá trình học tập và bài học rút ra
 
+Các đoạn dưới đây là bản nháp phản tư dựa trên sự kiện kỹ thuật có đường dẫn kiểm chứng. Sinh viên cần xác nhận phần nào thực sự phản ánh trải nghiệm và kiến thức của mình; thời lượng, cảm nhận và mức độ tự học không được suy ra từ log/commit.
+
 Hai challenge cho thấy giải steganography đòi hỏi kiểm chứng giả định, không chỉ tìm flag. Blue 3 cần suy luận quy luật biến đổi pixel và phân vùng; Sleepy Alarm cần xử lý stereo, đồng bộ thời gian và giải điều chế ASK.
 
-Bài học rõ nhất đến từ việc giả thuyết ban đầu về alignment không đủ để giải thích kết quả. Lần chạy đầu xử lý 497 symbol thay vì 350, phân loại 161 separator và tạo nhiều byte lỗi. Correlation cao giữa hai MP3 chỉ cho thấy có thể căn chỉnh hai track; nó không chứng minh đã chọn đúng kênh, đúng đoạn payload hoặc đúng ba mức biên độ ASK. Phân tích lại source creator làm rõ ba điều kiện: ASK chỉ nằm ở channel 0, payload kéo dài 7 giây và chỉ có 350 symbol, còn phần prefix của distributed stream trước overlap có thể chứa các symbol đầu.
+Sự kiện kỹ thuật thể hiện giới hạn của giả thuyết ban đầu về alignment: giả thuyết đó không đủ để giải thích kết quả. Lần chạy đầu xử lý 497 symbol thay vì 350, phân loại 161 separator và tạo nhiều byte lỗi. Correlation cao giữa hai MP3 chỉ cho thấy có thể căn chỉnh hai track; nó không chứng minh đã chọn đúng kênh, đúng đoạn payload hoặc đúng ba mức biên độ ASK. Phân tích lại source creator làm rõ ba điều kiện: ASK chỉ nằm ở channel 0, payload kéo dài 7 giây và chỉ có 350 symbol, còn phần prefix của distributed stream trước overlap có thể chứa các symbol đầu.
 
 Từ các điều kiện đó, decoder được điều chỉnh theo từng giả định: không downmix hai kênh; giữ prefix 1.729 mẫu bị loại khỏi overlap; chỉ xử lý 7 giây; dùng cửa sổ 882 mẫu tương ứng 50 baud; và chiếu coherent lên hai cơ sở sin/cos ở carrier 8 kHz để ước lượng biên độ I/Q. Kết quả mới đạt 350 symbol, 38 separator, 39 byte và exact-match. Khi thử gain chỉ ở một phía, một số trường hợp vẫn có alignment correlation gần 1 nhưng giải mã sai. Điều này tiếp tục bác bỏ cách hiểu đơn giản rằng correlation cao đồng nghĩa residual có scale phù hợp.
 
 Một thay đổi khác trong cách đánh giá là không xem PASS/FAIL như chỉ số duy nhất. Ma trận Blue 3 cho thấy brightness 0,9 vẫn giữ đúng 47/50 ký tự dù exact-match thất bại; ma trận audio cho thấy lỗi bit và lỗi separator cần được đo riêng. Vì vậy repository bổ sung edit distance, BER, SER và separator precision/recall, đồng thời giữ candidate thiếu ở trạng thái unavailable/null thay vì tự gán khoảng cách 0. Ground truth được sử dụng sau extraction để chấm output, không dùng làm đầu vào decoder.
 
-Quy trình học rút ra là: đọc creator source để lập giả thuyết; kiểm tra giả thuyết bằng số đo trung gian; sửa từng điều kiện một; lưu nguyên bản artifact và hash; chạy lại trên artifact chính thức; và báo cáo cả kết quả thất bại lẫn thành công. Các bước phát triển kỹ thuật và số đo ở trên được hỗ trợ bởi source, log và JSON trong repository. Phần trải nghiệm chủ quan riêng của người thực hiện cần được xác nhận bằng lời của chính người đó, không thể suy ra từ commit.
+Quy trình thực nghiệm có thể xác nhận từ các artifact là: đọc creator source để lập giả thuyết; kiểm tra giả thuyết bằng số đo trung gian; sửa từng điều kiện một; lưu nguyên bản artifact và hash; chạy lại trên artifact chính thức; và báo cáo cả kết quả thất bại lẫn thành công. Các bước phát triển kỹ thuật và số đo ở trên được hỗ trợ bởi source, log và JSON trong repository. Chúng không chứng minh thời lượng làm việc hoặc trải nghiệm chủ quan.
+
+**Phần phản tư cá nhân còn chờ người thực hiện xác nhận:** kiến thức trước khi làm, điều bản thân thực sự mới học, khó khăn chủ quan, quyết định tự đưa ra và hướng học tiếp. Nhật ký đã chuẩn bị các mốc kỹ thuật có đường dẫn bằng chứng; start time, end time, duration và technical lesson/personal reflection vẫn để trống. Không lấy commit timestamp làm giờ làm việc và không suy ra trải nghiệm cá nhân từ log.
 
 ### 11.7. Phản biện sâu: threat model, validity và diễn giải kết quả
 
@@ -606,6 +624,12 @@ Correlation xấp xỉ 0,999 chủ yếu giúp xác định độ trễ/tương 
 Benchmark có 17 ảnh (TP=5, TN=12, FP=0, FN=0) và 13 audio (TP=0, TN=8, FP=0, FN=5). Năm positive của mỗi modality đều xuất phát từ một artifact; benign controls là dữ liệu tổng hợp. Vì vậy image F1=1 chỉ cho thấy heuristic nhận diện họ mẫu Blue 3, không chứng minh generalization.
 
 Với audio, carrier-band energy ratio của positive khoảng 0,000204, thấp hơn ngưỡng 0,02 khoảng 98 lần; block-RMS CV khoảng 0,987 vượt ngưỡng 0,15. Do `classify_audio` chỉ gắn nhãn khi cả hai điều kiện đúng, feature carrier-band đang chặn toàn bộ positive trong benchmark hiện tại. Feature được tính trên toàn bộ first channel của file bằng periodogram, trong khi phần ASK theo source chỉ kéo dài 7 giây trong bản ghi khoảng 10 giây; đây là giả thuyết thiết kế hợp lý về sự pha loãng đặc trưng nhưng chưa được xác minh bằng ablation và không nên gọi là nguyên nhân duy nhất. Không tune threshold trên chính tập benchmark này; cần corpus độc lập, split theo nguồn, validation để chọn feature/threshold, ablation (carrier-band-only, RMS-only và kết hợp) rồi mới khóa held-out test. FPR=0 trên tám mẫu audio tổng hợp không chứng minh không có false positive thực tế.
+
+Ablation hậu kiểm từ feature rows toàn file trong `results/steganalysis/benchmark.csv` cho kết quả carrier-only TP=0/FN=5, RMS-only TP=5/FN=0 và AND TP=0/FN=5; các con số vẫn thuộc benchmark dựng nói trên. Script benchmark mới có thể đo riêng cả clip và 7 giây đầu với ngưỡng giữ nguyên. Kết quả cửa sổ 7 giây chưa được chạy.
+
+Một corpus ngoài phù hợp để khảo sát tiếp đã được xác định: *Speech steganography based on scrambling and hiding (Spanish audios)*, Mendeley Data, DOI 10.17632/7c5p4xzttz.1, license CC BY 4.0 [14]. Trang dataset mô tả 10 host speech (2 giây), 10 secret speech (1 giây), sample rate 8 kHz và 600 stego recordings từ 10×10 cặp host/secret với sáu mức BH; đây là scrambling/data hiding, không phải ASK 8 kHz. Corpus được ghi `IDENTIFIED_NOT_DOWNLOADED` trong `results/steganalysis/external_dataset_assessment.json`: chưa tải archive, kiểm tra file-level SHA-256 hoặc chạy phân tích nên chưa đưa vào train/validation/test. Nếu sử dụng, phải giữ **cả host_source_id và secret_source_id** tách biệt giữa các split, đồng thời giữ sáu BH variants của mỗi cặp trong cùng split. Phương án 6/2/2 ID cho cả hai trục giữ lại 216/24/24 stego samples (train/validation/test) và loại 336 cặp chéo split để tránh leakage; chỉ 10 host và 10 secret thuộc một miền speech hẹp nên external validity vẫn hạn chế.
+
+Repository bổ sung `scripts/check_steganalysis_dataset_manifest.py`, template manifest và `tests/test_steganalysis_dataset_manifest.py`. Các regression fixtures kiểm tra file thiếu, SHA-256 sai, host/secret source ID chéo split và hash trùng giữa split; chúng xác minh logic validator chứ **không** phải phép đánh giá trên dataset thật. Không có sample-level hash hoặc metric độc lập nào được tuyên bố trước khi archive được tải và xác minh.
 
 #### 11.7.6. Diễn giải robustness và kết luận
 
@@ -724,7 +748,7 @@ Các hạng mục kỹ thuật sau đã có bằng chứng trong repository; tr�
 - [x] Hai ma trận robustness mới đã chạy, có JSON/CSV và partial-recovery metrics; cập nhật diễn giải trong mục 8.5 và 11.7.6.
 - [ ] Hoàn thiện logbook bằng giờ làm thực tế và rà soát phản tư cá nhân tại mục 11.5; không ước lượng thời lượng.
 - [ ] Mở PDF cuối và kiểm tra từng trang ở mức phóng đại đọc được: không mất chữ, không cắt hình, bảng không tràn lề, công thức hiển thị đúng.
-- [ ] Xác nhận phần nội dung chính không vượt 15 trang; phụ lục và tài liệu tham khảo nằm ngoài phạm vi đếm theo assignment.
+- [ ] Ghi nhận số trang nội dung chính sau khi build; hướng dẫn học phần khuyến nghị không nên vượt 15 trang, nhưng nếu không có thông báo bắt buộc riêng thì không cắt nội dung học thuật chỉ để đạt mốc 15 trang.
 - [ ] Mở ZIP cuối, kiểm tra có `data/`, `src/`, `tests/`, `scripts/`, `references/`, `report/` và `results/`; không có `.venv`, cache hoặc secrets.
 - [ ] Đối chiếu PDF/ZIP được tạo từ cùng một revision của `main`; không nộp các binary cũ hơn source.
 
