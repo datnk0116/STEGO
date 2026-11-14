@@ -323,18 +323,39 @@ Lần triển khai cũ mắc ba vấn đề kỹ thuật:
 
 ### 6.4. Phiên bản decoder đã điều chỉnh
 
-Phiên bản hiện tại của `src/solve_challenges.py` và `src/sleepy_alarm/analyze.py` thực hiện các bước:
-1. Giải mã hai MP3 thành mảng mẫu, resample reference về sample rate của file phân phối nếu cần.
-2. Ước lượng độ lệch thời gian bằng cross-correlation trên tín hiệu mono đã decimate; sau đó căn chỉnh phần overlap ở sample rate gốc.
-3. Giữ lại phần đầu của file phân phối trước vị trí bắt đầu overlap, rồi ghép với residual đã căn chỉnh. Đây là bước quan trọng: phần đầu không tương quan với reference vẫn có thể chứa các symbol ASK đầu tiên. Bỏ prefix này làm mất hai bit đầu của byte đầu tiên.
-4. Chỉ phân tích channel 0 (left), vì `createsignal.m` chỉ cộng ASK vào cột audio thứ nhất.
-5. Thay vì suy biên độ bằng Hilbert envelope sau lọc (cách này tạo transient ở đầu chuỗi), dùng coherent detection: chiếu từng cửa sổ 882 mẫu lên hai cơ sở sin/cos tại 8 kHz, rồi tính độ lớn vector I/Q. Mỗi symbol có 160 chu kỳ sóng mang ở 44,1 kHz nên phép chiếu theo cả cửa sổ tăng khả năng loại thành phần không đồng pha.
-6. Phân loại ba cụm biên độ thấp/trung bình/cao, tương ứng separator/bit 0/bit 1; sau đó nhóm 8 bit thành byte.
-7. Kiểm tra đủ 350 symbol, 38 separator, 39 byte, độ dài 39, tiền tố/hậu tố và so khớp toàn bộ chuỗi với ground truth đọc độc lập từ bitmap trong source creator.
+Phiên bản hiện tại của solver và analyzer thực hiện quy trình:
+1. Đọc hai MP3, resample reference nếu sample rate khác; ước lượng offset bằng cross-correlation và chỉ lấy phần overlap.
+2. Giữ prefix của distributed MP3 trước điểm bắt đầu overlap rồi ghép với residual. Prefix này có thể chứa các symbol ASK đầu tiên; bỏ nó làm mất bit đầu.
+3. Phân tích channel 0 (left), vì creator chỉ chèn ASK vào kênh thứ nhất.
+4. Dùng coherent detection: chiếu từng cửa sổ 882 mẫu lên hai cơ sở sin/cos 8 kHz và tính biên độ I/Q. Mỗi symbol có 160 chu kỳ sóng mang; phép chiếu toàn symbol tránh transient ở đầu chuỗi của Hilbert-envelope sau lọc.
+5. Phân cụm ba mức thấp/trung bình/cao thành separator/bit 0/bit 1; nhóm 8 bit thành byte.
+6. Kiểm tra 350 symbol, 38 separator, 39 byte, độ dài 39 và đối chiếu toàn bộ chuỗi với ground truth được đọc độc lập từ bitmap creator.
+
+Một lần chạy đầu tiên dùng Hilbert-envelope và xử lý cả file đã thất bại; log được giữ tại results/2026-11-14/initial-run.md. Sau khi sửa đúng kênh, cửa sổ payload, prefix alignment và phép đo biên độ, decoder mới đã exact-match trên MP3 phân phối.
 
 Việc đối chiếu chính xác toàn bộ chuỗi là điều kiện bắt buộc để `success=true`. Chỉ khớp prefix/suffix không được xem là giải thành công.
 
-### 6.5. Lệnh tái hiện
+### 6.5. Kết quả giải mã trên MP3 chính thức
+
+Phiên bản coherent detector đã chạy trên file phân phối và so sánh với ground truth được đọc độc lập từ bitmap trong createsignal.m. Output đầy đủ được lưu trong results/sleepy_alarm/solver.json.
+
+| Đại lượng | Kết quả |
+|---|---:|
+| Sample rate / kênh phân tích | 44.100 Hz / channel 0 (left) |
+| Alignment lag | 1.729 mẫu = 0,039206 s |
+| Normalized absolute correlation | 0,9998734 |
+| Prefix được giữ trước overlap | 1.729 mẫu |
+| Symbol đã giải | 350/350 |
+| Separator / bit 0 / bit 1 | 38 / 153 / 159 |
+| Tâm cụm biên độ | 0,0001035 / 0,0019975 / 0,0049727 |
+| Byte giải mã / byte lỗi | 39 / 0 |
+| Exact-match | PASS |
+
+Tâm cụm bit 0 và bit 1 lệch lần lượt khoảng −0,13% và −0,55% so với mức danh định 0,002 và 0,005. Cụm separator ở khoảng 0,0001035 phản ánh nhiễu/codec còn lại sau phép trừ tham chiếu.
+
+**Chuỗi trích xuất từ MP3:** ictf{1_sl33py_NaYuKi_alarm_2a634dc1bb2}. Chuỗi 39 ký tự khớp toàn bộ bitmap ground truth của creator; errors=[]; format_valid=true; ground_truth_match=true. Ground truth chỉ được dùng sau trích xuất để xác minh chính xác, không làm đầu vào cho decoder.
+
+### 6.6. Lệnh tái hiện
 
 ~~~bash
 python src/sleepy_alarm/analyze.py \
@@ -343,18 +364,19 @@ python src/sleepy_alarm/analyze.py \
 
 python src/solve_challenges.py sleepy-alarm \
   data/sleepy_alarm/morning_n_breakfast.mp3 \
-  --reference data/sleepy_alarm/morning_n_breakfast_original.mp3
+  --reference data/sleepy_alarm/morning_n_breakfast_original.mp3 \
+  --expected 'ictf{1_sl33py_NaYuKi_alarm_2a634dc1bb2}'
 ~~~
 
-Kết quả cần lưu gồm sample rate, kênh được phân tích, alignment lag, normalized correlation, các tâm cụm envelope, số symbol 0/1/separator, số byte, nội dung giải mã và trạng thái so khớp toàn bộ flag. Các tâm cụm phải được đối chiếu với ba mức danh định 0, 0,002 và 0,005. Ground truth được lấy từ chuỗi bitmap trong `createsignal.m`, không được đưa vào decoder như dữ liệu trích xuất.
+Output JSON ghi sample rate, alignment, tâm cụm, phân bố symbol, byte giải mã và phép exact-match. Các hình waveform/spectrogram/envelope là bằng chứng trực quan; solver dùng coherent I/Q projection để quyết định symbol, không dùng trực tiếp Hilbert envelope trên hình.
 
-![Hình 2. Waveform của residual audio sau căn chỉnh tham chiếu, giới hạn vào cửa sổ truyền ASK. Nguồn: tự tạo từ MP3 challenge.](../results/sleepy_alarm/waveform.png)
+![Hình 2. Waveform của tín hiệu phân tích gồm prefix distributed và residual sau căn chỉnh, giới hạn vào cửa sổ truyền ASK. Nguồn: tự tạo từ MP3 challenge.](../results/sleepy_alarm/waveform.png)
 
 ![Hình 3. Spectrogram STFT của tín hiệu phân tích; cần quan sát dải năng lượng quanh sóng mang 8 kHz. Nguồn: tự tạo từ MP3 challenge.](../results/sleepy_alarm/spectrogram.png)
 
-![Hình 4. Envelope sau lọc băng quanh 8 kHz; các symbol được lấy mẫu ở vùng giữa chu kỳ 0,02 giây. Nguồn: tự tạo từ MP3 challenge.](../results/sleepy_alarm/ask_envelope.png)
+![Hình 4. Envelope Hilbert sau lọc băng quanh 8 kHz để quan sát định tính; phép quyết định bit của solver dùng coherent I/Q projection trên cửa sổ 882 mẫu. Nguồn: tự tạo từ MP3 challenge.](../results/sleepy_alarm/ask_envelope.png)
 
-![Hình 5. Sai khác giữa distributed audio và original reference sau căn chỉnh. Nguồn: tự tạo từ hai artifact chính thức.](../results/sleepy_alarm/reference_difference.png)
+![Hình 5. Tín hiệu phân tích trên timeline được phục hồi từ prefix và residual sau căn chỉnh. Nguồn: tự tạo từ hai artifact chính thức.](../results/sleepy_alarm/reference_difference.png)
 
 ## 7. Công cụ tự viết và kiểm thử
 
