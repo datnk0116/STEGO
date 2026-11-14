@@ -95,7 +95,7 @@ def main() -> int:
     plt.figure(figsize=(12, 3))
     plt.plot(t, analysis_mono, linewidth=0.5)
     plt.xlabel("Time (s)"); plt.ylabel("Amplitude")
-    plt.title("Aligned residual waveform" if args.reference else "Mono waveform")
+    plt.title("ASK analysis signal (left channel; aligned residual with preserved prefix)" if args.reference else "ASK analysis signal (left channel)")
     plt.tight_layout(); plt.savefig(waveform_path, dpi=160); plt.close()
     plt.figure(figsize=(12, 4))
     plt.pcolormesh(times, freqs, 20*np.log10(np.maximum(magnitude, 1e-12)),
@@ -154,7 +154,19 @@ def main() -> int:
                  "noverlap": int(min(args.noverlap, max(0, min(args.nperseg, analysis_frames)-1))),
                  "frequency_bins": int(len(freqs)), "time_frames": int(len(times))},
         "reference_comparison": reference_info,
-        "ask": {"carrier_hz": args.carrier, "baud": 50, "symbol_duration_seconds": 0.02, "transmission_seconds": 7.0, "envelope_symbol_median_min": min(symbol_levels) if symbol_levels else None, "envelope_symbol_median_max": max(symbol_levels) if symbol_levels else None, "envelope_symbol_count": len(symbol_levels)},
+        "ask": {
+            "carrier_hz": args.carrier,
+            "baud": 50,
+            "symbol_duration_seconds": 0.02,
+            "transmission_seconds": 7.0,
+            "envelope_symbol_median_min": min(symbol_levels) if symbol_levels else None,
+            "envelope_symbol_median_max": max(symbol_levels) if symbol_levels else None,
+            "envelope_symbol_quantiles_05_50_95": (
+                [float(x) for x in np.quantile(symbol_levels, [0.05, 0.50, 0.95])]
+                if symbol_levels else None
+            ),
+            "envelope_symbol_count": len(symbol_levels),
+        },
         "plots": [str(waveform_path), str(spec_path), str(envelope_path)] + ([reference_plot] if reference_plot else []),
         "note": "Plots are exploratory evidence, not proof of steganography by themselves."
     }
