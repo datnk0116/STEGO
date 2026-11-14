@@ -243,7 +243,7 @@ def validate_repository(root, pre_commit=False, require_submission_package=False
         package_state = "FRESH" if package_ok else ("STALE" if pkg_paths else "NOT_VERIFIED")
         report.derived["submission_package_freshness"] = package_state
         report.add("Submission package", package_ok or not require_submission_package, "verified and unchanged" if package_ok else package_state, warning=not require_submission_package)
-        relevant = [p for p in dirty_paths(root) if p in GATE_OUTPUTS or p in DOCS or p.startswith(("src/", "tests/", "data/", "scripts/", "report/", "docs/"))]
+        relevant = [p for p in dirty_paths(root) if p in GATE_OUTPUTS or p in DOCS or p.startswith(("src/", "tests/", "data/", "scripts/", "report/", "docs/", "results/submission/"))]
         report.add("Working tree", not relevant, "relevant files committed" if not relevant else f"uncommitted: {relevant}")
     return report
 

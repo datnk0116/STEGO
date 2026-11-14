@@ -201,6 +201,12 @@ class ProvenanceConsistencyTests(unittest.TestCase):
         result = validate_repository(self.root, pre_commit=True)
         self.assertTrue(result.passed, result.errors)
 
+    def test_uncommitted_submission_binary_is_reported(self):
+        self.write("results/submission/mock.pdf", b"locally modified package\n")
+        result = validate_repository(self.root)
+        self.assertFalse(result.passed)
+        self.assertTrue(any(not ok and name == "Working tree" for name, ok, _ in result.checks))
+
     def test_submission_package_can_be_required_explicitly(self):
         result = validate_repository(self.root, require_submission_package=True)
         self.assertFalse(result.passed)
