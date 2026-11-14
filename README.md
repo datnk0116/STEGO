@@ -27,10 +27,10 @@ A passing synthetic unit test does not prove that the official challenge artifac
 - `results/`: machine-readable outputs, plots, CSVs and execution logs.
 - `report/REPORT.md`: report aligned to the UET.CN3124 assignment rubric.
 - `references/REFERENCES.md`: cited primary sources and technical documentation.
-- `docs/DEFENSE_QA.md`: oral-defense questions for explaining the implementation and limits.
+- `docs/DEFENSE_QA.md`: technical questions for explaining the implementation, evidence and limits if verification is requested.
 - `docs/PERSONAL_REFLECTION_TEMPLATE.md`: prompts for the student's own reflection; never invent personal experience or hours.
 - `docs/QUALITY_GATE.md`: local artifact/test verification procedure.
-- `docs/PLAN_9_6.md`: detailed acceptance plan for the 9.6/10 target.
+- `docs/QUALITY_ASSURANCE_PLAN.md`: quality-assurance plan, acceptance criteria and evidence index.
 
 ## Environment setup
 
@@ -118,7 +118,7 @@ Run the one-command local evidence gate:
 python scripts/verify_reproducibility.py
 ```
 
-The gate runs the complete unittest suite, checks SHA-256 and byte sizes for all three official artifacts, verifies the Blue 3 flag and the 39-character Sleepy Alarm exact-match, and records the reference-free result as a limitation measurement. The committed gate evidence records **22/22 tests passed (exit code 0)**, all three artifact hashes passed, and both official decoders matched their expected payloads under the documented conditions. The JSON identifies tested source commit `11cd5e3216e779b6101b22cd891689ecdf9b8e54`; commit `3015d5ddcab12fb99d53158c4029750d7b8805b3` subsequently packages the gate logs and regenerated result files without changing source or tests. `results/logs/unit-tests.log` remains a historical six-test log; use `results/logs/quality-gate-tests.log` as the current 22-test evidence.
+The gate runs the complete unittest suite, checks SHA-256 and byte sizes for all three official artifacts, verifies the Blue 3 flag and the 39-character Sleepy Alarm exact-match, and records the reference-free result as a limitation measurement. The committed gate evidence records **22/22 tests passed (exit code 0)**, all three artifact hashes passed, and both official decoders matched their expected payloads under the documented conditions. The JSON records revision `a040e3863145038b786ba6719629e636fdf2e565`. Commit `3bb2b57790d164a6997ee1afe157a0fc7a8a8807` subsequently packages the gate log and JSON. Comparing these two revisions shows that the packaging commit changes only `results/logs/quality-gate-tests.log` and `results/verification/quality-gate.json`; it does not change source or test files. `results/logs/unit-tests.log` remains a historical six-test log; use `results/logs/quality-gate-tests.log` as the current 22-test evidence.
 
 The GitHub Actions workflow is optional. The quality gate does not start GitHub Actions or build DOCX/PDF/ZIP. For those local submission artifacts, the separate command is `python scripts/build_submission.py`.
 
