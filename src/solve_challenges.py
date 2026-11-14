@@ -96,6 +96,7 @@ def solve_sleepy(path: Path, carrier_hz: float = 8000.0,
         # because they do not overlap the original reference. Preserve those
         # target samples, then append the aligned residual. This reconstructs
         # the distributed timeline without discarding the first ASK symbols.
+        target_start = int(alignment_info["target_start_sample"])
         if alignment_info["channel_handling"] == "downmixed_to_mono":
             raw_prefix = raw_target.mean(axis=1, keepdims=True)
         else:
