@@ -27,6 +27,8 @@ A passing synthetic unit test does not prove that the official challenge artifac
 - `results/`: machine-readable outputs, plots, CSVs and execution logs.
 - `report/REPORT.md`: report aligned to the UET.CN3124 assignment rubric.
 - `references/REFERENCES.md`: cited primary sources and technical documentation.
+- `docs/DEFENSE_QA.md`: oral-defense questions for explaining the implementation and limits.
+- `docs/PERSONAL_REFLECTION_TEMPLATE.md`: prompts for the student's own reflection; never invent personal experience or hours.
 
 ## Environment setup
 
@@ -101,7 +103,7 @@ Outputs are written under `results/submission/`: the DOCX, PDF and `STUDENT_UETC
 python -m unittest discover -s tests -v
 ```
 
-The GitHub Actions workflow contains the reproducibility pipeline, but you do not need to start or rerun it to build the submission. Use `python scripts/build_submission.py` locally after installing Pandoc, LibreOffice and Poppler. The script repairs DOCX table geometry, validates that the main body is at most 15 pages, then creates a source ZIP. The workflow uses the same repair script when it is run by a maintainer.
+The GitHub Actions workflow provides an optional CI check. For local submission work, use `python scripts/build_submission.py`; this does not start a remote workflow. It repairs DOCX table geometry, validates the main-body page limit and creates a source ZIP.
 
 ## Evidence conventions
 
