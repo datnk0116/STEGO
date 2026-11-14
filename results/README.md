@@ -13,8 +13,9 @@ All committed results must be produced by a recorded run. Use a dated folder suc
 - `sleepy_alarm/analysis.json`: audio metadata, alignment, STFT and ASK envelope measurements.
 - `sleepy_alarm/*.png`: waveform, spectrogram, carrier envelope and aligned residual plots.
 - `sleepy_alarm/solver.json`: decoded text, symbol counts, cluster centers, byte errors and exact expected-text comparison.
-- `sleepy_alarm/robustness/sleepy_alarm_robustness.csv` and `.json`: paired target/reference transform tests, only after baseline succeeds.\n- `sleepy_alarm/asymmetric_robustness/asymmetric_robustness.csv` and `.json`: target-only/reference-only transform tests, including decoded text, errors, clipping and alignment correlation.
-- `logs/commands.log`: exact commands and standard output/error.
+- `sleepy_alarm/robustness/sleepy_alarm_robustness.csv` and `.json`: paired target/reference transform tests, only after baseline succeeds.
+- `sleepy_alarm/asymmetric_robustness/asymmetric_robustness.csv` and `.json`: target-only/reference-only transform tests, including decoded text, errors, clipping and alignment correlation.
+- Per-experiment command lines and outputs are recorded in the corresponding `results/logs/*.log`, JSON metadata and dated run notes. A consolidated `logs/commands.log` is not currently committed.
 - `logbook-template.csv`: blank template; copy it to a dated logbook and record actual work sessions.
 
 ## Integrity and interpretation
