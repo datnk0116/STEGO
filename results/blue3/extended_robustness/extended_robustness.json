@@ -9,63 +9,63 @@
       "success": false,
       "candidate": null,
       "attempts": 511,
-      "elapsed_seconds": 0.2757396249980957
+      "elapsed_seconds": 0.2699637499972596
     },
     {
       "variant": "brightness_1.1",
       "success": false,
       "candidate": null,
       "attempts": 511,
-      "elapsed_seconds": 0.27347454199843924
+      "elapsed_seconds": 0.2729511249999632
     },
     {
       "variant": "contrast_0.9",
       "success": false,
       "candidate": null,
       "attempts": 511,
-      "elapsed_seconds": 0.2737876659994072
+      "elapsed_seconds": 0.27145883300181595
     },
     {
       "variant": "contrast_1.1",
       "success": false,
       "candidate": null,
       "attempts": 511,
-      "elapsed_seconds": 0.2741534170017985
+      "elapsed_seconds": 0.27431566700033727
     },
     {
       "variant": "gaussian_blur_radius_0.3",
       "success": true,
       "candidate": "byuctf{more_blue_steganography_da_ba_dee_nkiY9CyP}",
       "attempts": 49,
-      "elapsed_seconds": 0.13055929100301
+      "elapsed_seconds": 0.12854370800050674
     },
     {
       "variant": "crop_16px",
       "success": false,
       "candidate": null,
       "attempts": 479,
-      "elapsed_seconds": 0.244055291001132
+      "elapsed_seconds": 0.24389379200147232
     },
     {
       "variant": "gaussian_noise_sigma_0.5",
       "success": false,
       "candidate": null,
       "attempts": 0,
-      "elapsed_seconds": 0.1305006250004226
+      "elapsed_seconds": 0.1323653330000525
     },
     {
       "variant": "gaussian_noise_sigma_1.0",
       "success": false,
       "candidate": null,
       "attempts": 0,
-      "elapsed_seconds": 0.13618862500152318
+      "elapsed_seconds": 0.13912566699946183
     },
     {
       "variant": "gaussian_noise_sigma_2.0",
       "success": false,
       "candidate": null,
       "attempts": 124,
-      "elapsed_seconds": 0.1584956249971583
+      "elapsed_seconds": 0.1784070830035489
     }
   ],
   "warning": "Results characterize this decoder and exact attack settings only."
