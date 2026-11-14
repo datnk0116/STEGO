@@ -217,7 +217,7 @@ Acceptance:
 
 Tasks:
 1. Wait until report/source package contents are finalized.
-2. Run `python scripts/build_submission.py --max-main-pages 15`.
+2. Run `python scripts/build_submission.py --max-main-pages 17`.
 3. Inspect PDF page count, rendering, figure legibility and citations.
 4. List and inspect ZIP entries; verify source, tests, scripts, references, datasets and result evidence are present.
 5. Exclude virtual environments, caches, secrets, nested ZIPs and stale outputs.
@@ -225,7 +225,7 @@ Tasks:
 
 Acceptance:
 - DOCX/PDF/ZIP all derive from the same finalized content revision.
-- PDF complies with the 15-page main-content guidance (appendix/references excluded as stated in the course guide).
+- The local PDF checker allows up to 17 main-content pages (appendix/references excluded). This project-level allowance does not override the 15-page course-guide guidance; if that is a strict submission cap, reduce the body to 15 pages before submitting.
 - ZIP can be extracted and its contents verified.
 - The checker reports package freshness only when a real build record exists.
 

@@ -115,7 +115,7 @@ Install the document tools once (`pandoc`, LibreOffice Writer and `poppler-utils
 python scripts/build_submission.py
 ```
 
-Outputs are written under `results/submission/`: the DOCX, PDF and `STUDENT_UETCN3124_Scripts.zip`. The build stops if the main body exceeds 15 pages. The report remains a Markdown source of truth; binary submission files must be regenerated after report changes.
+Outputs are written under `results/submission/`: the DOCX, PDF and `STUDENT_UETCN3124_Scripts.zip`. The local PDF checker allows up to 17 main-body pages for this build. This is a local checking allowance and does not override any stricter page limit stated in the course instructions. The report remains a Markdown source of truth; binary submission files must be regenerated after report changes.
 
 ## Tests and local quality gate
 

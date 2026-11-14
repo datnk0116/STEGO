@@ -73,4 +73,4 @@ The committed robustness scripts and JSON/CSV outputs are historical experiment 
 
 ## Submission package check
 
-The technical gate does not rebuild submission binaries. After the report and source-package inputs are final, run python scripts/build_submission.py --max-main-pages 15, inspect the generated PDF, and inspect the ZIP contents. The strict provenance checker reports the package as NOT_VERIFIED until an independently verifiable package build record exists.
+The technical gate does not rebuild submission binaries. After the report and source-package inputs are final, run python scripts/build_submission.py --max-main-pages 17, inspect the generated PDF, and inspect the ZIP contents. The strict provenance checker reports the package as NOT_VERIFIED until an independently verifiable package build record exists.

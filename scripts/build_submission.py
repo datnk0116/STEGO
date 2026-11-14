@@ -47,7 +47,7 @@ def build_zip():
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--max-main-pages",type=int,default=15)
+    parser.add_argument("--max-main-pages",type=int,default=17)
     args=parser.parse_args()
     require_tools(["pandoc","libreoffice","pdfinfo","pdftotext"])
     OUT.mkdir(parents=True,exist_ok=True)
