@@ -45,7 +45,7 @@ python src/sleepy_alarm/analyze.py data/sleepy_alarm/morning_n_breakfast.mp3 --r
 python src/solve_challenges.py sleepy-alarm data/sleepy_alarm/morning_n_breakfast.mp3 --reference data/sleepy_alarm/morning_n_breakfast_original.mp3
 ```
 
-The original MP3 reference is downloaded by the same script. When `--reference` is supplied, the analyzer and solver resample the reference to the challenge sample rate if needed, estimate sample offset by cross-correlation, and analyze only the aligned overlap. The printed alignment metadata (lag, overlap duration and normalized correlation) must be recorded; a low correlation means the subtraction may not be trustworthy.
+The original MP3 reference is downloaded by the same script. When `--reference` is supplied, the analyzer and solver resample the reference to the challenge sample rate if needed, estimate sample offset by cross-correlation, and analyze only the aligned overlap. The printed alignment metadata (lag, preserved prefix length, overlap duration and normalized correlation) must be recorded; a low correlation means the subtraction may not be trustworthy. The solver only analyzes the first 7-second payload on the left channel and estimates the three amplitude clusters from the decoded samples.
 
 ## Tests
 
