@@ -34,7 +34,7 @@
     "reference_start_sample": 0,
     "overlap_frames": 438912,
     "overlap_duration_seconds": 9.95265306122449,
-    "normalized_abs_correlation": 0.9998734358023291,
+    "normalized_abs_correlation": 0.9998734358023295,
     "channel_handling": "channelwise",
     "truncated_to_overlap": true,
     "preserved_prefix_samples": 1729,
