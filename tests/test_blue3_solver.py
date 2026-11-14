@@ -11,7 +11,7 @@ from solve_challenges import solve_blue
 
 
 class Blue3SolverTests(unittest.TestCase):
-    def test_decodes_generated_diagonal_region_image(self):
+    def test_decodes_with_modal_base_color_in_black_box_mode(self):
         flag = "byuctf{test_123}"
         image = Image.new("RGB", (512, 512), (64, 77, 205))
         pixels = image.load()
