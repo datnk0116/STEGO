@@ -1,0 +1,197 @@
+{
+  "schema_version": 1,
+  "created_at_utc": "2026-11-14T07:28:17.112988+00:00",
+  "git": {
+    "commit": "11cd5e3216e779b6101b22cd891689ecdf9b8e54",
+    "branch": "main",
+    "status_short": "?? results/logs/quality-gate-tests.log"
+  },
+  "environment": {
+    "platform": "macOS-15.7.4-arm64-arm-64bit-Mach-O",
+    "architecture": "arm64",
+    "python": "3.14.10 (main, Oct 25 2026, 17:12:00) [Clang 17.0.0 (clang-1700.6.4.2)]",
+    "packages": {
+      "Pillow": "13.0.0",
+      "numpy": "2.5.4",
+      "scipy": "1.18.1",
+      "matplotlib": "3.11.2",
+      "soundfile": "0.14.0",
+      "python-docx": "1.2.0"
+    }
+  },
+  "unit_tests": {
+    "command": "python -m unittest discover -s tests -v",
+    "exit_code": 0,
+    "expected_test_methods": 22,
+    "tests_run": 22,
+    "test_count_matches_source": true,
+    "passed": true,
+    "log": "results/logs/quality-gate-tests.log",
+    "tail": "\ntest_official_artifact_sha256 (test_official_artifacts.OfficialArtifactIntegrationTests.test_official_artifact_sha256) ... ok\ntest_sleepy_alarm_official_artifact_exact_flag_with_reference (test_official_artifacts.OfficialArtifactIntegrationTests.test_sleepy_alarm_official_artifact_exact_flag_with_reference) ... ok\ntest_blue_exact_candidate_has_full_similarity (test_robustness_metrics.RobustnessMetricsTests.test_blue_exact_candidate_has_full_similarity) ... ok\ntest_blue_partial_candidate_reports_edit_distance (test_robustness_metrics.RobustnessMetricsTests.test_blue_partial_candidate_reports_edit_distance) ... ok\ntest_expected_ask_stream_has_documented_symbol_count (test_robustness_metrics.RobustnessMetricsTests.test_expected_ask_stream_has_documented_symbol_count) ... ok\ntest_levenshtein_handles_insertions_and_deletions (test_robustness_metrics.RobustnessMetricsTests.test_levenshtein_handles_insertions_and_deletions) ... ok\ntest_missing_blue_candidate_is_not_reported_as_zero_edit_distance (test_robustness_metrics.RobustnessMetricsTests.test_missing_blue_candidate_is_not_reported_as_zero_edit_distance) ... ok\ntest_sleepy_metrics_count_bit_and_separator_errors_separately (test_robustness_metrics.RobustnessMetricsTests.test_sleepy_metrics_count_bit_and_separator_errors_separately) ... ok\ntest_sleepy_metrics_reject_wrong_symbol_count (test_robustness_metrics.RobustnessMetricsTests.test_sleepy_metrics_reject_wrong_symbol_count) ... ok\ntest_sleepy_perfect_symbol_stream_has_zero_error_rates (test_robustness_metrics.RobustnessMetricsTests.test_sleepy_perfect_symbol_stream_has_zero_error_rates) ... ok\ntest_decodes_39_byte_ask_message_from_first_stereo_channel (test_sleepy_alarm_solver.SleepyAlarmSolverTests.test_decodes_39_byte_ask_message_from_first_stereo_channel) ... ok\ntest_ask_like_modulation_is_flagged (test_steganalysis.SteganalysisTests.test_ask_like_modulation_is_flagged) ... ok\ntest_audio_features_are_finite (test_steganalysis.SteganalysisTests.test_audio_features_are_finite) ... ok\ntest_broadband_noise_is_not_flagged (test_steganalysis.SteganalysisTests.test_broadband_noise_is_not_flagged) ... ok\ntest_textured_image_is_not_flagged (test_steganalysis.SteganalysisTests.test_textured_image_is_not_flagged) ... ok\ntest_uniform_image_is_flagged_by_explicit_heuristic (test_steganalysis.SteganalysisTests.test_uniform_image_is_flagged_by_explicit_heuristic) ... ok\n\n----------------------------------------------------------------------\nRan 22 tests in 1.012s\n\nOK\n"
+  },
+  "artifact_integrity": {
+    "blue3": {
+      "path": "data/blue3/blue.png",
+      "bytes": 9406,
+      "sha256": "009dab85bf6ccc5b42b8efa5f959ab6efa0c556b37eb6b4a77a21ec3356b721e",
+      "exists": true,
+      "actual_bytes": 9406,
+      "actual_sha256": "009dab85bf6ccc5b42b8efa5f959ab6efa0c556b37eb6b4a77a21ec3356b721e",
+      "passed": true
+    },
+    "sleepy_alarm": {
+      "path": "data/sleepy_alarm/morning_n_breakfast.mp3",
+      "bytes": 179283,
+      "sha256": "bd181876c2d28152b9c3982fd88945d4e681fd93d49477622ea5841a3ff25ae2",
+      "exists": true,
+      "actual_bytes": 179283,
+      "actual_sha256": "bd181876c2d28152b9c3982fd88945d4e681fd93d49477622ea5841a3ff25ae2",
+      "passed": true
+    },
+    "sleepy_alarm_reference": {
+      "path": "data/sleepy_alarm/morning_n_breakfast_original.mp3",
+      "bytes": 160495,
+      "sha256": "d0c283834955e54d68b0bba723ccd194142a428d2de74722e5f1dff3ccbd94ad",
+      "exists": true,
+      "actual_bytes": 160495,
+      "actual_sha256": "d0c283834955e54d68b0bba723ccd194142a428d2de74722e5f1dff3ccbd94ad",
+      "passed": true
+    }
+  },
+  "official_decoder_verification": {
+    "blue3": {
+      "candidate": "byuctf{more_blue_steganography_da_ba_dee_nkiY9CyP}",
+      "expected_length": 50,
+      "attempt_count": 49,
+      "exact_match": true,
+      "passed": true
+    },
+    "sleepy_alarm_reference_assisted": {
+      "passed": true,
+      "exact_match": true,
+      "format_valid": true,
+      "symbol_count": 350,
+      "separator_count": 38,
+      "byte_count": 39,
+      "byte_errors": [],
+      "alignment_lag_samples": 1729,
+      "alignment_correlation": 0.9998734358246231,
+      "cluster_centers": [
+        0.00010346536568754544,
+        0.0019974891068537835,
+        0.00497272470857525
+      ]
+    },
+    "sleepy_alarm_reference_free": {
+      "currently_exact": false,
+      "format_valid": false,
+      "decoded_length": 26,
+      "symbol_count": 350,
+      "separator_count": 49,
+      "byte_errors": [
+        {
+          "index": 3,
+          "bits": "0110",
+          "reason": "not an 8-bit byte"
+        },
+        {
+          "index": 4,
+          "bits": "110",
+          "reason": "not an 8-bit byte"
+        },
+        {
+          "index": 5,
+          "bits": "011110110",
+          "reason": "not an 8-bit byte"
+        },
+        {
+          "index": 6,
+          "bits": "0110001",
+          "reason": "not an 8-bit byte"
+        },
+        {
+          "index": 7,
+          "bits": "1011101",
+          "reason": "not an 8-bit byte"
+        },
+        {
+          "index": 13,
+          "bits": "1111001",
+          "reason": "not an 8-bit byte"
+        },
+        {
+          "index": 17,
+          "bits": "000110",
+          "reason": "not an 8-bit byte"
+        },
+        {
+          "index": 18,
+          "bits": "1",
+          "reason": "not an 8-bit byte"
+        },
+        {
+          "index": 21,
+          "bits": "01101",
+          "reason": "not an 8-bit byte"
+        },
+        {
+          "index": 22,
+          "bits": "01",
+          "reason": "not an 8-bit byte"
+        },
+        {
+          "index": 24,
+          "bits": "1100001",
+          "reason": "not an 8-bit byte"
+        },
+        {
+          "index": 25,
+          "bits": "1101100",
+          "reason": "not an 8-bit byte"
+        },
+        {
+          "index": 31,
+          "bits": "011000",
+          "reason": "not an 8-bit byte"
+        },
+        {
+          "index": 32,
+          "bits": "1",
+          "reason": "not an 8-bit byte"
+        },
+        {
+          "index": 34,
+          "bits": "0",
+          "reason": "not an 8-bit byte"
+        },
+        {
+          "index": 35,
+          "bits": "110011",
+          "reason": "not an 8-bit byte"
+        },
+        {
+          "index": 39,
+          "bits": "0011",
+          "reason": "not an 8-bit byte"
+        },
+        {
+          "index": 40,
+          "bits": "001",
+          "reason": "not an 8-bit byte"
+        },
+        {
+          "index": 41,
+          "bits": "0110",
+          "reason": "not an 8-bit byte"
+        },
+        {
+          "index": 42,
+          "bits": "010",
+          "reason": "not an 8-bit byte"
+        }
+      ]
+    }
+  },
+  "overall_passed": true,
+  "scope_note": "A local reproducibility gate for pinned artifacts and tests. It does not certify population-level robustness or general steganalysis."
+}

@@ -1,0 +1,27 @@
+test_aligns_integer_offset_and_returns_equal_overlap (test_audio_alignment.AudioAlignmentTests.test_aligns_integer_offset_and_returns_equal_overlap) ... ok
+test_channel_mismatch_is_downmixed (test_audio_alignment.AudioAlignmentTests.test_channel_mismatch_is_downmixed) ... ok
+test_resamples_reference_before_alignment (test_audio_alignment.AudioAlignmentTests.test_resamples_reference_before_alignment) ... ok
+test_cli_black_box_mode_does_not_require_base_color (test_blue3_cli.Blue3CliTests.test_cli_black_box_mode_does_not_require_base_color) ... ok
+test_decodes_with_modal_base_color_in_black_box_mode (test_blue3_solver.Blue3SolverTests.test_decodes_with_modal_base_color_in_black_box_mode) ... ok
+test_blue3_official_artifact_exact_flag (test_official_artifacts.OfficialArtifactIntegrationTests.test_blue3_official_artifact_exact_flag) ... ok
+test_official_artifact_sha256 (test_official_artifacts.OfficialArtifactIntegrationTests.test_official_artifact_sha256) ... ok
+test_sleepy_alarm_official_artifact_exact_flag_with_reference (test_official_artifacts.OfficialArtifactIntegrationTests.test_sleepy_alarm_official_artifact_exact_flag_with_reference) ... ok
+test_blue_exact_candidate_has_full_similarity (test_robustness_metrics.RobustnessMetricsTests.test_blue_exact_candidate_has_full_similarity) ... ok
+test_blue_partial_candidate_reports_edit_distance (test_robustness_metrics.RobustnessMetricsTests.test_blue_partial_candidate_reports_edit_distance) ... ok
+test_expected_ask_stream_has_documented_symbol_count (test_robustness_metrics.RobustnessMetricsTests.test_expected_ask_stream_has_documented_symbol_count) ... ok
+test_levenshtein_handles_insertions_and_deletions (test_robustness_metrics.RobustnessMetricsTests.test_levenshtein_handles_insertions_and_deletions) ... ok
+test_missing_blue_candidate_is_not_reported_as_zero_edit_distance (test_robustness_metrics.RobustnessMetricsTests.test_missing_blue_candidate_is_not_reported_as_zero_edit_distance) ... ok
+test_sleepy_metrics_count_bit_and_separator_errors_separately (test_robustness_metrics.RobustnessMetricsTests.test_sleepy_metrics_count_bit_and_separator_errors_separately) ... ok
+test_sleepy_metrics_reject_wrong_symbol_count (test_robustness_metrics.RobustnessMetricsTests.test_sleepy_metrics_reject_wrong_symbol_count) ... ok
+test_sleepy_perfect_symbol_stream_has_zero_error_rates (test_robustness_metrics.RobustnessMetricsTests.test_sleepy_perfect_symbol_stream_has_zero_error_rates) ... ok
+test_decodes_39_byte_ask_message_from_first_stereo_channel (test_sleepy_alarm_solver.SleepyAlarmSolverTests.test_decodes_39_byte_ask_message_from_first_stereo_channel) ... ok
+test_ask_like_modulation_is_flagged (test_steganalysis.SteganalysisTests.test_ask_like_modulation_is_flagged) ... ok
+test_audio_features_are_finite (test_steganalysis.SteganalysisTests.test_audio_features_are_finite) ... ok
+test_broadband_noise_is_not_flagged (test_steganalysis.SteganalysisTests.test_broadband_noise_is_not_flagged) ... ok
+test_textured_image_is_not_flagged (test_steganalysis.SteganalysisTests.test_textured_image_is_not_flagged) ... ok
+test_uniform_image_is_flagged_by_explicit_heuristic (test_steganalysis.SteganalysisTests.test_uniform_image_is_flagged_by_explicit_heuristic) ... ok
+
+----------------------------------------------------------------------
+Ran 22 tests in 1.012s
+
+OK
