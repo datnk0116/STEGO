@@ -1,0 +1,131 @@
+{
+  "expected_text_used_only_for_validation": true,
+  "trials": {
+    "reference_free": {
+      "status": "completed",
+      "reference_used": false,
+      "format_valid": false,
+      "ground_truth_match": false,
+      "success": false,
+      "decoded_length": 26,
+      "symbol_count": 350,
+      "separator_count": 49,
+      "errors": [
+        {
+          "index": 3,
+          "bits": "0110",
+          "reason": "not an 8-bit byte"
+        },
+        {
+          "index": 4,
+          "bits": "110",
+          "reason": "not an 8-bit byte"
+        },
+        {
+          "index": 5,
+          "bits": "011110110",
+          "reason": "not an 8-bit byte"
+        },
+        {
+          "index": 6,
+          "bits": "0110001",
+          "reason": "not an 8-bit byte"
+        },
+        {
+          "index": 7,
+          "bits": "1011101",
+          "reason": "not an 8-bit byte"
+        },
+        {
+          "index": 13,
+          "bits": "1111001",
+          "reason": "not an 8-bit byte"
+        },
+        {
+          "index": 17,
+          "bits": "000110",
+          "reason": "not an 8-bit byte"
+        },
+        {
+          "index": 18,
+          "bits": "1",
+          "reason": "not an 8-bit byte"
+        },
+        {
+          "index": 21,
+          "bits": "01101",
+          "reason": "not an 8-bit byte"
+        },
+        {
+          "index": 22,
+          "bits": "01",
+          "reason": "not an 8-bit byte"
+        },
+        {
+          "index": 24,
+          "bits": "1100001",
+          "reason": "not an 8-bit byte"
+        },
+        {
+          "index": 25,
+          "bits": "1101100",
+          "reason": "not an 8-bit byte"
+        },
+        {
+          "index": 31,
+          "bits": "011000",
+          "reason": "not an 8-bit byte"
+        },
+        {
+          "index": 32,
+          "bits": "1",
+          "reason": "not an 8-bit byte"
+        },
+        {
+          "index": 34,
+          "bits": "0",
+          "reason": "not an 8-bit byte"
+        },
+        {
+          "index": 35,
+          "bits": "110011",
+          "reason": "not an 8-bit byte"
+        },
+        {
+          "index": 39,
+          "bits": "0011",
+          "reason": "not an 8-bit byte"
+        },
+        {
+          "index": 40,
+          "bits": "001",
+          "reason": "not an 8-bit byte"
+        },
+        {
+          "index": 41,
+          "bits": "0110",
+          "reason": "not an 8-bit byte"
+        },
+        {
+          "index": 42,
+          "bits": "010",
+          "reason": "not an 8-bit byte"
+        }
+      ],
+      "decoded_text": "ictsl33p_Nauk_arm_224dcb2}"
+    },
+    "reference_assisted": {
+      "status": "completed",
+      "reference_used": true,
+      "format_valid": true,
+      "ground_truth_match": true,
+      "success": true,
+      "decoded_length": 39,
+      "symbol_count": 350,
+      "separator_count": 38,
+      "errors": [],
+      "decoded_text": "ictf{1_sl33py_NaYuKi_alarm_2a634dc1bb2}"
+    }
+  },
+  "note": "Reference-free and reference-assisted results are kept separate; expected text is used only for exact-match validation, never extraction."
+}

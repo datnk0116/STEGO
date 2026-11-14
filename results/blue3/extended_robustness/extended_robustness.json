@@ -1,0 +1,72 @@
+{
+  "baseline_success": true,
+  "seed": 20261114,
+  "variant_count": 9,
+  "success_count": 1,
+  "results": [
+    {
+      "variant": "brightness_0.9",
+      "success": false,
+      "candidate": null,
+      "attempts": 511,
+      "elapsed_seconds": 0.2757396249980957
+    },
+    {
+      "variant": "brightness_1.1",
+      "success": false,
+      "candidate": null,
+      "attempts": 511,
+      "elapsed_seconds": 0.27347454199843924
+    },
+    {
+      "variant": "contrast_0.9",
+      "success": false,
+      "candidate": null,
+      "attempts": 511,
+      "elapsed_seconds": 0.2737876659994072
+    },
+    {
+      "variant": "contrast_1.1",
+      "success": false,
+      "candidate": null,
+      "attempts": 511,
+      "elapsed_seconds": 0.2741534170017985
+    },
+    {
+      "variant": "gaussian_blur_radius_0.3",
+      "success": true,
+      "candidate": "byuctf{more_blue_steganography_da_ba_dee_nkiY9CyP}",
+      "attempts": 49,
+      "elapsed_seconds": 0.13055929100301
+    },
+    {
+      "variant": "crop_16px",
+      "success": false,
+      "candidate": null,
+      "attempts": 479,
+      "elapsed_seconds": 0.244055291001132
+    },
+    {
+      "variant": "gaussian_noise_sigma_0.5",
+      "success": false,
+      "candidate": null,
+      "attempts": 0,
+      "elapsed_seconds": 0.1305006250004226
+    },
+    {
+      "variant": "gaussian_noise_sigma_1.0",
+      "success": false,
+      "candidate": null,
+      "attempts": 0,
+      "elapsed_seconds": 0.13618862500152318
+    },
+    {
+      "variant": "gaussian_noise_sigma_2.0",
+      "success": false,
+      "candidate": null,
+      "attempts": 124,
+      "elapsed_seconds": 0.1584956249971583
+    }
+  ],
+  "warning": "Results characterize this decoder and exact attack settings only."
+}

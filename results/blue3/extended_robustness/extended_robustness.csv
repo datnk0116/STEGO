@@ -1,0 +1,10 @@
+variant,success,candidate,attempts,elapsed_seconds
+brightness_0.9,False,,511,0.2757396249980957
+brightness_1.1,False,,511,0.27347454199843924
+contrast_0.9,False,,511,0.2737876659994072
+contrast_1.1,False,,511,0.2741534170017985
+gaussian_blur_radius_0.3,True,byuctf{more_blue_steganography_da_ba_dee_nkiY9CyP},49,0.13055929100301
+crop_16px,False,,479,0.244055291001132
+gaussian_noise_sigma_0.5,False,,0,0.1305006250004226
+gaussian_noise_sigma_1.0,False,,0,0.13618862500152318
+gaussian_noise_sigma_2.0,False,,124,0.1584956249971583
