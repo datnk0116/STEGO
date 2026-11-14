@@ -605,7 +605,13 @@ Giá trị kỹ thuật của đồ án nằm ở việc tự triển khai hai d
 
 [10] Trường Đại học Công nghệ, ĐHQGHN, “Mô tả bài tập lớn / đồ án thực hành — UET.CN3124: Dự án thực hành CTF Jeopardy,” tài liệu hướng dẫn học phần, đặc biệt các mục 3–7, trang 3–8.
 
-[11] Zeecka, “Aperi'Solve — Steganalysis web platform,” README, repository AperiSolve. https://github.com/Zeecka/AperiSolve (accessed 14 November 2026).\n\n[12] Paweł Kaczmarek and Zbigniew Piotrowski, “The A-Files — Research toolkit for evaluating audio steganography and watermarking,” README, repository The-A-Files. https://github.com/pawel-kaczmarek/The-A-Files (accessed 14 November 2026).\n\n[13] ragibson, “Steganography — Least Significant Bit Steganography for bitmap images, WAV sound files, and byte sequences,” repository README. https://github.com/ragibson/Steganography (accessed 14 November 2026).\n\n## Phụ lục A — Lệnh tái hiện
+[11] Zeecka, “Aperi'Solve — Steganalysis web platform,” README, repository AperiSolve. https://github.com/Zeecka/AperiSolve (accessed 14 November 2026).
+
+[12] Paweł Kaczmarek and Zbigniew Piotrowski, “The A-Files — Research toolkit for evaluating audio steganography and watermarking,” README, repository The-A-Files. https://github.com/pawel-kaczmarek/The-A-Files (accessed 14 November 2026).
+
+[13] ragibson, “Steganography — Least Significant Bit Steganography for bitmap images, WAV sound files, and byte sequences,” repository README. https://github.com/ragibson/Steganography (accessed 14 November 2026).
+
+## Phụ lục A — Lệnh tái hiện
 
 ~~~bash
 # Environment and artifacts
