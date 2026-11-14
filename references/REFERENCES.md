@@ -26,4 +26,4 @@
 
 [10] Trường Đại học Công nghệ, ĐHQGHN, “Mô tả bài tập lớn / đồ án thực hành — UET.CN3124: Dự án thực hành CTF Jeopardy,” assignment brief, especially sections 3–7, pp. 3–8.
 
-For every external write-up or source-code reference used in the report, identify the exact file/section and explain how the method was independently reproduced. Access dates must reflect the actual date on which the source was consulted.
+For every external write-up or source-code reference used in the report, identify the exact file/section and explain how the method was independently reproduced. The challenge repositories and technical documentation listed above were consulted on 14 November 2026.
