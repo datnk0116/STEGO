@@ -108,13 +108,17 @@ python scripts/build_submission.py
 
 Outputs are written under `results/submission/`: the DOCX, PDF and `STUDENT_UETCN3124_Scripts.zip`. The build stops if the main body exceeds 15 pages. The report remains a Markdown source of truth; binary submission files must be regenerated after report changes.
 
-## Tests and continuous integration
+## Tests and local quality gate
+
+Run the one-command local evidence gate:
 
 ```bash
-python -m unittest discover -s tests -v
+python scripts/verify_reproducibility.py
 ```
 
-The GitHub Actions workflow provides an optional CI check. For local submission work, use `python scripts/build_submission.py`; this does not start a remote workflow. It repairs DOCX table geometry, validates the main-body page limit and creates a source ZIP.
+The gate runs the complete unittest suite, checks SHA-256 and byte sizes for all three official artifacts, verifies the Blue 3 flag and the 39-character Sleepy Alarm exact-match, and records the reference-free result as a limitation measurement. It writes `results/verification/quality-gate.json` and `results/logs/quality-gate-tests.log`. Current source contains 22 test methods; the committed historical log still proves only six, so use the newly generated log when reporting the test count.
+
+The GitHub Actions workflow is optional. The quality gate does not start GitHub Actions or build DOCX/PDF/ZIP. For those local submission artifacts, the separate command is `python scripts/build_submission.py`.
 
 
 ### Steganalysis triage and expanded experiments
@@ -133,7 +137,7 @@ python src/experiments/sleepy_alarm_robustness_matrix.py \
 
 The benchmark includes deterministic **synthetic benign controls** (seed 20261114) and one official positive artifact per modality. Its precision/recall/F1/FPR are descriptive of this small constructed set only; they are not estimates of real-world detection performance. The benchmark also compares reference-free and reference-assisted Sleepy Alarm extraction. The committed comparison is complete: reference-free extraction fails exact decoding (26 characters, 49 separators), while reference-assisted extraction succeeds. Do not describe the reference-free mode as successful.
 
-The expanded Blue 3 matrix tests brightness, contrast, blur, crop and seeded Gaussian noise. The audio matrix tests one-sided gain, additive noise at several SNRs, band-pass filtering and resampling round-trip. Committed outputs are available under `results/`: Blue 3 extended robustness passes 1/9 variants; the Sleepy Alarm matrix passes 7/23 trials (including baseline). The detector benchmark reports image TP=5/TN=12/FP=0/FN=0 on this constructed set, but audio TP=0/TN=8/FP=0/FN=5 (recall=0). These small challenge-derived/synthetic samples are not real-world performance estimates. The historical unit-test log proves only six tests; source contains 11, so rerun the full suite and save a fresh log.
+The expanded Blue 3 matrix tests brightness, contrast, blur, crop and seeded Gaussian noise. It now also records candidate-at-baseline-length, character position accuracy, Levenshtein edit distance and normalized edit similarity. The audio matrix tests one-sided gain, additive noise at several SNRs, band-pass filtering and resampling round-trip; it now records BER, symbol error rate and separator precision/recall per trial. Rerun both scripts before using these new metrics: historical outputs still contain only PASS/FAIL and must not be retroactively assigned BER or edit-distance values. Committed historical outputs under `results/` show Blue 3 1/9 and Sleepy Alarm 7/23 PASS (including baseline). The detector benchmark reports image TP=5/TN=12/FP=0/FN=0 on this constructed set, but audio TP=0/TN=8/FP=0/FN=5 (recall=0). These small challenge-derived/synthetic samples are not real-world performance estimates. The historical unit-test log proves only six tests; source now contains 22 test methods, including official-artifact integration tests. Run `python scripts/verify_reproducibility.py` and save its fresh log/JSON before claiming all tests pass.
 
 ## Evidence conventions
 
@@ -153,5 +157,5 @@ The report includes a dedicated critical-evaluation section covering the threat 
 - Blue 3 extended robustness passes 1/9 variants; Sleepy Alarm's one-sided robustness passes 3/6 variants.
 - The historical unit-test log covers six tests only, while source currently contains 11 test cases; rerun the suite before claiming current full-suite success.
 
-See `report/REPORT.md` section 11.7–11.9 and `docs/DEFENSE_QA.md` for the threat model, validity discussion, and defense questions. These findings describe the committed experiments only and are not claims about all steganography methods.
+See `report/REPORT.md` section 11.7–11.9, `docs/DEFENSE_QA.md`, and `docs/QUALITY_GATE.md` for the threat model, validity discussion, defense questions, and reproducible verification procedure. These findings describe the committed experiments only and are not claims about all steganography methods.
 
