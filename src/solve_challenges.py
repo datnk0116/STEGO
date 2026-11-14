@@ -76,16 +76,25 @@ def _three_level_cluster(values: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
 def solve_sleepy(path: Path, carrier_hz: float = 8000.0,
                  baud: float = 50.0, reference: Path | None = None,
                  transmission_seconds: float = 7.0) -> dict:
-    signal, sr = sf.read(path, always_2d=True, dtype="float64")
+    raw_target, sr = sf.read(path, always_2d=True, dtype="float64")
+    signal = raw_target
     alignment_info = None
-    crop_start = 0
     if reference is not None:
         original, original_sr = sf.read(reference, always_2d=True, dtype="float64")
-        signal, original, alignment_info = align_reference(
-            signal, int(sr), original, int(original_sr)
+        aligned_target, aligned_reference, alignment_info = align_reference(
+            raw_target, int(sr), original, int(original_sr)
         )
-        crop_start = int(alignment_info["target_start_sample"])
-        signal = signal - original
+        residual = aligned_target - aligned_reference
+        target_start = int(alignment_info["target_start_sample"])
+        if alignment_info["channel_handling"] == "downmixed_to_mono":
+            raw_prefix = raw_target.mean(axis=1, keepdims=True)
+        else:
+            raw_prefix = raw_target
+        # Keep the distributed file's leading samples before the matched
+        # overlap. Otherwise cross-correlation cropping could discard the
+        # beginning of the 7-second payload, including the first flag bits.
+        prefix = raw_prefix[:target_start] if target_start > 0 else raw_prefix[:0]
+        signal = np.concatenate((prefix, residual), axis=0)
 
     if not 0 < baud <= 1000:
         raise ValueError("baud must be in (0, 1000]")
@@ -106,10 +115,10 @@ def solve_sleepy(path: Path, carrier_hz: float = 8000.0,
 
     samples_per_bit = sr / baud
     symbol_count = int(round(transmission_seconds * baud))
-    # The ASK payload begins at sample 0 of the distributed track. Since
-    # reference alignment crops the beginning of the distributed track,
-    # restore its symbol-clock phase in the cropped residual.
-    phase_offset = int(round((-crop_start) % samples_per_bit))
+    # Reconstruct the original distributed-track timeline above, including
+    # any leading samples excluded from the aligned overlap. The ASK clock
+    # therefore starts at sample zero again.
+    phase_offset = 0
     levels = []
     for i in range(symbol_count):
         bit_start = phase_offset + i * samples_per_bit
@@ -162,6 +171,9 @@ def solve_sleepy(path: Path, carrier_hz: float = 8000.0,
         "expected_symbol_count": symbol_count,
         "measured_symbol_count": len(levels),
         "symbol_clock_phase_samples_after_alignment": phase_offset,
+        "reference_prefix_samples_preserved": (
+            int(alignment_info["target_start_sample"]) if alignment_info else 0
+        ),
         "reference_alignment": alignment_info,
         "amplitude_cluster_centers": [float(x) for x in centers],
         "symbol_counts": {
