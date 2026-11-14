@@ -579,7 +579,7 @@ Với audio, The-A-Files mô tả khung đánh giá rộng hơn, tách payload r
 **Các bước tiếp theo có thể kiểm chứng:**
 1. **Chạy và lưu kết quả các pipeline mới:** chạy test suite, benchmark detector, robustness mở rộng Blue 3 và ma trận audio; kiểm tra từng CSV/JSON và cập nhật số liệu thực tế. Đây là bước xác minh code đã có, không được mô tả như kết quả đã hoàn tất trước khi chạy.
 2. **Mở rộng corpus:** bổ sung file lành tính và file stego từ nhiều nguồn; tách tập phát triển và tập kiểm thử để tránh điều chỉnh ngưỡng trên chính dữ liệu đánh giá.
-2. **Đánh giá detection:** báo cáo confusion matrix, precision, recall, F1 và false-positive rate ở các ngưỡng đã công bố; không chỉ báo cáo flag decode thành công/thất bại.
+3. **Đánh giá detection:** báo cáo confusion matrix, precision, recall, F1 và false-positive rate ở các ngưỡng đã công bố; không chỉ báo cáo flag decode thành công/thất bại.
 3. **Đánh giá extraction:** với audio, báo cáo bit error rate (BER), byte exact-match và tỷ lệ payload phục hồi; lặp nhiều seed/biến thể nếu generator có thành phần ngẫu nhiên.
 4. **Đánh giá robustness:** xây ma trận cường độ cho gain, clipping, resampling, crop, filtering và codec; phân biệt biến đổi đồng bộ với bất đối xứng.
 5. **Giảm phụ thuộc reference:** thử detector không-reference dựa trên peak/spectrogram và mô hình nhiễu nền; so sánh trực tiếp với reference-assisted decoder trên cùng corpus.
@@ -609,7 +609,7 @@ Về giới hạn tự đánh giá, đồ án mới có heuristic detector và s
 
 Các thí nghiệm cho thấy decoder Blue 3 không còn tìm được candidate sau JPEG quality 95/85/70 hoặc resize 0,75×/0,5×. Sleepy Alarm exact-match trong cả bốn trường hợp audio theo cặp; với biến đổi bất đối xứng, chỉ 3/6 phép thử PASS: hai phép resampling một phía thành công, còn bốn phép gain một phía thất bại. Kết quả cho thấy việc giữ tương quan nền cao không đủ để bảo đảm phân loại ASK đúng khi thang biên độ giữa target và reference không đồng nhất. Kết luận chỉ giới hạn ở hai challenge và đúng pipeline thực nghiệm này, không suy rộng thành nhận định cho mọi thuật toán steganography.
 
-Giá trị kỹ thuật của đồ án nằm ở việc tự triển khai hai decoder, giữ lại và phân tích lần giải mã thất bại, kiểm chứng bằng sáu regression tests, dùng artifact có SHA-256 và lượng hóa robustness bằng CSV/JSON. Hướng tiếp theo trước mắt là chạy và lưu kết quả cho test suite/benchmark/robustness scripts mới, sau đó mở rộng corpus thực tế, hiệu chuẩn detector và cải thiện khả năng giải mã Sleepy Alarm không cần reference.
+Giá trị kỹ thuật của đồ án nằm ở việc tự triển khai hai decoder, giữ lại và phân tích lần giải mã thất bại, kiểm chứng bằng các regression tests đã lưu log lịch sử (sáu test trong lần chạy cũ; năm test mới cần xác nhận lại), dùng artifact có SHA-256 và lượng hóa robustness bằng CSV/JSON. Hướng tiếp theo trước mắt là chạy và lưu kết quả cho test suite/benchmark/robustness scripts mới, sau đó mở rộng corpus thực tế, hiệu chuẩn detector và cải thiện khả năng giải mã Sleepy Alarm không cần reference.
 
 ## Tài liệu tham khảo
 
