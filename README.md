@@ -142,3 +142,16 @@ Each result must include the source artifact, SHA-256, command, parameters, outp
 ## Scope
 
 All analysis is offline and limited to the two public challenge artifacts. No external target is scanned, exploited or contacted.
+
+## Critical evaluation and limitations
+
+The report includes a dedicated critical-evaluation section covering the threat model, construct/internal/external validity, decoder assumptions, detector failure analysis, asymmetric robustness, and prioritized future experiments. Important limitations are intentionally retained rather than hidden:
+
+- Sleepy Alarm is currently reference-assisted; the saved reference-free comparison fails exact decoding.
+- The audio heuristic detector has recall=0 on the current small benchmark (TP=0, FN=5).
+- The image detector's perfect score is challenge-family-specific and based on synthetic controls plus derivatives of one source artifact.
+- Blue 3 extended robustness passes 1/9 variants; Sleepy Alarm's one-sided robustness passes 3/6 variants.
+- The historical unit-test log covers six tests only, while source currently contains 11 test cases; rerun the suite before claiming current full-suite success.
+
+See `report/REPORT.md` section 11.7–11.9 and `docs/DEFENSE_QA.md` for the threat model, validity discussion, and defense questions. These findings describe the committed experiments only and are not claims about all steganography methods.
+
