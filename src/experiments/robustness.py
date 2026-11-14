@@ -2,6 +2,7 @@
 """Controlled perturbation helpers; always write to a separate output directory."""
 from __future__ import annotations
 import argparse, json
+from fractions import Fraction
 from pathlib import Path
 from PIL import Image
 import numpy as np
@@ -30,12 +31,12 @@ def audio_experiments(src: Path, out: Path) -> list[dict]:
     out.mkdir(parents=True, exist_ok=True)
     x,sr=sf.read(src,always_2d=True,dtype="float64")
     records=[]
-    # Resample to 48 kHz and back to original rate using polyphase filters.
-    y=resample_poly(x, up=160, down=147, axis=0) if sr==44100 else resample_poly(x, up=48000, down=sr, axis=0)
-    y_sr=48000
-    if sr!=44100:
-        y=resample_poly(y, up=sr, down=48000, axis=0)
-        y_sr=sr
+    # Resample to 48 kHz and back to the original rate using polyphase filters.
+    to_48k = Fraction(48000, sr).limit_denominator(100000)
+    y=resample_poly(x, up=to_48k.numerator, down=to_48k.denominator, axis=0)
+    back_to_source = Fraction(sr, 48000).limit_denominator(100000)
+    y=resample_poly(y, up=back_to_source.numerator, down=back_to_source.denominator, axis=0)
+    y_sr=sr
     target=out/"audio_resample_roundtrip.wav"
     sf.write(target,y,y_sr,subtype="PCM_24")
     records.append({"type":"resample_roundtrip","source_rate":sr,"intermediate_rate":48000,"output":str(target),"frames":int(y.shape[0])})
