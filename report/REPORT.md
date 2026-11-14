@@ -1,326 +1,521 @@
-# Báo cáo đồ án thực hành CTF Jeopardy
+# BÁO CÁO ĐỒ ÁN THỰC HÀNH CTF JEOPARDY
 ## UET.CN3124 — An toàn và an ninh mạng
 
-**Tên đề tài:** Phân tích kỹ thuật ẩn tin trong ảnh và âm thanh: nghiên cứu Blue 3 và Sleepy Alarm  
+**Tên đề tài:** Phân tích và đánh giá kỹ thuật ẩn tin trên ảnh và âm thanh qua Blue 3 (BYUCTF) và Sleepy Alarm (ImaginaryCTF 2024)  
+**Chủ đề CTF chính:** Steganography  
 **Sinh viên:** [HỌ VÀ TÊN] — **MSSV:** [MSSV]  
 **Lớp:** [LỚP] — **Ngày nộp:** [NGÀY NỘP]
 
-> **Trạng thái:** Bản thảo nghiên cứu có thể tái lập. Các trường [CẦN THỰC NGHIỆM] phải được thay bằng kết quả do sinh viên trực tiếp chạy. Không được tự điền flag, runtime, metric hoặc kết quả chưa đo.
+> **Trạng thái bằng chứng:** Blue 3 đã được chạy trên artifact chính thức và khôi phục đúng flag theo đối chiếu với README của ban tổ chức. Sleepy Alarm đã được tải, xác minh hash và chạy thử; lần giải mã đầu tiên thất bại. Một phiên bản decoder đã được điều chỉnh theo source generator, nhưng kết quả trên MP3 chính thức của phiên bản mới chưa được chạy xác nhận. Các nội dung chưa có log không được xem là kết quả đã hoàn thành.
+
+---
 
 ## Tóm tắt
 
-Báo cáo nghiên cứu hai challenge CTF thuộc chủ đề Steganography: Blue 3 (BYUCTF) và Sleepy Alarm (ImaginaryCTF 2024). Mục tiêu là khảo sát cách dữ liệu có thể được nhúng trong ảnh thông qua biến đổi pixel và trong âm thanh thông qua cấu trúc tín hiệu; xây dựng quy trình phân tích độc lập; đánh giá khả năng tái hiện; và thảo luận dấu hiệu phát hiện dưới góc nhìn phòng thủ.
+Đồ án khảo sát hai cơ chế steganography khác nhau trong cùng một chủ đề CTF. Blue 3 (BYUCTF) ẩn từng ký tự trong tổng sai khác giá trị RGB của các vùng vuông nằm trên đường chéo ảnh. Sleepy Alarm (ImaginaryCTF 2024) nhúng chuỗi bit bằng điều chế biên độ ASK trên sóng mang 8 kHz, tốc độ 50 baud, rồi trộn tín hiệu này vào bản nhạc báo thức.
 
-Phương pháp gồm: (1) thu thập và xác minh artifact chính thức; (2) khảo sát metadata, định dạng và đặc trưng tín hiệu; (3) kiểm tra giả thuyết bằng script; (4) đối chiếu kết quả và ghi nhận giới hạn. Với ảnh, quy trình tập trung vào histogram, kênh màu và sai khác pixel. Với âm thanh, quy trình khảo sát waveform, phổ Fourier và spectrogram. Kết quả thực nghiệm sẽ chỉ được báo cáo sau khi chạy trên artifact gốc.
+Đối với Blue 3, công cụ tự viết đã phân tích ảnh PNG 512 × 512, xác định màu nền RGB (64, 77, 205), thử 49 độ dài ứng viên và khôi phục chuỗi 50 ký tự. Chuỗi kết quả trùng với flag do ban tổ chức công bố. Đối với Sleepy Alarm, hai MP3 được xác minh bằng SHA-256 và đồng bộ bằng cross-correlation; lần giải mã đầu tiên cho kết quả sai do xử lý sai kênh stereo, sai khoảng thời gian payload và ngưỡng biên độ chưa phù hợp với tín hiệu MP3. Từ source MATLAB chính thức, quy trình đã được điều chỉnh để phân tích kênh trái, 350 symbol đầu trong 7 giây và ba cụm biên độ. Kết quả cuối của lần chạy sửa đổi vẫn đang chờ xác minh.
 
-**Kết quả thực nghiệm:** [CẦN THỰC NGHIỆM — ghi phát hiện, SHA-256, số liệu và ảnh minh chứng thực tế.]
+Đóng góp của đồ án gồm decoder Blue 3 có chế độ tự suy luận màu nền, decoder ASK có tham chiếu âm thanh, công cụ tạo hình phân tích ảnh/âm thanh, bộ kiểm thử hồi quy tổng hợp và kịch bản thí nghiệm độ bền. Báo cáo phân biệt kết quả đo được, kết quả tham khảo từ source upstream và các thí nghiệm chưa thực hiện.
 
-**Từ khóa:** Capture The Flag, steganography, steganalysis, pixel analysis, audio signal processing, FFT, spectrogram.
+**Từ khóa:** Steganography, Steganalysis, CTF, pixel-difference encoding, Amplitude Shift Keying, FFT, STFT, cross-correlation.
 
-## 1. Giới thiệu và mục tiêu
+## 1. Giới thiệu và thiết kế đồ án
 
-### 1.1. Bối cảnh
+### 1.1. Bối cảnh và mục tiêu
 
-Steganography là kỹ thuật che giấu sự tồn tại của thông điệp trong một vật mang tin (cover object), khác với cryptography vốn tập trung biến đổi nội dung bằng mật mã. Trong bài toán CTF, người giải được cung cấp file và cần suy luận cách dữ liệu được nhúng, sau đó khôi phục thông điệp.
+Steganography tập trung che giấu sự tồn tại của thông điệp trong một vật mang tin, chẳng hạn ảnh hoặc âm thanh. Khác với mật mã học, mục tiêu không chỉ là làm cho nội dung khó đọc mà còn làm cho người quan sát khó nhận ra có dữ liệu bổ sung. Người gửi cần nhúng thông điệp sao cho ít gây nghi ngờ; người phân tích cần nhận biết bất thường và khôi phục thông điệp khi có đủ bằng chứng.
 
-Ảnh số và âm thanh số là hai vật mang tin phù hợp để nghiên cứu vì chúng chứa nhiều mẫu số. Thay đổi nhỏ trong các mẫu có thể khó nhận biết bằng quan sát thông thường nhưng có thể bộc lộ qua phân tích thống kê hoặc tín hiệu.
+Đồ án chọn hai challenge sử dụng hai loại vật mang tin khác nhau. Blue 3 thể hiện cách nhúng dữ liệu trong miền không gian của ảnh, còn Sleepy Alarm thể hiện cách nhúng trong miền tín hiệu của âm thanh. Cặp challenge này cho phép so sánh hai hướng phân tích: thống kê pixel theo vùng và phân tích tín hiệu theo tần số/thời gian.
 
-### 1.2. Mục tiêu
+Mục tiêu cụ thể:
+1. Tái hiện hai challenge bằng artifact chính thức, giữ nguyên dữ liệu đầu vào và ghi SHA-256.
+2. Tự xây dựng decoder thay vì chỉ sử dụng lời giải có sẵn.
+3. Phân tích điều kiện toán học khiến decoder hoạt động và điều kiện khiến nó thất bại.
+4. So sánh cách giải có thông tin từ source với cách giải dựa trên artifact.
+5. Tạo thí nghiệm kiểm tra độ nhạy của kỹ thuật nhúng trước một số phép biến đổi.
+6. Đánh giá dấu hiệu phát hiện và biện pháp phòng thủ đối với ảnh/âm thanh có dữ liệu ẩn.
 
-1. Thiết lập môi trường phân tích offline có thể tái lập.
-2. Phân tích hai challenge chung chủ đề Steganography nhưng khác loại vật mang tin.
-3. Tự triển khai công cụ kiểm tra thay vì chỉ chạy công cụ đóng gói.
-4. Ghi lại giả thuyết, lệnh, đầu ra, lỗi và cách khắc phục.
-5. Đánh giá điều kiện thành công, giới hạn, dấu hiệu phát hiện và biện pháp phòng thủ.
-6. So sánh hai loại vật mang tin và đề xuất mở rộng có thể kiểm chứng.
+### 1.2. Lý do lựa chọn và so sánh phương án
 
-### 1.3. Phạm vi và câu hỏi nghiên cứu
+Assignment yêu cầu chọn một chủ đề CTF chính và khuyến nghị một cụm challenge nhất quán gồm hai challenge có liên hệ, hoặc một challenge khó kèm phần mở rộng có ý nghĩa [10]. Hai challenge được chọn đều thuộc hướng steganography, nhưng bổ sung cho nhau về dữ liệu và công cụ.
 
-- RQ1: Đặc trưng nào của ảnh giúp nhận diện khả năng dữ liệu đã được nhúng bằng biến đổi pixel?
-- RQ2: Phân tích miền thời gian, miền tần số và spectrogram hỗ trợ phát hiện cấu trúc ẩn trong âm thanh như thế nào?
-- RQ3: Kết quả có tái lập được khi sử dụng cùng artifact, môi trường và lệnh?
-- RQ4: Những thao tác xử lý ảnh/âm thanh nào có thể phá hủy hoặc làm suy giảm thông tin steganographic?
+| Phương án | Vật mang tin | Kỹ thuật chính | Giá trị học tập | Hạn chế khi chọn |
+|---|---|---|---|---|
+| Blue 3 — BYUCTF | PNG | Tổng sai khác RGB theo vùng đường chéo | Có thể suy luận thuật toán, tự viết decoder và kiểm tra tính đúng | Cần suy ra độ dài flag và màu nền |
+| Sleepy Alarm — ImaginaryCTF | MP3 | ASK, FFT/STFT, lọc băng và tách tín hiệu tham chiếu | Có phân tích tín hiệu, đồng bộ, codec và độ bền | MP3 làm thay đổi biên độ; cần xử lý audio cẩn thận |
+| Bài ảnh dùng LSB phổ thông | PNG/BMP | Đọc bit thấp của kênh màu | Dễ tái hiện | Ít chiều sâu nếu chỉ dùng công cụ trích xuất |
+| Bài chỉ dùng Steghide | Ảnh/tệp | Trích payload bằng công cụ đóng gói | Có thể kiểm chứng nhanh | Phụ thuộc passphrase/công cụ; khó thể hiện phân tích thuật toán nếu không mở rộng |
 
-Phạm vi chỉ bao gồm file challenge công khai và bản sao cục bộ. Không thực hiện tấn công hoặc thu thập dữ liệu trên hệ thống ngoài phạm vi cho phép.
+Blue 3 được ưu tiên vì source mô tả thuật toán cụ thể, ảnh đầu vào có sẵn và có thể tự kiểm tra từ dữ liệu. Sleepy Alarm bổ sung một bài toán tín hiệu khác hẳn, đồng thời tạo điều kiện phân tích sự khác nhau giữa dữ liệu gốc, tín hiệu đã trộn và tín hiệu sau nén MP3. Việc chọn hai bài không nhằm tăng số lượng flag mà nhằm tạo phép so sánh có cùng chủ đề nhưng khác miền biểu diễn.
 
-## 2. Bối cảnh challenge và kiến thức nền
+### 1.3. Câu hỏi nghiên cứu và giả thuyết
 
-### 2.1. Blue 3 — BYUCTF
+- **RQ1:** Tổng sai khác RGB theo từng vùng có đủ thông tin để khôi phục ký tự đã nhúng trong Blue 3 hay không?
+- **RQ2:** Phân tích phổ và envelope có thể tách tín hiệu ASK 8 kHz khỏi âm thanh nền trong Sleepy Alarm hay không?
+- **RQ3:** Kết quả giải mã thay đổi thế nào khi ảnh bị JPEG recompression/resize hoặc âm thanh bị resampling/gain/clipping?
+- **RQ4:** Có thể xây dựng dấu hiệu phát hiện steganography từ đặc trưng pixel và phổ âm thanh không?
 
-Blue 3 được BYU-CSA mô tả ở mức Hard. Flag được tách thành từng ký tự; với ký tự thứ i, bộ tạo chọn ngẫu nhiên ord(c) lần, mỗi lần tăng 1 một kênh màu ngẫu nhiên của một pixel trong vùng vuông thứ i trên đường chéo. Ảnh nền là RGB (64, 77, 205), kích thước 512×512. Các vùng có kích thước floor(512/L) × floor(512/L), trong đó L là độ dài flag; phần dư ở mép phải/dưới không thuộc các vùng được duyệt. Solver upstream ước lượng màu nền phổ biến nhất, thử độ dài L, cộng tổng chênh lệch ba kênh so với màu nền trong từng vùng rồi ánh xạ tổng sang mã ký tự. Bản triển khai độc lập nằm tại `src/solve_challenges.py`. Challenge hard-mode chỉ phân phối blue.png; create.py/solve.py là tài liệu tham khảo của tác giả, không phải artifact bắt buộc cho người chơi.
+Các giả thuyết:
+- **H1 — Blue 3:** Nếu màu nền được xác định đúng, ảnh còn nguyên vẹn và kích thước không thay đổi, tổng chênh lệch ba kênh RGB trong vùng ký tự thứ i bằng mã ASCII của ký tự đó.
+- **H2 — Sleepy Alarm:** Nếu tách được thành phần quanh 8 kHz, giữ đúng đồng hồ symbol 50 baud và phân biệt được ba trạng thái biên độ, có thể phục hồi 350 symbol tương ứng 39 byte và 38 dấu phân cách.
+- **H3 — Độ bền:** JPEG recompression/resize có thể phá hủy quan hệ pixel tuyệt đối của Blue 3; resampling, filtering hoặc clipping có thể làm sai biên độ/thời điểm symbol của Sleepy Alarm.
 
-Artifact cần thu thập: ảnh gốc và file mô tả/source từ kho BYU được liệt kê trong `data/README.md`.
+### 1.4. Tiêu chí xác nhận thành công
 
-Câu hỏi phân tích: dữ liệu có được biểu diễn bằng sự khác biệt giữa pixel hoặc giữa các vùng ảnh hay không; thứ tự duyệt pixel/vùng, kênh màu, ngưỡng và ánh xạ ký tự được xác định như thế nào? Không khẳng định thuật toán cụ thể trước khi đối chiếu source và dữ liệu.
+| Challenge | Tiêu chí kỹ thuật | Trạng thái hiện tại |
+|---|---|---|
+| Blue 3 | Khôi phục đủ chuỗi; khớp định dạng và đối chiếu flag chính thức; ghi hash và thông số ảnh | Đã đạt trên lần chạy cục bộ; cần chạy lại sau thay đổi chế độ tự suy luận màu nền |
+| Sleepy Alarm | 350 symbol; 38 separator; 39 byte; prefix ictf{; suffix }; không có byte lỗi; đối chiếu generator | Chưa đạt trên lần chạy đầu; phiên bản decoder mới đang chờ xác minh |
+| Robustness | Mỗi biến thể có trạng thái giải mã và tham số biến đổi được ghi lại | Đã có script tạo biến thể; chưa có kết quả đo |
 
-### 2.2. Sleepy Alarm — ImaginaryCTF 2024
+## 2. Kiến thức nền và mô hình kỹ thuật
 
-Sleepy Alarm thuộc category Forensics, độ khó Medium, tác giả Minerva. Challenge cung cấp `togive/morning_n_breakfast.mp3` và gợi ý độ dài flag là 39 ký tự (tính cả ictf và dấu ngoặc nhọn). Writeup chính thức mô tả một thành phần jingle yếu với peak bất thường ở 8 kHz. Sau khi cô lập sóng mang 8 kHz, tín hiệu có ba mức biên độ: 2×10⁻³ biểu diễn bit 0, 5×10⁻³ biểu diễn bit 1 và 0 biểu diễn điểm kết thúc byte. Mỗi bit kéo dài 0,02 giây, tương ứng 50 baud. Đây là Amplitude Shift Keying (ASK). Challenge repository còn công bố file gốc `morning_n_breakfast_original.mp3` và script MATLAB tạo tín hiệu; có thể dùng cặp original/challenge để so sánh, nhưng lời giải phải được tái hiện trên file phân phối cho người chơi.
+### 2.1. Mô hình steganography
 
-Artifact cần thu thập: file âm thanh phát hành chính thức trong challenge repository của ImaginaryCTF 2024, cùng mô tả challenge và writeup tham khảo (nếu có).
+Có thể mô tả quá trình nhúng tổng quát:
 
-Câu hỏi phân tích: tín hiệu có thành phần tần số, khoảng thời gian, kênh stereo hoặc mẫu lặp bất thường hay không; spectrogram/FFT có làm lộ cấu trúc không quan sát rõ khi nghe thông thường hay không? Không mặc định thông điệp được mã hóa bằng một tần số cố định.
+\[
+S = E(C,M,K,\theta)
+\]
 
-### 2.3. Kiến thức nền
+Trong đó C là vật mang tin gốc, M là thông điệp, K là khóa (nếu có), θ là tham số thuật toán và S là vật mang tin sau khi nhúng. Quá trình trích xuất tìm:
 
-#### 2.3.1. Mô hình nhúng
+\[
+\hat M = D(S,K,\theta)
+\]
 
-Mô hình tổng quát: `stego = Embed(cover, message, key, parameters)`. Quá trình trích xuất: `message′ = Extract(stego, key, parameters)`. Ba thuộc tính cần xem xét là tính bí mật (khó nhận biết), dung lượng và độ bền trước biến đổi vật mang tin.
+Một kỹ thuật ẩn tin thường được đánh giá qua ba yếu tố: dung lượng (payload capacity), tính khó phát hiện (imperceptibility) và độ bền (robustness). Ba yếu tố này có thể xung đột. Ví dụ, thay đổi nhiều pixel có thể tăng dung lượng nhưng làm phân bố màu dễ bị phát hiện; nén ảnh có thể phá hủy payload.
 
-#### 2.3.2. Ảnh số
+### 2.2. Blue 3: mã hóa bằng tổng sai khác RGB
 
-Ảnh raster biểu diễn thành ma trận mẫu. Với RGB, mỗi pixel có ba thành phần R, G, B. Có thể khảo sát kích thước, mode, bit depth, metadata, histogram từng kênh, phân bố giá trị và sai khác pixel. Với Blue 3, base image theo creator source là màu đồng nhất RGB (64,77,205), vì vậy có thể dùng chính màu này làm baseline thay vì cần một file cover riêng. Với hai ảnh A và B cùng kích thước: `D(x,y,c) = |A(x,y,c) − B(x,y,c)|`. Thống kê D gồm tỷ lệ pixel khác 0, trung bình, cực đại và histogram.
+Theo README và creator script chính thức, ảnh được tạo từ nền đồng nhất RGB = (64, 77, 205), kích thước 512 × 512. Với flag có độ dài L, đặt:
 
-#### 2.3.3. Âm thanh số
+\[
+s = \left\lfloor \frac{512}{L} \right\rfloor
+\]
 
-Âm thanh rời rạc được biểu diễn bởi `x[n]`, với tần số lấy mẫu `f_s`. Thời lượng lý thuyết là `N/f_s` giây cho N mẫu. Phân tích miền thời gian khảo sát biên độ, khoảng lặng, clipping và tuần hoàn.
+Ký tự thứ i được gắn với vùng vuông:
+
+\[
+R_i = [is,(i+1)s)\times[is,(i+1)s)
+\]
+
+Trong mỗi vòng lặp tương ứng một đơn vị mã ký tự, creator chọn ngẫu nhiên một pixel thuộc R_i và tăng một đơn vị ở một trong ba kênh RGB. Nếu pixel được chọn nhiều lần, các mức tăng được cộng dồn.
+
+Gọi B=(64,77,205) là màu nền và I(x,y,c) là giá trị kênh c tại pixel (x,y). Tổng sai khác của vùng i:
+
+\[
+\Delta_i =
+\sum_{(x,y)\in R_i}
+\sum_{c\in\{R,G,B\}}
+(I(x,y,c)-B_c)
+\]
+
+Mỗi thao tác nhúng chỉ tăng đúng một đơn vị ở đúng một kênh. Do đó, nếu ảnh không bị biến đổi và không xảy ra tràn/clipping giá trị kênh:
+
+\[
+\Delta_i = \operatorname{ord}(m_i)
+\]
+
+Suy ra ký tự:
+
+\[
+\hat m_i = \operatorname{chr}(\Delta_i)
+\]
+
+Phép tổng hợp không cần biết pixel nào đã bị thay đổi, kênh nào được chọn hay thứ tự ngẫu nhiên của creator. Các thao tác tăng một đơn vị có tính cộng, nên tổng sai khác giữ lại số lần tăng của cả vùng. Điều kiện thành công là xác định đúng L, đúng màu nền, đúng ranh giới vùng và bảo toàn giá trị pixel.
+
+Với flag thực tế có 50 ký tự, s = floor(512/50) = 10. Mỗi ký tự tương ứng vùng 10 × 10 pixel; 50 vùng bao phủ 5.000 vị trí pixel trên đường chéo. Mép phải và mép dưới còn 12 pixel không thuộc các vùng được duyệt. Tổng số lần tăng kênh suy ra từ chuỗi flag chính thức là 5.164; số lần tăng có thể lớn hơn số vị trí pixel vì một pixel có thể được chọn lặp lại.
+
+### 2.3. Sleepy Alarm: điều chế ASK trong miền thời gian
+
+Source MATLAB của challenge mô tả ba trạng thái biên độ:
+- 0: dấu phân cách/kết thúc một byte.
+- 2 × 10⁻³: bit 0.
+- 5 × 10⁻³: bit 1.
+
+Sóng mang có tần số fc = 8.000 Hz. Tốc độ symbol Rs = 50 baud, nên thời lượng mỗi symbol Ts = 1/Rs = 0,02 giây. Với sample rate 44.100 Hz, số mẫu mỗi symbol là:
+
+\[
+N_s = 44100 \times 0.02 = 882
+\]
+
+Một ký tự ASCII gồm 8 bit. Flag dài 39 ký tự nên có 312 bit. Generator chèn một dấu phân cách giữa các byte, tạo 38 dấu phân cách. Tổng số symbol là:
+
+\[
+N_{\text{symbol}}=312+38=350
+\]
+
+350 symbol × 0,02 giây = 7 giây. Trong mỗi symbol, sóng mang có 8.000 × 0,02 = 160 chu kỳ. Generator MATLAB cộng tín hiệu ASK vào cột thứ nhất của ma trận audio, tức kênh trái trong file stereo. Vì vậy, lấy trung bình hai kênh trước khi giải mã sẽ làm suy giảm biên độ thành phần ASK.
+
+### 2.4. FFT, STFT và envelope
 
 Biến đổi Fourier rời rạc:
 
-`X[k] = Σ(n=0..N−1) x[n] exp(−j 2πkn/N)`
+\[
+X[k]=\sum_{n=0}^{N-1}x[n]e^{-j2\pi kn/N}
+\]
 
-Độ phân giải tần số của FFT N điểm là `f_s/N`. Spectrogram biểu diễn năng lượng theo thời gian và tần số; STFT chia tín hiệu thành các khung, nhân cửa sổ rồi thực hiện Fourier. Cần ghi rõ FFT size, loại cửa sổ và hop length vì chúng ảnh hưởng độ phân giải.
+Độ phân giải tần số của FFT N điểm là Δf = fs/N. FFT trên toàn file phù hợp để xác định peak tần số nhưng không cho biết peak xuất hiện ở thời điểm nào. STFT chia tín hiệu thành các cửa sổ ngắn; spectrogram biểu diễn năng lượng theo thời gian và tần số. Sau khi lọc băng quanh sóng mang, analytic signal/Hilbert transform có thể dùng để lấy envelope, từ đó ước lượng mức biên độ trong phần giữa mỗi symbol.
 
-#### 2.3.4. Steganalysis và giới hạn
+Đối với Sleepy Alarm, các tham số quan trọng là tần số cắt bộ lọc, kích thước cửa sổ STFT, hop length, vị trí bắt đầu symbol và cách xử lý âm thanh nền. Spectrogram không phải bằng chứng duy nhất; kết luận phải phù hợp với số symbol, mức biên độ, cấu trúc byte và độ dài flag được challenge gợi ý.
 
-Steganalysis tìm dấu hiệu thống kê hoặc cấu trúc bất thường. Không có một dấu hiệu đơn lẻ nào chứng minh chắc chắn tồn tại dữ liệu ẩn. Hậu kỳ ảnh, codec, nén, resampling và filtering đều có thể tạo bất thường tương tự. Kết luận phải kết hợp nhiều bằng chứng và nêu false positives.
+## 3. Nguồn dữ liệu và tính toàn vẹn
 
-## 3. Môi trường thực nghiệm
+Các artifact được lấy từ repository chính thức, tải về bằng script có kiểm tra kích thước và tính SHA-256 cục bộ.
 
-### 3.1. Cấu hình
+| Artifact | Nguồn | Kích thước | SHA-256 cục bộ |
+|---|---|---:|---|
+| blue.png | BYU-CSA, Blue 3 | 9.406 bytes | 009dab85bf6ccc5b42b8efa5f959ab6efa0c556b37eb6b4a77a21ec3356b721e |
+| morning_n_breakfast.mp3 | ImaginaryCTF, file phân phối | 179.283 bytes | bd181876c2d28152b9c3982fd88945d4e681fd93d49477622ea5841a3ff25ae2 |
+| morning_n_breakfast_original.mp3 | ImaginaryCTF, audio tham chiếu | 160.495 bytes | d0c283834955e54d68b0bba723ccd194142a428d2de74722e5f1dff3ccbd94ad2 |
 
-- Hệ điều hành: macOS 15.7.4
-- Kiến trúc CPU: arm64
-- Python: 3.14.10
-- Pillow 13.0.0; NumPy 2.5.4; SciPy 1.18.1; Matplotlib 3.11.2; SoundFile 0.14.0 (theo log môi trường ngày 14-11-2026).
-- Môi trường: virtual environment `.venv`.
-- Dữ liệu: bản sao artifact upstream, không chỉnh sửa bản gốc.
+Blue 3 có định dạng PNG, mode RGB, kích thước 512 × 512, 262.144 pixel; Pillow không báo metadata key. Các giá trị kênh quan sát được:
 
-### 3.2. Công cụ
+| Kênh | Min | Max | Mean | Std | Số giá trị duy nhất |
+|---|---:|---:|---:|---:|---:|
+| R | 64 | 68 | 64,006634 | 0,093454 | 5 |
+| G | 77 | 81 | 77,006531 | 0,094254 | 5 |
+| B | 205 | 209 | 205,006535 | 0,094233 | 5 |
 
-- Python: tự động hóa kiểm tra và phân tích.
-- Pillow: đọc ảnh và khảo sát pixel.
-- NumPy: tính toán mảng và FFT.
-- SciPy và SoundFile: đọc/đặc trưng âm thanh.
-- Matplotlib: biểu diễn waveform, phổ và spectrogram.
-- ExifTool, `file`, `shasum`: kiểm tra metadata, định dạng và tính toàn vẹn.
+Các giá trị min/max nhất quán với mô hình nền (64,77,205) được tăng từng đơn vị. Tuy nhiên, chỉ các thống kê này chưa đủ chứng minh payload; bằng chứng quyết định là tổng sai khác theo đúng phân vùng và kết quả giải mã đối chiếu với flag chính thức.
 
-### 3.3. Cài đặt
+## 4. Môi trường thực nghiệm và công cụ
 
-```bash
-python -m venv .venv
-source .venv/bin/activate       # macOS/Linux
-# .venv\Scripts\activate      # Windows
-python -m pip install -r requirements.txt
+### 4.1. Cấu hình ghi nhận từ máy chạy
+
+| Thành phần | Phiên bản/cấu hình |
+|---|---|
+| Hệ điều hành | macOS 15.7.4 |
+| Kiến trúc | arm64 |
+| Python | 3.14.10 |
+| Pillow | 13.0.0 |
+| NumPy | 2.5.4 |
+| SciPy | 1.18.1 |
+| Matplotlib | 3.11.2 |
+| SoundFile | 0.14.0 |
+| Quản lý môi trường | uv và virtual environment .venv |
+
+Pillow đọc ảnh và trích ma trận RGB; NumPy tính tổng và thống kê mảng; SciPy thực hiện lọc, cross-correlation và STFT; SoundFile đọc dữ liệu audio; Matplotlib xuất histogram, waveform, spectrogram và envelope.
+
+### 4.2. Cài đặt và tái lập
+
+~~~bash
+uv venv --python 3.14
+source .venv/bin/activate
+uv pip install -r requirements.txt
 python scripts/check_environment.py
-```
+python scripts/download_artifacts.py all
+python -m unittest discover -s tests -v
+~~~
 
-### 3.4. Tính toàn vẹn
+Không chỉnh sửa artifact gốc. Mọi ảnh JPEG, ảnh resize, audio resample hoặc audio gain/clipping phải được lưu trong thư mục kết quả riêng. Trước mỗi lần chạy, ghi lại hash input, lệnh, tham số và thời gian chạy.
 
-Mỗi artifact được giữ nguyên và có SHA-256 ghi trong `results/artifact_manifest.txt`. Không chạy công cụ biến đổi trực tiếp trên file gốc. Mọi file chuyển đổi, lọc hoặc resample phải được lưu riêng và ghi tham số.
+## 5. Quy trình thực hiện và kết quả Blue 3
 
-## 4. Quy trình thực hiện
+### 5.1. Khảo sát ban đầu
 
-### 4.1. Quy trình chung
+Lệnh chạy:
 
-1. Đọc mô tả challenge và ghi nguồn tải/ngày truy cập.
-2. Tải artifact từ kho phát hành chính thức.
-3. Xác minh file, định dạng, kích thước và SHA-256.
-4. Phân tích sơ bộ bằng công cụ hệ thống và script.
-5. Nêu giả thuyết có thể kiểm chứng; mỗi giả thuyết phải có phép thử và kết quả.
-6. Triển khai hoặc điều chỉnh script độc lập.
-7. Đối chiếu với source/writeup upstream và trích dẫn rõ ràng.
-8. Chạy lại từ môi trường sạch.
-9. Lưu log, ảnh chụp terminal và kết quả trung gian.
+~~~bash
+python src/blue3/analyze.py data/blue3/blue.png
+~~~
 
-### 4.2. Blue 3 — phân tích ảnh
+Kết quả cho thấy PNG RGB 512 × 512, không có metadata key và các kênh chỉ sử dụng 5 mức giá trị nằm sát màu nền. Đây là chỉ dấu phù hợp với một phép biến đổi pixel có biên độ nhỏ. Giả thuyết được đặt ra là tổng độ lệch của từng vùng đường chéo có thể biểu diễn mã ký tự.
 
-**Bước 1 — Kiểm tra file:** ghi kích thước, mode, định dạng, metadata và SHA-256.
+### 5.2. Decoder và tìm độ dài flag
 
-**Bước 2 — Khảo sát pixel:** xuất histogram kênh màu và thống kê cơ bản; kiểm tra màu RGB (64,77,205), tỷ lệ pixel đúng màu nền và phân bố tổng sai khác có dấu.
+Lệnh chạy:
 
-**Bước 3 — Hình thành giả thuyết:** source creator cho biết mỗi ký tự c được biểu diễn bởi tổng số lần tăng kênh màu bằng `ord(c)` trong vùng đường chéo tương ứng. Vì mỗi thay đổi chỉ tăng một đơn vị ở một kênh, tổng sai khác RGB trong một vùng phải khôi phục được mã ký tự, miễn là màu nền và phân vùng được xác định đúng. Cụ thể, với L ký tự và ảnh 512×512, mỗi vùng có cạnh `floor(512/L)`; vùng i có góc trên-trái `(i·w, i·h)`.
+~~~bash
+python src/solve_challenges.py blue3 data/blue3/blue.png
+~~~
 
-**Bước 4 — Kiểm thử:** solver upstream ước lượng màu nền từ màu phổ biến nhất. Bản tái triển khai sử dụng baseline đã biết từ creator source RGB (64,77,205), sau đó thử các ứng viên L. Với từng i, cộng `R−64 + G−77 + B−205` trong vùng vuông đường chéo để thu mã ký tự. Dừng khi chuỗi khớp regex `byuctf{[0-9A-Za-z_]*}`. Script độc lập: `python src/solve_challenges.py blue3 data/blue3/blue.png`. Việc biết baseline từ source được ghi nhận là lợi thế white-box; cần thêm phép thử suy luận baseline từ ảnh để đánh giá tình huống black-box.
+Trong lần chạy đầu, decoder sử dụng màu nền RGB (64,77,205), thử các độ dài ứng viên và cộng tổng sai khác RGB của mỗi vùng. Kết quả terminal:
 
-**Bước 5 — Xác minh:** kết quả cần có định dạng hợp lý và được đối chiếu độc lập với logic tạo challenge. Không dùng flag trong source làm bằng chứng duy nhất cho khả năng giải từ artifact.
+~~~text
+Candidate: byuctf{more_blue_steganography_da_ba_dee_nkiY9CyP}
+Attempts: 49
+Format validated: True
+~~~
 
-Bằng chứng cần có: ảnh đầu vào và SHA-256; metadata; histogram; log script; đầu ra trung gian; phép kiểm tra kết quả; ảnh chụp terminal.
+Chuỗi có 50 ký tự và trùng chính xác với flag trong README chính thức của BYU-CSA [1]. Đây là xác minh độc lập ở mức kết quả: decoder khôi phục từ pixel, sau đó được so sánh với giá trị do ban tổ chức công bố. Việc khớp regex đơn thuần sẽ yếu hơn vì có thể xuất hiện ứng viên ngẫu nhiên; đối chiếu với flag chính thức làm giảm đáng kể khả năng kết luận nhầm.
 
-### 4.3. Sleepy Alarm — phân tích âm thanh
+### 5.3. Tự triển khai và so sánh hai cách xác định màu nền
 
-**Bước 1 — Kiểm tra container/codec:** ghi sample rate, số kênh, số frame, sample width, thời lượng và SHA-256.
+Creator source công bố màu nền RGB (64,77,205). Tuy nhiên, để tránh phụ thuộc vào thông tin source khi giải hard-mode chỉ cung cấp ảnh, decoder mới có hai cách:
+1. **Black-box:** suy luận màu nền là bộ RGB xuất hiện phổ biến nhất trong ảnh.
+2. **Source-informed:** truyền trực tiếp màu nền biết từ creator source qua tham số.
 
-**Bước 2 — Nghe và quan sát:** nghe ở mức âm lượng an toàn; ghi đoạn bất thường nhưng không kết luận chỉ dựa vào thính giác.
+Phiên bản hiện tại đặt black-box làm mặc định. Điều này giúp so sánh một solver dựa trên quan sát artifact với một solver được hỗ trợ bởi thông tin triển khai. Cần chạy lại lệnh Blue 3 trên phiên bản mới và lưu output để chứng minh chế độ tự suy luận vẫn thu được cùng flag.
 
-**Bước 3 — Waveform:** vẽ biên độ theo thời gian; kiểm tra khoảng lặng, clipping, đoạn lặp và thay đổi năng lượng.
+### 5.4. Độ phức tạp và điều kiện thành công
 
-**Bước 4 — FFT/STFT:** source mô tả sóng mang 8 kHz và 50 baud (0,02 s/bit). Generator MATLAB tạo vector ASK dài đúng 7 giây và cộng tín hiệu vào cột audio thứ nhất (left channel). Do đó, decoder chỉ lấy 350 symbol đầu và phân tích channel 0; không lấy trung bình hai kênh vì thao tác đó làm giảm một nửa biên độ ASK. Dùng band-pass quanh 8 kHz, tính analytic signal/envelope bằng Hilbert transform, lấy trung vị biên độ trong phần giữa mỗi symbol để tránh chuyển tiếp. Sau khi trừ reference, decoder khôi phục pha symbol clock bằng độ lệch mẫu do quá trình căn chỉnh. Thay vì áp ngưỡng cứng lên tín hiệu MP3 đã nén, decoder ước lượng ba cụm biên độ thấp/trung bình/cao, tương ứng dấu phân cách/bit 0/bit 1; cần kiểm tra tâm cụm có phù hợp mức lý thuyết hay không.
+Với mỗi ứng viên L, tổng số pixel được xét trên L vùng xấp xỉ L × (512/L)² = 512²/L. Khi thử nhiều độ dài, tổng lượng công việc tăng theo O(n² log n) trong trường hợp tổng quát. Bộ nhớ chính để giữ ma trận ảnh là O(n²). Với ảnh 512 × 512, phép tính nhẹ và phù hợp máy cá nhân.
 
-**Bước 5 — Kiểm thử giả thuyết:** challenge được phân phối là bản alarm đã trộn tín hiệu ASK với nhạc nền; repository upstream có bản original tương ứng. Bản triển khai đồng bộ reference bằng resampling khi cần, ước lượng độ lệch mẫu qua cross-correlation rồi chỉ so sánh phần overlap. Sau khi crop, pha symbol phải được dịch theo `(-target_start_sample) mod 882`; bỏ qua bước này sẽ làm lệch ranh giới bit. Phân tích 350 symbol đầu (7 giây) vì generator chỉ tạo payload trong khoảng thời gian đó; phần audio còn lại không phải ASK payload. Phải lưu lag, overlap duration, normalized correlation, channel được phân tích và tâm ba cụm biên độ.
+Các điều kiện cần:
+- Dữ liệu ảnh còn nguyên giá trị pixel, không bị JPEG recompression hoặc resize.
+- Kích thước và hình học vùng còn đúng 512 × 512.
+- Màu nền được xác định chính xác.
+- Creator chỉ tăng giá trị kênh; không có phép biến đổi làm đổi dấu/số lượng sai khác.
+- Độ dài L được xác định đúng.
 
-**Bước 6 — Xác minh:** giải mã ASK theo khung 0,02 giây/symbol, đọc từng nhóm 8 bit thành một byte; mức thấp nhất là dấu phân cách byte theo source. Kết quả đúng phải có 350 symbol, 38 dấu phân cách, 39 byte, độ dài 39 ký tự, tiền tố `ictf{` và hậu tố `}`. Đối chiếu với generator `createsignal.m` nhưng phân biệt source-derived ground truth với nội dung thực sự khôi phục từ file âm thanh.
+### 5.5. Hình minh họa cần xuất
 
-Bằng chứng cần có: metadata âm thanh; waveform; spectrogram có trục thời gian/tần số; cấu hình FFT/STFT; log; đầu ra trung gian; kết quả xác minh.
+Script src/blue3/visualize.py tạo hình gồm histogram từng kênh, bản đồ độ lệch màu và biểu đồ tổng sai khác theo vùng đường chéo. Hình này cần được sinh từ artifact chính thức và đưa vào báo cáo với chú thích nguồn dữ liệu. Không dùng hình minh họa tự vẽ thay cho output thực nghiệm.
 
-## 5. Kết quả thực nghiệm
+~~~bash
+python src/blue3/visualize.py data/blue3/blue.png --length 50
+~~~
 
-> Hoàn thiện phần này sau khi trực tiếp chạy challenge artifacts. Không thay thế trường chưa đo bằng số liệu ước lượng.
+## 6. Quy trình và kết quả Sleepy Alarm
 
-### 5.1. Blue 3
+### 6.1. Khảo sát và xác định cơ chế
 
-- Upstream image: `blue.png`, 9,406 bytes; Git blob `1dc26a1dde421a6ed0a553c89256e0ad75394c6b`.
-- Upstream challenge source explains the diagonal-region character encoding; the independent decoder is in `src/solve_challenges.py`.
-- Artifact filename: `data/blue3/blue.png`.
-- Kích thước: 9,406 bytes; PNG, RGB, 512×512; 262,144 pixel; Pillow báo không có metadata keys.
-- SHA-256 local: `009dab85bf6ccc5b42b8efa5f959ab6efa0c556b37eb6b4a77a21ec3356b721e`.
-- R channel: min=64, max=68, mean=64.00663375854492, std=0.09345379422886371, 5 unique values.
-- G channel: min=77, max=81, mean=77.00653076171875, std=0.09425359809012815, 5 unique values.
-- B channel: min=205, max=209, mean=205.00653457641602, std=0.09423309511716214, 5 unique values.
-- Giả thuyết đã xác nhận theo solver: màu nền RGB (64,77,205); tổng sai khác RGB trong từng vùng vuông đường chéo cho mã ký tự.
-- Lệnh: `python src/blue3/analyze.py data/blue3/blue.png` và `python src/solve_challenges.py blue3 data/blue3/blue.png`.
-- Regression test bổ sung: `python -m unittest discover -s tests -v` tạo ảnh Blue 3 nhân tạo để kiểm tra độc lập thuật toán decoder.
-- Kết quả terminal: `byuctf{more_blue_steganography_da_ba_dee_nkiY9CyP}`; solver thử 49 candidate lengths và báo `Format validated: True`.
-- Thời gian chạy: chưa được đo/ghi lại.
+Challenge mô tả một jingle yếu trong file báo thức. Source README chỉ ra peak khác thường ở 8 kHz và ba mức biên độ sau khi cô lập sóng mang. Source MATLAB xác định payload 350 symbol, 50 baud, thời gian truyền 7 giây và việc cộng tín hiệu ASK vào kênh audio đầu tiên [4][5].
 
-**Diễn giải:** [Giải thích dựa trên log và dữ liệu thực tế; phân biệt suy luận, quan sát và xác minh.]
+Các file MP3 được tải và xác minh SHA-256. Lần phân tích đầu tiên với reference báo lỗi do hai file sau giải mã không có cùng số frame. Module audio_alignment được bổ sung để chuyển đổi sample rate khi cần, ước lượng offset bằng cross-correlation và chỉ trừ phần hai tín hiệu chồng lấp.
 
-### 5.2. Sleepy Alarm
+### 6.2. Lần giải mã đầu tiên — kết quả thất bại được giữ lại
 
-- Official distributed audio: `morning_n_breakfast.mp3`, 179,283 bytes; Git blob `5140f9652af9848374263dca3fdfcd9469903c4d`.
-- Official description specifies an 8 kHz ASK carrier, 50 baud, amplitude levels 0.002 (bit 0), 0.005 (bit 1), and zero as byte separator; official source also contains an original audio track and MATLAB signal-generation script.
-- Artifact filename: `data/sleepy_alarm/morning_n_breakfast.mp3`; reference: `data/sleepy_alarm/morning_n_breakfast_original.mp3`.
-- Distributed MP3: 179,283 bytes; local SHA-256 `bd181876c2d28152b9c3982fd88945d4e681fd93d49477622ea5841a3ff25ae2`.
-- Original MP3: 160,495 bytes; local SHA-256 `d0c283834955e54d68b0bba723ccd194142a428d2de74722e5f1dff3ccbd94ad2`.
-- Initial analyzer run failed because the two decoded MP3s did not have identical frame counts. The subsequent solver metadata showed both tracks decoded at 44.1 kHz with two channels. The first decoder then aligned the tracks but incorrectly averaged stereo channels and decoded the full 9.95-second clip, which includes about 3 seconds after the 7-second ASK transmission. The first post-alignment solver attempt also failed: it averaged the two stereo channels, processed 497 symbols over the full 9.95-second audio, measured no unknown symbols but misclassified the carrier levels, and returned NUL bytes. The revised decoder now (i) preserves the original target prefix excluded by cross-correlation cropping, (ii) uses the first/left channel where the MATLAB generator inserts ASK, (iii) decodes exactly 350 symbols in the first 7 seconds, and (iv) estimates the three amplitude clusters rather than applying fixed thresholds to stereo-averaged MP3 residuals. Synthetic regression coverage has been added; the revised implementation still requires a user-run end-to-end check on the official MP3.
-- Codec/container: [CẦN THỰC NGHIỆM — re-run analyzer after alignment update].
-- Sample rate / channels / frame count: [CẦN THỰC NGHIỆM]
-- Thời lượng: [CẦN THỰC NGHIỆM]
-- Sóng mang/baud/chu kỳ bit theo mô tả chính thức: 8.000 Hz / 50 baud / 0,02 s mỗi bit.
-- Quan sát waveform: [CẦN THỰC NGHIỆM]
-- Quan sát spectrogram: [CẦN THỰC NGHIỆM]
-- Kết quả trích xuất đã xác minh: [CẦN THỰC NGHIỆM]
-- Thời gian chạy: [CẦN THỰC NGHIỆM]
+Lần chạy solver đầu tiên với reference ghi nhận:
 
-**Diễn giải:** [Sau lần chạy tiếp theo, ghi tâm cụm 0/0.002/0.005 đo được; xác nhận 350 symbol, 38 dấu phân cách, 39 byte, flag length 39 và prefix/suffix. Nêu rõ sai lệch còn lại do MP3 encoding/filtering nếu có.]
+| Thông số | Giá trị |
+|---|---:|
+| Sample rate | 44.100 Hz |
+| Số kênh | 2 |
+| Thời lượng phần overlap | 9,952653 s |
+| Alignment lag | 1.729 samples |
+| Alignment lag theo thời gian | 0,039206 s |
+| Số frame overlap | 438.912 |
+| Normalized absolute correlation | 0,9998734 |
+| Symbol đã xử lý | 497 |
+| Separator bị nhận diện | 161 |
+| Unknown symbol | 0 |
+| Khoảng envelope median | 0,0000312 đến 0,0030983 |
+| Byte NUL thu được | 17 |
+| Nhóm bit không đủ 8 bit | 18 |
 
-### 5.3. Tổng hợp
+Solver trả về chuỗi NUL và các nhóm bit có độ dài không hợp lệ. Đây là **kết quả thất bại**, không phải flag. Việc giữ lại lần thất bại có giá trị vì nó cho thấy độ tương quan cao giữa hai soundtrack không đồng nghĩa decoder đã lấy đúng payload. Cross-correlation chỉ hỗ trợ căn chỉnh nền âm thanh; nó không tự chứng minh biên symbol hoặc biên độ đã được nhận dạng đúng.
 
-| Khía cạnh | Blue 3 (ảnh) | Sleepy Alarm (âm thanh) |
+### 6.3. Phân tích nguyên nhân
+
+Lần triển khai cũ mắc ba vấn đề kỹ thuật:
+1. **Trung bình hai kênh stereo:** generator chỉ thêm ASK vào channel 0. Việc lấy trung bình hai kênh làm giảm thành phần ASK và thay đổi phân bố envelope.
+2. **Xử lý cả file thay vì payload:** file dài gần 10 giây nhưng generator chỉ tạo chuỗi ASK 7 giây. Vì vậy, lần chạy cũ xử lý 497 symbol thay vì 350.
+3. **Ngưỡng cố định chưa phù hợp:** ngưỡng 0,002 và 0,005 được mô tả trong source generator, nhưng tín hiệu đã qua MP3 encoding và bước lấy envelope. Dùng trực tiếp các ngưỡng này sau khi trộn/trừ audio có thể phân loại sai.
+
+### 6.4. Phiên bản decoder đã điều chỉnh
+
+Phiên bản mới của src/solve_challenges.py và src/sleepy_alarm/analyze.py được thiết kế để:
+- Đồng bộ reference và giữ lại thông tin alignment.
+- Phân tích kênh trái thay vì trung bình hai kênh.
+- Giới hạn phép giải mã trong 7 giây đầu, tương ứng 350 symbol.
+- Lấy median envelope ở phần giữa mỗi symbol để giảm ảnh hưởng vùng chuyển tiếp.
+- Ước lượng ba cụm biên độ từ dữ liệu thực tế thay vì áp ngưỡng cố định ngay từ đầu.
+- Kiểm tra số byte, chiều dài 39 ký tự, prefix ictf{, suffix } và danh sách byte lỗi.
+
+Các điều chỉnh trên dựa trên source chính thức, nhưng chỉ được xem là thành công khi chạy trên file MP3 phân phối và thu được kết quả thỏa tất cả điều kiện. Tại thời điểm viết bản báo cáo này, kết quả chạy của phiên bản mới **chưa được cung cấp**.
+
+### 6.5. Lệnh tái hiện
+
+~~~bash
+python src/sleepy_alarm/analyze.py \
+  data/sleepy_alarm/morning_n_breakfast.mp3 \
+  --reference data/sleepy_alarm/morning_n_breakfast_original.mp3
+
+python src/solve_challenges.py sleepy-alarm \
+  data/sleepy_alarm/morning_n_breakfast.mp3 \
+  --reference data/sleepy_alarm/morning_n_breakfast_original.mp3
+~~~
+
+Kết quả cuối cùng cần lưu gồm sample rate, kênh được phân tích, alignment lag, normalized correlation, các tâm cụm envelope, số symbol 0/1/separator, số byte, nội dung giải mã và trạng thái kiểm tra flag. Cần kiểm tra các tâm cụm có phù hợp định tính với ba mức 0, 0,002 và 0,005; nếu không, phải tiếp tục phân tích thay vì chỉ dựa vào định dạng flag.
+
+## 7. Công cụ tự viết và kiểm thử
+
+| Thành phần | Vai trò | Bằng chứng cần lưu |
 |---|---|---|
-| Vật mang tin | Raster image | Digital audio |
-| Miền phân tích | Không gian/pixel/kênh màu | Thời gian/tần số/kênh |
-| Công cụ chính | Pillow, NumPy | SciPy, NumPy, Matplotlib |
-| Dấu hiệu quan sát | [điền] | [điền] |
-| Tham số nhạy cảm | [điền] | [điền] |
-| Kết quả xác minh | [điền] | [điền] |
-| Giới hạn | [điền] | [điền] |
+| src/solve_challenges.py | Decoder Blue 3 và ASK | stdout JSON/text, tham số chạy |
+| src/blue3/analyze.py | Metadata, histogram thống kê RGB | JSON đầu ra |
+| src/blue3/visualize.py | Histogram, heatmap sai khác, tổng vùng đường chéo | blue3_diagnostics.png |
+| src/sleepy_alarm/analyze.py | Waveform, spectrogram, ASK envelope | Các hình PNG và JSON |
+| src/audio_alignment.py | Resample và căn chỉnh reference | Lag, overlap, correlation |
+| src/experiments/robustness.py | Sinh biến thể ảnh/audio | Danh sách artifact biến đổi |
+| src/experiments/blue3_robustness.py | Chạy decoder qua JPEG/resize | CSV thành công/thất bại |
+| tests/ | Kiểm thử decoder và alignment bằng dữ liệu tổng hợp | Log unittest |
 
-## 6. Phân tích kỹ thuật và phòng thủ
+Lần chạy regression đầu tiên ghi nhận 4 test pass: ba test audio alignment và một test decoder Blue 3. Sau đó một test ASK tổng hợp đã được bổ sung, nên phiên bản test hiện tại có 5 test và cần chạy lại. Test tổng hợp chỉ xác minh hành vi của hàm trên dữ liệu do test tạo; nó không thay thế cho kiểm chứng trên MP3 chính thức.
 
-### 6.1. Góc nhìn tấn công
+~~~bash
+python -m unittest discover -s tests -v
+~~~
 
-Ẩn tin thành công khi người quan sát không nhận ra vật mang tin chứa dữ liệu bổ sung và quy trình trích xuất biết cách diễn giải mẫu đã nhúng. Trong CTF, người giải thường biết phạm vi và có mô tả challenge; trong thực tế, người phân tích có thể không có cover gốc, key hoặc thông tin thuật toán.
+## 8. Thiết kế thí nghiệm robustness
 
-Với Blue 3, cách giải dựa vào tổng sai khác tuyệt đối có dấu so với base color, nên thay đổi pixel ngoài cơ chế tạo, clipping ở biên kênh màu hoặc các phép biến đổi làm lệch baseline có thể làm sai tổng mã ký tự; resize/crop đặc biệt có thể phá vỡ phân vùng. Với Sleepy Alarm, lossy compression, resampling, filtering, mixing hoặc normalization có thể làm thay đổi biên độ/pha của sóng mang 8 kHz và gây lỗi phân loại ASK. Độ bền phải được đo bằng thí nghiệm.
+Mục tiêu là xác định mức độ nhạy của hai cơ chế nhúng trước các phép biến đổi phổ biến. Mọi phép biến đổi phải thực hiện trên bản sao; artifact gốc không bị ghi đè.
 
-### 6.2. Góc nhìn phòng thủ
+### 8.1. Blue 3
 
-- Kiểm tra định dạng thực tế và metadata, không tin tuyệt đối phần mở rộng.
-- So sánh hash với bản tin cậy nếu có.
-- Kết hợp phân tích thống kê và cấu trúc ảnh/audio.
-- Phát hiện mẫu phổ hoặc pixel bất thường bằng nhiều đặc trưng.
-- Bảo toàn bản gốc trước khi chuyển đổi.
-- Ghi nguồn, chuỗi xử lý và hash phục vụ điều tra.
+| Nhóm | Phép biến đổi | Tham số |
+|---|---|---|
+| Đối chứng | PNG gốc | Không biến đổi |
+| Nén mất dữ liệu | JPEG recompression | Quality 95, 85, 70 |
+| Thay đổi hình học | Resize | 0,75× và 0,5× |
 
-Một cảnh báo steganalysis chỉ là chỉ dấu để điều tra tiếp, không tự động chứng minh hành vi độc hại. Ảnh nghệ thuật, filter, watermark, codec và hậu kỳ đều có thể gây false positives.
+Đầu ra cần đo: flag candidate, có khớp baseline hay không, số độ dài đã thử và thời gian chạy. Việc không giải mã được sau JPEG/resize cho thấy decoder tổng pixel nhạy với thay đổi mẫu và ranh giới vùng. Không được suy rộng điều này thành kết luận rằng mọi phương pháp steganography trên ảnh đều mất dữ liệu sau JPEG.
 
-### 6.3. Điều kiện thành công và giới hạn
+~~~bash
+python src/experiments/blue3_robustness.py data/blue3/blue.png
+~~~
 
-- Phải dùng đúng artifact và bảo toàn dữ liệu.
-- Cần xác định đúng định dạng và phương pháp giải mã.
-- So sánh ảnh cần cover reference tương thích kích thước, căn chỉnh và mã hóa.
-- FFT/STFT phụ thuộc tham số; chọn sai cửa sổ hoặc độ phân giải có thể che khuất đặc trưng.
-- Kết quả cần xác minh độc lập, không chỉ dựa vào chuỗi trông giống flag.
+### 8.2. Sleepy Alarm
 
-## 7. Tùy biến và mở rộng
+| Nhóm | Phép biến đổi | Tham số |
+|---|---|---|
+| Đối chứng | MP3 phân phối | Không biến đổi |
+| Resampling | Round-trip | 44,1 kHz → 48 kHz → 44,1 kHz |
+| Gain | Thay đổi amplitude | 0,5× và 1,5× có clipping |
 
-Các mở rộng được thiết kế trong repository:
+Đầu ra cần đo: số symbol hợp lệ, khoảng cách giữa ba tâm cụm envelope, số byte lỗi và trạng thái giải mã. Nếu baseline Sleepy Alarm chưa giải thành công, chưa được diễn giải kết quả robustness; cần thiết lập baseline trước.
 
-1. Image analyzer: đọc ảnh, in metadata, histogram và thống kê kênh.
-2. Audio analyzer: đọc file, in đặc trưng tín hiệu, tạo waveform và spectrogram.
-3. Integrity manifest: ghi SHA-256 và thông tin artifact để tái lập.
-4. Robustness experiment: `src/experiments/robustness.py` tạo các bản sao JPEG quality 95/85/70, resize 0.75/0.5, audio resampling round-trip và gain/clipping. Chạy solver trên từng bản sao và ghi kết quả thành công/thất bại; không diễn giải độ bền khi chưa thực nghiệm.
-5. Comparative evaluation: so sánh vật mang tin, độ nhạy tham số, khả năng tự động hóa và false positives.
-6. Synthetic regression tests: `tests/test_blue3_solver.py` sinh ảnh giả lập theo creator algorithm để kiểm tra decoder; `tests/test_audio_alignment.py` kiểm tra đồng bộ sample offset, khác sample rate và lệch số kênh. Lệnh chạy: `python -m unittest discover -s tests -v`. Các test mới được thêm, cần chạy và lưu log trước khi báo cáo là đã pass.
+## 9. Phân tích an ninh: góc nhìn tấn công và phòng thủ
 
-**Triển khai trong repository:** `src/solve_challenges.py` chứa hai solver; `src/blue3/analyze.py` và `src/sleepy_alarm/analyze.py` chứa analyzer; `src/audio_alignment.py` đồng bộ reference; `src/experiments/robustness.py` sinh các biến thể có kiểm soát. Regression tests đã được thêm nhưng chưa có log xác nhận chạy pass trong môi trường người dùng. **Kết quả từng mở rộng:** [CẦN THỰC NGHIỆM — ghi commit, lệnh, input hash, output, solver success/failure, số liệu và ảnh minh chứng.]
+### 9.1. Góc nhìn tấn công
 
-## 8. Đánh giá, phản biện và tự học
+Blue 3 sử dụng phép biến đổi rất nhỏ trên các thành phần RGB, vì vậy ảnh nhìn tổng thể vẫn có màu xanh gần như đồng nhất. Thông tin được phân bố theo vùng đường chéo; không cần một pixel riêng biệt tương ứng một bit. Người giải phải xác định cấu trúc vùng và độ dài flag trước khi cộng sai khác.
 
-### 8.1. Điểm mạnh
-- Hai challenge chung trọng tâm Steganography nhưng khác vật mang tin.
-- Kết hợp khảo sát thủ công, phân tích tín hiệu/thống kê và tự động hóa.
-- Có thể tái hiện offline trên artifact cục bộ.
-- Hash, lệnh, phiên bản công cụ và log hỗ trợ kiểm chứng.
+Sleepy Alarm sử dụng sóng mang 8 kHz. Dữ liệu được biểu diễn bằng biên độ, không phải bằng sự hiện diện/vắng mặt của sóng mang. Người phân tích cần phát hiện peak, tách thành phần tín hiệu và khôi phục thời điểm symbol. Khi file đã được nén MP3, envelope có thể không còn đúng tuyệt đối mức 0,002 và 0,005 như trong source generator.
 
-### 8.2. Hạn chế
-- Challenge CTF có thể đơn giản hóa giả định so với steganography thực tế.
-- Không có cover/reference thì kết luận so sánh pixel bị giới hạn.
-- FFT/spectrogram phụ thuộc tham số; hình phổ không tự chứng minh có thông điệp.
-- Writeup công khai làm giảm tính độc lập nếu đọc trước khi tự phân tích.
-- Hai challenge không đại diện cho toàn bộ thuật toán ẩn tin.
+### 9.2. Dấu hiệu phát hiện
 
-### 8.3. Phản biện phương pháp
+**Đối với ảnh:**
+- Màu nền hoặc một màu chiếm ưu thế rất lớn.
+- Phân bố giá trị kênh chỉ tập trung quanh một mức hẹp.
+- Tổng sai khác trong các vùng đường chéo có thể cho ra chuỗi ký tự có cấu trúc.
+- Phần sai khác ảnh tập trung có quy luật không gian.
 
-Để giảm thiên kiến xác nhận, ghi giả thuyết trước khi thử, lưu cả trường hợp thất bại, xác định điều kiện bác bỏ và đối chiếu với ít nhất một phương pháp độc lập. Khi source challenge công khai, phải đánh dấu chi tiết biết từ source so với chi tiết suy ra từ artifact. Solver khớp source chưa đủ chứng minh phương pháp steganalysis phát hiện payload trong tình huống black-box.
+**Đối với âm thanh:**
+- Peak phổ bất thường ở quanh 8 kHz.
+- Envelope có ba mức phân bố và lặp theo chu kỳ 0,02 giây.
+- Sau khi so sánh với bản tham chiếu, residual có thành phần hẹp băng quanh sóng mang.
+- Các symbol có thể nhóm thành byte 8 bit, ngăn cách bởi mức biên độ thấp.
 
-### 8.4. Bài học và hướng học tiếp
+Các dấu hiệu trên chỉ là heuristic. Một ảnh đồ họa có màu nền đơn giản hoặc một âm thanh có thành phần cao tần không mặc nhiên là steganography. Muốn giảm false positive, cần kết hợp nhiều dấu hiệu và kiểm tra tính nhất quán của cấu trúc thông điệp.
 
-Hướng tiếp theo gồm thống kê ảnh nâng cao, steganalysis dựa trên mô hình, audio watermark/steganography, phân tích codec và đánh giá độ bền. Mỗi hướng cần dataset và phép đánh giá rõ ràng.
+### 9.3. Biện pháp phòng thủ
 
-## 9. Kết luận
+- Quản lý nguồn gốc file, hash và bản gốc để phục vụ so sánh.
+- Kiểm tra metadata, định dạng thật và sự nhất quán giữa phần mở rộng với cấu trúc file.
+- Với ảnh, dùng phân tích histogram, màu nền, phân bố vùng và mô hình steganalysis phù hợp; không chỉ dựa trên quan sát bằng mắt.
+- Với âm thanh, kiểm tra phổ, STFT, envelope, kênh stereo và các mẫu lặp bất thường.
+- Giữ bản gốc trước mọi bước normalize, resize, recompress hoặc resample.
+- Cảnh báo steganalysis nên được xem là tín hiệu điều tra tiếp, không tự động kết luận file độc hại.
 
-Đồ án xây dựng quy trình thực nghiệm thống nhất để nghiên cứu hai challenge Steganography trên ảnh và âm thanh. Giá trị không chỉ là khôi phục thông điệp mà còn giải thích cách dữ liệu được biểu diễn, xác minh bằng chứng cứ, đánh giá điều kiện/giới hạn và phát triển công cụ có thể tái lập. Kết luận cuối cùng về từng challenge chỉ được chốt sau khi artifact chính thức được tải, hash được ghi nhận và quy trình được chạy thành công từ môi trường sạch.
+## 10. So sánh kết quả hai challenge
+
+| Khía cạnh | Blue 3 | Sleepy Alarm |
+|---|---|---|
+| Vật mang tin | PNG 512 × 512 RGB | MP3 stereo |
+| Miền biểu diễn | Không gian/pixel | Thời gian/tần số |
+| Cơ chế | Tổng sai khác RGB theo vùng | ASK ba mức biên độ |
+| Thông tin cần suy luận | Độ dài L, màu nền, ranh giới vùng | Carrier, baud, symbol clock, channel, biên độ |
+| Phép phân tích chính | Histogram, pixel sum | FFT/STFT, band-pass, Hilbert envelope |
+| Ảnh hưởng của biến đổi | JPEG/resize thay đổi pixel và vùng | MP3/resampling ảnh hưởng biên độ và thời điểm |
+| Kết quả hiện tại | Đã khôi phục đúng flag | Decoder cũ thất bại; bản sửa cần chạy xác minh |
+
+Blue 3 có cơ chế xác định và ổn định hơn vì PNG bảo toàn giá trị pixel; tổng sai khác có quan hệ trực tiếp với mã ký tự. Sleepy Alarm khó hơn ở khâu tách tín hiệu vì dữ liệu nằm trên âm thanh nền và file đã qua mã hóa MP3. Hai challenge cho thấy “đọc được dữ liệu ẩn” phụ thuộc không chỉ vào thuật toán nhúng mà còn vào loại vật mang tin và chuỗi xử lý file.
+
+## 11. Đánh giá, hạn chế và quá trình tự học
+
+### 11.1. Điểm mạnh
+
+- Cặp challenge giữ chung một chủ đề CTF chính nhưng có hai miền dữ liệu khác nhau.
+- Blue 3 đã được tái hiện trên artifact chính thức và đối chiếu với flag của ban tổ chức.
+- Decoder được tự triển khai; có chế độ suy luận màu nền và chế độ biết màu nền từ source để so sánh.
+- Quá trình thất bại ở Sleepy Alarm được giữ lại, giúp giải thích vì sao một kết quả có correlation cao vẫn có thể giải mã sai.
+- Repository có script kiểm thử, công cụ trực quan hóa và kịch bản robustness.
+
+### 11.2. Hạn chế hiện tại
+
+1. Kết quả Sleepy Alarm của decoder mới chưa được xác minh trên MP3 thật.
+2. Các thí nghiệm robustness mới có script tạo biến thể; chưa có bảng kết quả thành công/thất bại.
+3. Chưa đo runtime có hệ thống cho từng lệnh.
+4. Chưa thực hiện đánh giá false positive trên tập ảnh/audio lành tính; do đó các dấu hiệu phát hiện mới ở mức phân tích định tính.
+5. Mẫu nghiên cứu chỉ gồm hai challenge, không đại diện cho toàn bộ kỹ thuật steganography.
+6. Blue 3 là challenge có thuật toán đặc thù; kết quả không thể suy rộng thành decoder dùng chung cho mọi ảnh.
+
+### 11.3. Phản biện và hướng cải tiến
+
+Cần phân biệt **giải được challenge** với **phát hiện steganography trong tình huống thực tế**. Blue 3 có thể giải bằng tổng sai khác vì creator cố ý thiết kế phép cộng tuyến tính theo từng vùng. Trong một hệ thống thực, người phân tích có thể không biết màu nền, kích thước phân vùng, thuật toán nhúng hoặc định dạng flag. Chế độ black-box trong decoder là một bước gần hơn với tình huống này, nhưng vẫn dựa trên giả định màu nền xuất hiện phổ biến nhất.
+
+Với Sleepy Alarm, việc dùng file gốc để trừ nền là một lợi thế white-box. Nếu không có reference, người phân tích phải tách tín hiệu yếu khỏi nhạc nền chỉ bằng đặc trưng phổ và envelope; đây là bài toán khó hơn. Hướng mở rộng là xây dựng bộ phát hiện ASK không dùng reference, so sánh kết quả với cách trừ reference và đo tỷ lệ byte phục hồi đúng. Cần tạo thêm mẫu âm thanh đối chứng để ước lượng false positive trước khi đề xuất triển khai phòng thủ.
+
+### 11.4. Nhật ký và bằng chứng
+
+Log thực nghiệm đầu tiên được lưu tại results/2026-11-14/initial-run.md. Log ghi lại môi trường macOS, phiên bản thư viện, hash ba artifact, kết quả Blue 3 và lần giải mã Sleepy Alarm thất bại. Trước khi nộp, cần bổ sung các phiên làm việc thực tế, thời lượng, giả thuyết, lệnh, lỗi, cách khắc phục và ảnh chụp màn hình theo yêu cầu assignment. Không tự điền thời gian làm việc nếu không có ghi nhận thực tế.
+
+## 12. Kết luận
+
+Đồ án đã chứng minh được quy trình trích xuất dữ liệu ẩn trong ảnh bằng phân tích pixel: Blue 3 được giải bằng tổng sai khác RGB theo vùng đường chéo và kết quả trùng flag chính thức. Đối với âm thanh, source challenge cho thấy payload dùng ASK 8 kHz/50 baud trong 7 giây; lần giải mã đầu tiên thất bại, qua đó làm rõ tầm quan trọng của việc chọn đúng kênh, đúng khoảng thời gian và hiệu chỉnh biên độ sau MP3 encoding.
+
+Giá trị kỹ thuật của đồ án nằm ở việc tự triển khai decoder, giữ lại bằng chứng thất bại, bổ sung kiểm thử và thiết kế thí nghiệm độ bền. Để kết luận Sleepy Alarm hoàn thành, cần chạy phiên bản decoder hiện tại trên MP3 chính thức, khôi phục đủ 39 byte và đối chiếu độc lập. Để hoàn thiện đánh giá, cần chạy thí nghiệm robustness và lưu hình phân tích từ artifact gốc. Những bước chưa thực hiện không được trình bày như kết quả đã đạt.
 
 ## Tài liệu tham khảo
 
-[1] BYU-CSA, “Blue 3? — challenge description and write-up,” `forensics-steganography/blue-3/README.md`, commit 18c8f246756e79069c1cb1753c8bfea5e73e31f5. https://github.com/BYU-CSA/old-ctf-challenges/tree/master/forensics-steganography/blue-3 (truy cập: 14-11-2026).
+[1] BYU-CSA, “Blue 3? — BYUCTF Forensics/Steganography,” README và flag chính thức, repository old-ctf-challenges, commit 18c8f246756e79069c1cb1753c8bfea5e73e31f5. https://github.com/BYU-CSA/old-ctf-challenges/tree/master/forensics-steganography/blue-3
 
-[2] ImaginaryCTF, “Sleepy Alarm — challenge description and solution,” `Forensics/Sleepy Alarm/readme.md`, repository ImaginaryCTF-2024-Challenges. https://github.com/ImaginaryCTF/ImaginaryCTF-2024-Challenges/tree/main/Forensics/Sleepy%20Alarm (truy cập: 14-11-2026).
+[2] BYU-CSA, “Blue 3 creator script,” create.py, cùng commit 18c8f246756e79069c1cb1753c8bfea5e73e31f5. https://github.com/BYU-CSA/old-ctf-challenges/blob/master/forensics-steganography/blue-3/create.py
 
-[3] BYU-CSA, `create.py` and `solve.py` in the Blue 3 directory, upstream commit 18c8f246756e79069c1cb1753c8bfea5e73e31f5.
+[3] BYU-CSA, “Blue 3 reference solver,” solve.py, cùng commit 18c8f246756e79069c1cb1753c8bfea5e73e31f5. https://github.com/BYU-CSA/old-ctf-challenges/blob/master/forensics-steganography/blue-3/solve.py
 
-[4] ImaginaryCTF, `src/createsignal.m`, `src/morning_n_breakfast_original.mp3`, and `togive/morning_n_breakfast.mp3`, upstream commit 21ea0e040638b953f5cc0efca1d900024899a7bc.
+[4] ImaginaryCTF, “Sleepy Alarm — Challenge description and solution,” README, repository ImaginaryCTF-2024-Challenges, commit 21ea0e040638b953f5cc0efca1d900024899a7bc. https://github.com/ImaginaryCTF/ImaginaryCTF-2024-Challenges/tree/main/Forensics/Sleepy%20Alarm
 
-[5] CTFtime team, “All about CTF (Capture The Flag),” tài liệu được assignment UET.CN3124 khuyến nghị.
+[5] ImaginaryCTF, “createsignal.m,” MATLAB generator for Sleepy Alarm, cùng commit 21ea0e040638b953f5cc0efca1d900024899a7bc. https://github.com/ImaginaryCTF/ImaginaryCTF-2024-Challenges/blob/main/Forensics/Sleepy%20Alarm/src/createsignal.m
 
-[6] UET.CN3124, “Mô tả bài tập lớn / đồ án thực hành — Dự án thực hành CTF Jeopardy,” tài liệu học phần, mục 3–8.
+[6] NumPy Developers, “Discrete Fourier Transform (numpy.fft).” https://numpy.org/doc/stable/reference/routines.fft.html
 
-[7] NumPy Developers, “Discrete Fourier Transform (numpy.fft),” https://numpy.org/doc/stable/reference/routines.fft.html (truy cập: [ngày truy cập thực tế]).
+[7] SciPy Developers, “Short-Time Fourier Transform.” https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.stft.html
 
-[8] SciPy Developers, “Short-Time Fourier Transform,” https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.stft.html (truy cập: [ngày truy cập thực tế]).
+[8] Pillow Developers, “Image class and pixel access.” https://pillow.readthedocs.io/
+
+[9] CTFtime Team, “All about CTF (Capture The Flag),” tài liệu được assignment UET.CN3124 khuyến nghị.
+
+[10] Trường Đại học Công nghệ, ĐHQGHN, “Mô tả bài tập lớn / đồ án thực hành — UET.CN3124: Dự án thực hành CTF Jeopardy,” tài liệu hướng dẫn học phần, đặc biệt các mục 3–9.
 
 ## Phụ lục A — Lệnh tái hiện
 
-```bash
-python -m pip install -r requirements.txt
+~~~bash
+# Environment and artifacts
+uv venv --python 3.14
+source .venv/bin/activate
+uv pip install -r requirements.txt
 python scripts/check_environment.py
-shasum -a 256 data/blue3/blue.png
+python scripts/download_artifacts.py all
+
+# Regression tests
+python -m unittest discover -s tests -v
+
+# Blue 3
 python src/blue3/analyze.py data/blue3/blue.png
-python src/sleepy_alarm/analyze.py data/sleepy_alarm/<official-audio-file>
-```
+python src/solve_challenges.py blue3 data/blue3/blue.png
+python src/blue3/visualize.py data/blue3/blue.png --length 50
+python src/experiments/blue3_robustness.py data/blue3/blue.png
 
-## Phụ lục B — Checklist trước khi nộp
+# Sleepy Alarm
+python src/sleepy_alarm/analyze.py data/sleepy_alarm/morning_n_breakfast.mp3 --reference data/sleepy_alarm/morning_n_breakfast_original.mp3
+python src/solve_challenges.py sleepy-alarm data/sleepy_alarm/morning_n_breakfast.mp3 --reference data/sleepy_alarm/morning_n_breakfast_original.mp3
+~~~
 
-- [ ] Điền họ tên, MSSV, lớp và ngày nộp.
-- [ ] Tải artifact từ nguồn chính thức và lưu URL cụ thể.
-- [ ] Ghi SHA-256 tất cả artifact.
-- [ ] Chạy lại từ môi trường sạch.
-- [ ] Lưu ảnh chụp màn hình cài đặt, phân tích, kết quả trung gian và kết quả cuối.
-- [ ] Xác minh độc lập với writeup/source tham khảo.
-- [ ] Hoàn thành ít nhất một phần mở rộng có kết quả thực nghiệm.
-- [ ] Phân tích góc nhìn tấn công và phòng thủ.
-- [ ] Điền mọi trường [CẦN THỰC NGHIỆM] và xóa hướng dẫn biên tập.
-- [ ] Kiểm tra trích dẫn, chú thích hình, đánh số bảng/hình và xuất PDF.
-- [ ] Đảm bảo báo cáo chính không quá 15 trang, không tính phụ lục/tài liệu tham khảo.
+## Phụ lục B — Checklist hoàn thiện trước khi nộp
+
+- [ ] Chạy lại Blue 3 trên phiên bản decoder black-box mới; lưu terminal output.
+- [ ] Chạy 5 regression tests của phiên bản hiện tại; lưu log.
+- [ ] Chạy lại Sleepy Alarm bằng decoder mới; xác nhận 350 symbol, 38 separator, 39 byte, prefix/suffix và errors rỗng.
+- [ ] Xuất và chèn hình Blue 3 histogram/heatmap/region contribution.
+- [ ] Xuất và chèn waveform, spectrogram, ASK envelope của Sleepy Alarm.
+- [ ] Chạy robustness evaluation trên ảnh và audio; lập bảng kết quả đo được.
+- [ ] Bổ sung ảnh chụp quá trình cài đặt, phân tích, lỗi và kết quả cuối.
+- [ ] Bổ sung nhật ký thời gian làm việc thực tế; không ước lượng hoặc bịa thời lượng.
+- [ ] Điền thông tin sinh viên, ngày nộp và chuẩn hóa trích dẫn IEEE.
+- [ ] Kiểm tra nội dung chính không vượt 15 trang; phụ lục và tài liệu tham khảo để riêng.
