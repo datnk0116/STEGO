@@ -6,9 +6,7 @@
 **Sinh viên:** ______________________________ — **MSSV:** __________________  
 **Lớp:** __________________ — **Ngày nộp:** ____ / ____ / 2026 — **Hạn nộp:** ____ / ____ / 2026
 
-> **Sidenote hành chính:** Các trường thông tin cá nhân trên trang bìa hiện chưa được điền trong repository. Theo phạm vi rà soát kỹ thuật hiện tại, các trường này được xem là phần hành chính cần bổ sung khi xuất bản nộp bài, không dùng để đánh giá mức độ hoàn thành kỹ thuật của đồ án.
-
-> **Trạng thái bằng chứng kỹ thuật:** Quality gate đã chạy thành công trên macOS 15.7.4/arm64/Python 3.14.10 tại source commit `11cd5e3216e779b6101b22cd891689ecdf9b8e54`: **22/22 test pass**, ba artifact khớp kích thước và SHA-256, Blue 3 exact-match và Sleepy Alarm reference-assisted exact-match (350 symbol, 38 separator, 39 byte). Commit `3015d5ddcab12fb99d53158c4029750d7b8805b3` lưu log/JSON quality gate và các ma trận robustness mới; commit này chỉ bổ sung bằng chứng, không thay đổi source hoặc tests. Kết quả reference-free Sleepy Alarm vẫn thất bại (26 ký tự, 49 separator); detector audio có recall=0. Các giới hạn này được giữ nguyên trong đánh giá.
+> **Trạng thái bằng chứng kỹ thuật:** Quality gate đã chạy thành công trên macOS 15.7.4/arm64/Python 3.14.10 tại source commit `a040e3863145038b786ba6719629e636fdf2e565`: **22/22 test pass**, ba artifact khớp kích thước và SHA-256, Blue 3 exact-match và Sleepy Alarm reference-assisted exact-match (350 symbol, 38 separator, 39 byte). Commit `3bb2b57790d164a6997ee1afe157a0fc7a8a8807` lưu log/JSON quality gate và các ma trận robustness mới; commit này chỉ bổ sung bằng chứng, không thay đổi source hoặc tests. Kết quả reference-free Sleepy Alarm vẫn thất bại (26 ký tự, 49 separator); detector audio có recall=0. Các giới hạn này được giữ nguyên trong đánh giá.
 
 ---
 
@@ -92,7 +90,7 @@ Các giả thuyết:
 | Phân tích kết quả | 2,0 | Mục 2, 5, 6, 9, 10: chứng minh toán học, 350 symbol ASK, lỗi và điều kiện giải |
 | Đánh giá, phản biện và tự học | 2,0 | Mục 11.1–11.9: hạn chế định lượng, threat model, validity, phản biện hai decoder, benchmark detector, ma trận khắc phục và kế hoạch học tiếp |
 
-Bảng này là bản đồ đối chiếu với rubric, không phải tự chấm điểm. Điểm số chỉ do giảng viên quyết định dựa trên báo cáo và khả năng trình diễn lại.
+Bảng này là bản đồ đối chiếu với rubric, không phải tự chấm điểm. Điểm số chỉ do giảng viên quyết định dựa trên hồ sơ nộp, khả năng tái hiện và khả năng giải thích khi được yêu cầu xác minh.
 
 ## 2. Kiến thức nền và mô hình kỹ thuật
 
@@ -361,7 +359,7 @@ Các lệnh cài môi trường, phân tích, giải mã và xác minh Sleepy Al
 | scripts/verify_reproducibility.py | Quality gate: SHA-256, unit/integration tests, hai decoder chính thức và environment |
 | tests/ | 22 test methods: hồi quy tổng hợp, integration trên artifact chính thức và kiểm thử metric |
 
-`results/logs/unit-tests.log` là log lịch sử của 6 regression tests ở revision cũ. Bằng chứng hiện hành là `results/logs/quality-gate-tests.log`, ghi nhận 22/22 tests pass (exit code 0) trên source commit `11cd5e3216e779b6101b22cd891689ecdf9b8e54`. Commit `3015d5d` đưa log và JSON này cùng các kết quả robustness mới lên `main`; không có thay đổi source/tests giữa hai commit.
+`results/logs/unit-tests.log` là log lịch sử của 6 regression tests ở revision cũ. Bằng chứng hiện hành là `results/logs/quality-gate-tests.log`, ghi nhận 22/22 tests pass (exit code 0) trên source commit `a040e3863145038b786ba6719629e636fdf2e565`. Commit `3bb2b57` đưa log và JSON này cùng các kết quả robustness mới lên `main`; không có thay đổi source/tests giữa hai commit.
 
 ~~~bash
 python scripts/verify_reproducibility.py
@@ -529,7 +527,7 @@ Blue 3 có cơ chế xác định và ổn định hơn vì PNG bảo toàn giá
 4. **Robustness Blue 3 thấp trong ma trận mở rộng.** Chỉ 1/9 biến thể exact-match (Gaussian blur radius 0,3). Trong tám biến thể FAIL, sáu vẫn tạo candidate 50 ký tự để đo partial recovery: brightness 0,9 có 47/50 vị trí đúng, edit distance 3, similarity 94%; brightness 1,1 có 28/50 vị trí đúng, edit distance 20, similarity 60%; contrast 0,9 có edit distance 48, similarity 4%; contrast 1,1, crop 16 px và Gaussian noise sigma 2,0 có edit distance 50. Gaussian noise sigma 0,5 và 1,0 không tạo candidate ở độ dài baseline, nên edit distance được để null. Đây là khác biệt giữa exact-match thất bại và không còn candidate để đánh giá.
 5. **Audio nhạy với điều kiện biến đổi.** Ma trận mở rộng có 7/23 PASS (bao gồm baseline). Trung bình số học trên 23 trial, bao gồm baseline, là SER 12,31%, BER 12,97%, separator precision 77,07% và recall 93,14%. Ví dụ target-side AWGN ở SNR 20 dB có SER 20,57% và BER 22,76%; reference-side AWGN ở 10 dB có SER 60,00% và BER 63,78%. Bốn phép gain một phía trong ma trận asymmetric ban đầu đều FAIL, trong khi hai phép resampling một phía PASS. Các giá trị trung bình này chỉ mô tả tập trial đã định trước, không phải ước lượng hiệu năng trên một quần thể audio.
 6. **Quy mô mẫu hạn chế.** Nghiên cứu chỉ có hai challenge chính thức; các biến thể sinh từ một artifact không độc lập thống kê. Chưa có khoảng tin cậy, repeated runs trên nhiều payload hoặc kiểm định chéo theo challenge.
-7. **Bằng chứng kiểm thử đã được đồng bộ ở mức source/evidence.** Quality gate ghi nhận 22/22 tests pass, exit code 0, trên source commit `11cd5e3216e779b6101b22cd891689ecdf9b8e54`; log và JSON đã được lưu trong commit `3015d5d`. `results/logs/unit-tests.log` vẫn chỉ là log lịch sử 6 test và không được dùng thay cho quality-gate log. Nếu source hoặc tests thay đổi sau revision được kiểm thử, cần chạy lại gate.
+7. **Bằng chứng kiểm thử đã được đồng bộ ở mức source/evidence.** Quality gate ghi nhận 22/22 tests pass, exit code 0, trên source commit `a040e3863145038b786ba6719629e636fdf2e565`; log và JSON đã được lưu trong commit `3bb2b57`. `results/logs/unit-tests.log` vẫn chỉ là log lịch sử 6 test và không được dùng thay cho quality-gate log. Nếu source hoặc tests thay đổi sau revision được kiểm thử, cần chạy lại gate.
 8. **Chưa có benchmark trực tiếp với công cụ ngoài.** Phần đối chiếu Aperi'Solve, The-A-Files và ragibson/Steganography dựa trên README/tài liệu công khai; không cài đặt, không chạy cùng corpus, không đo thời gian hoặc metric.
 
 ### 11.3. Phản biện kết quả và đánh giá tính hợp lệ
@@ -551,7 +549,7 @@ Không điều chỉnh ngưỡng chỉ để biến năm positive hiện tại t
 
 ### 11.5. Nhật ký và bằng chứng
 
-Bằng chứng kỹ thuật có thể tái kiểm tra được lưu theo từng lớp: artifact và SHA-256 trong `data/` và `results/artifact_manifest.json`; log quality gate 22/22 tests trong `results/logs/quality-gate-tests.log`; báo cáo gate tại `results/verification/quality-gate.json`; kết quả Blue 3 trong `results/blue3/`; kết quả audio exact-match trong `results/sleepy_alarm/solver.json`; các ma trận robustness trong CSV/JSON; và lần giải mã Sleepy Alarm thất bại ban đầu trong `results/2026-11-14/initial-run.md`. Log sáu test cũ chỉ giữ vai trò lịch sử. `quality-gate.json` xác định source commit được kiểm tra; commit `3015d5d` là commit lưu bằng chứng sau khi chạy.
+Bằng chứng kỹ thuật có thể tái kiểm tra được lưu theo từng lớp: artifact và SHA-256 trong `data/` và `results/artifact_manifest.json`; log quality gate 22/22 tests trong `results/logs/quality-gate-tests.log`; báo cáo gate tại `results/verification/quality-gate.json`; kết quả Blue 3 trong `results/blue3/`; kết quả audio exact-match trong `results/sleepy_alarm/solver.json`; các ma trận robustness trong CSV/JSON; và lần giải mã Sleepy Alarm thất bại ban đầu trong `results/2026-11-14/initial-run.md`. Log sáu test cũ chỉ giữ vai trò lịch sử. `quality-gate.json` xác định source commit được kiểm tra; commit `3bb2b57` là commit lưu bằng chứng sau khi chạy.
 
 ### 11.6. Tự đánh giá quá trình học tập và bài học rút ra
 
