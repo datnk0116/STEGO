@@ -326,10 +326,10 @@ Lần triển khai cũ mắc ba vấn đề kỹ thuật:
 Phiên bản hiện tại của `src/solve_challenges.py` và `src/sleepy_alarm/analyze.py` thực hiện các bước:
 1. Giải mã hai MP3 thành mảng mẫu, resample reference về sample rate của file phân phối nếu cần.
 2. Ước lượng độ lệch thời gian bằng cross-correlation trên tín hiệu mono đã decimate; sau đó căn chỉnh phần overlap ở sample rate gốc.
-3. Loại bỏ phần MP3 encoder delay không thuộc timeline của tín hiệu gốc. Phần residual sau căn chỉnh bắt đầu tại sample 0 của track nguồn, cũng là điểm bắt đầu payload do generator tạo. Không ghép lại prefix chưa căn chỉnh vì thao tác đó sẽ dịch đồng hồ symbol.
+3. Giữ lại phần đầu của file phân phối trước vị trí bắt đầu overlap, rồi ghép với residual đã căn chỉnh. Đây là bước quan trọng: phần đầu không tương quan với reference vẫn có thể chứa các symbol ASK đầu tiên. Bỏ prefix này làm mất hai bit đầu của byte đầu tiên.
 4. Chỉ phân tích channel 0 (left), vì `createsignal.m` chỉ cộng ASK vào cột audio thứ nhất.
-5. Lọc băng 7.5–8.5 kHz, dùng Hilbert envelope và lấy median ở 50% giữa mỗi symbol để tránh transient tại ranh giới.
-6. Phân loại ba mức thấp/trung bình/cao bằng clustering, tương ứng separator/bit 0/bit 1; sau đó nhóm 8 bit thành byte.
+5. Thay vì suy biên độ bằng Hilbert envelope sau lọc (cách này tạo transient ở đầu chuỗi), dùng coherent detection: chiếu từng cửa sổ 882 mẫu lên hai cơ sở sin/cos tại 8 kHz, rồi tính độ lớn vector I/Q. Mỗi symbol có 160 chu kỳ sóng mang ở 44,1 kHz nên phép chiếu theo cả cửa sổ tăng khả năng loại thành phần không đồng pha.
+6. Phân loại ba cụm biên độ thấp/trung bình/cao, tương ứng separator/bit 0/bit 1; sau đó nhóm 8 bit thành byte.
 7. Kiểm tra đủ 350 symbol, 38 separator, 39 byte, độ dài 39, tiền tố/hậu tố và so khớp toàn bộ chuỗi với ground truth đọc độc lập từ bitmap trong source creator.
 
 Việc đối chiếu chính xác toàn bộ chuỗi là điều kiện bắt buộc để `success=true`. Chỉ khớp prefix/suffix không được xem là giải thành công.
