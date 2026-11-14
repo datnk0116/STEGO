@@ -65,7 +65,7 @@ python src/experiments/sleepy_alarm_asymmetric_robustness.py \
   --expected 'ictf{1_sl33py_NaYuKi_alarm_2a634dc1bb2}'
 ~~~
 
-Script kiểm tra target-only/reference-only với gain và resampling round-trip. Chỉ diễn giải các kết quả thực tế trong JSON/CSV sau khi chạy; không giả định trước trường hợp nào phải PASS hay FAIL.
+Kết quả đã đo: baseline PASS; target-only gain 0,5× FAIL (46 separator), target-only gain 1,5× FAIL (37 separator), target-only resampling PASS (38 separator), reference-only gain 0,5× FAIL (41 separator), reference-only gain 1,5× FAIL (38 separator), reference-only resampling PASS (38 separator). Tổng cộng 3/6 phép thử PASS. Bốn phép gain một phía thất bại dù alignment correlation vẫn xấp xỉ 0,99888–0,99987; hai phép resampling một phía thành công. Điều này cho thấy correlation cao chỉ hỗ trợ đánh giá căn chỉnh, không bảo đảm phân loại đúng biên độ ASK. Xem JSON/CSV để kiểm tra decoded text, lỗi byte, clipping và runtime.
 
 ## 6. Bằng chứng cần mở khi vấn đáp
 
