@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Non-destructive metadata, waveform and STFT inspection for audio challenges."""
 from __future__ import annotations
-import argparse, hashlib, json
+import argparse, hashlib, json, sys
 from pathlib import Path
 import numpy as np
 import soundfile as sf
 from scipy.signal import stft, butter, sosfiltfilt, hilbert
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from audio_alignment import align_reference
 import matplotlib
 matplotlib.use("Agg")
@@ -80,7 +81,7 @@ def main() -> int:
     plt.pcolormesh(times, freqs, 20*np.log10(np.maximum(magnitude, 1e-12)),
                    shading="auto")
     plt.ylim(0, sr/2); plt.xlabel("Time (s)"); plt.ylabel("Frequency (Hz)")
-    plt.title(f"STFT magnitude (nperseg={min(args.nperseg, frames)}, noverlap={min(args.noverlap, max(0, min(args.nperseg, frames)-1))})")
+    plt.title(f"STFT magnitude (nperseg={min(args.nperseg, analysis_frames)}, noverlap={min(args.noverlap, max(0, min(args.nperseg, analysis_frames)-1))})")
     plt.colorbar(label="Magnitude (dB)"); plt.tight_layout()
     plt.savefig(spec_path, dpi=160); plt.close()
     if args.reference:
@@ -123,8 +124,8 @@ def main() -> int:
         "peak_amplitude": float(np.max(np.abs(audio))),
         "rms_amplitude": float(np.sqrt(np.mean(audio**2))),
         "clipped_sample_fraction": float(np.mean(np.abs(audio) >= 0.999)),
-        "stft": {"nperseg": int(min(args.nperseg, frames)),
-                 "noverlap": int(min(args.noverlap, max(0, min(args.nperseg, frames)-1))),
+        "stft": {"nperseg": int(min(args.nperseg, analysis_frames)),
+                 "noverlap": int(min(args.noverlap, max(0, min(args.nperseg, analysis_frames)-1))),
                  "frequency_bins": int(len(freqs)), "time_frames": int(len(times))},
         "reference_comparison": reference_info,
         "ask": {"carrier_hz": args.carrier, "baud": 50, "symbol_duration_seconds": 0.02, "envelope_symbol_median_min": min(symbol_levels) if symbol_levels else None, "envelope_symbol_median_max": max(symbol_levels) if symbol_levels else None, "envelope_symbol_count": len(symbol_levels)},
