@@ -85,13 +85,23 @@ python src/experiments/sleepy_alarm_robustness.py \
 
 The expected flag is taken from the official creator bitmap solely for exact validation. The decoder must reconstruct the text from the distributed MP3; it must not read the expected text as its extraction input. A structural-only run without `--expected` reports `success: null` and `format_valid` separately.
 
+## Build the submission locally (no GitHub Actions run required)
+
+Install the document tools once (`pandoc`, LibreOffice Writer and `poppler-utils`), then run:
+
+```bash
+python scripts/build_submission.py
+```
+
+Outputs are written under `results/submission/`: the DOCX, PDF and `STUDENT_UETCN3124_Scripts.zip`. The build stops if the main body exceeds 15 pages. The report remains a Markdown source of truth; binary submission files must be regenerated after report changes.
+
 ## Tests and continuous integration
 
 ```bash
 python -m unittest discover -s tests -v
 ```
 
-The GitHub Actions workflow runs synthetic tests and the two official challenge workflows on pushes to `main`. It stores logs, JSON, visualizations and experiment CSVs as repository evidence. An official Sleepy Alarm run is marked successful only when exact ground-truth comparison passes.
+The GitHub Actions workflow contains the reproducibility pipeline, but you do not need to start or rerun it to build the submission. Use `python scripts/build_submission.py` locally after installing Pandoc, LibreOffice and Poppler. The script repairs DOCX table geometry, validates that the main body is at most 15 pages, then creates a source ZIP. The workflow uses the same repair script when it is run by a maintainer.
 
 ## Evidence conventions
 
