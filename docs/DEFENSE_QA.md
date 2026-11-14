@@ -70,7 +70,7 @@ Kết quả đã đo: baseline PASS; target-only gain 0,5× FAIL (46 separator),
 ## 6. Bằng chứng cần mở khi vấn đáp
 
 - Manifest và SHA-256 của ba artifact.
-- Log unit-tests.log chỉ là lịch sử sáu regression tests; quality-gate-tests.log ghi 22/22 tests pass tại source commit 11cd5e3. Commit 3015d5d lưu bằng chứng và ma trận mới, không đổi source/tests.
+- Log unit-tests.log chỉ là lịch sử sáu regression tests; quality-gate-tests.log ghi 22/22 tests pass tại revision a040e38. Commit 3bb2b57 lưu các tệp bằng chứng, không đổi source/tests.
 - Blue 3 solver log và hình diagnostics.
 - Sleepy Alarm solver JSON: số symbol, tâm cụm, byte lỗi, exact-match.
 - Hai file CSV robustness.
@@ -166,7 +166,7 @@ Quality gate P0 đã hoàn tất: 22/22 tests pass, ba artifact đúng hash và 
 
 **Những kết luận nào không được phép đưa ra?**
 
-Không được nói STEGO là detector steganography tổng quát; không nói Sleepy Alarm hoạt động blind; không nói Blue 3 payload chắc chắn bị xóa sau JPEG/resize; không dùng FPR=0 từ tám mẫu synthetic để khẳng định không có false positive. Có thể khẳng định 22/22 tests pass theo quality-gate log ở source commit 11cd5e3; nếu thay source hoặc tests thì phải chạy lại, không dùng log cũ sáu test.
+Không được nói STEGO là detector steganography tổng quát; không nói Sleepy Alarm hoạt động blind; không nói Blue 3 payload chắc chắn bị xóa sau JPEG/resize; không dùng FPR=0 từ tám mẫu synthetic để khẳng định không có false positive. Có thể khẳng định 22/22 tests pass theo quality-gate log ở revision a040e38; nếu thay source hoặc tests thì phải chạy lại, không dùng log cũ sáu test.
 
 ## 11. Trả lời ngắn gọn về điểm yếu
 
@@ -195,5 +195,5 @@ Script lấy candidate được tạo ở độ dài baseline flag, rồi so sá
 
 **Lệnh nào xác nhận revision có thể tái lập?**
 
-Chạy `python scripts/verify_reproducibility.py`. Bằng chứng hiện có ghi 22/22 tests pass, hash ba artifact và hai decoder exact-match. JSON ghi source commit đã kiểm thử (`11cd5e3`); commit `3015d5d` lưu các file kết quả sau lần chạy, không thay đổi source/tests. Nếu sửa source/tests, chạy gate lại trước khi nộp.
+Chạy `python scripts/verify_reproducibility.py`. Bằng chứng hiện có ghi 22/22 tests pass, hash ba artifact và hai decoder exact-match. JSON ghi source commit đã kiểm thử (`a040e38`); commit `3bb2b57` lưu các file kết quả sau lần chạy, không thay đổi source/tests. Nếu sửa source/tests, chạy gate lại trước khi nộp.
 
