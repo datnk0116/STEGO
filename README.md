@@ -131,9 +131,9 @@ python src/experiments/sleepy_alarm_robustness_matrix.py \
   --expected 'ictf{1_sl33py_NaYuKi_alarm_2a634dc1bb2}'
 ```
 
-The benchmark includes deterministic **synthetic benign controls** (seed 20261114) and one official positive artifact per modality. Its precision/recall/F1/FPR are descriptive of this small constructed set only; they are not estimates of real-world detection performance. The benchmark also compares reference-free and reference-assisted Sleepy Alarm extraction. The solver already supports this mode by omitting `--reference`; the trial must be treated as failed if the signal cannot be separated without the cover track.
+The benchmark includes deterministic **synthetic benign controls** (seed 20261114) and one official positive artifact per modality. Its precision/recall/F1/FPR are descriptive of this small constructed set only; they are not estimates of real-world detection performance. The benchmark also compares reference-free and reference-assisted Sleepy Alarm extraction. The solver already supports this mode by omitting `--reference`. This comparison is implemented but has not yet been run and committed as evidence; do not describe reference-free extraction as successful until `results/steganalysis/reference_comparison.json` confirms it.
 
-The expanded Blue 3 matrix tests brightness, contrast, blur, crop and seeded Gaussian noise. The audio matrix tests one-sided gain, additive noise at several SNRs, band-pass filtering and resampling round-trip. These scripts write per-trial CSV/JSON under `results/`; run them locally before quoting any new numeric result in the report.
+The expanded Blue 3 matrix tests brightness, contrast, blur, crop and seeded Gaussian noise. The audio matrix tests one-sided gain, additive noise at several SNRs, band-pass filtering and resampling round-trip. These scripts write per-trial CSV/JSON under `results/`; run them locally before quoting any new numeric result in the report. The committed historical `results/logs/unit-tests.log` contains six older tests and does not verify the five newer steganalysis tests; rerun the full suite and save a fresh log.
 
 ## Evidence conventions
 
