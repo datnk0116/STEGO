@@ -13,8 +13,9 @@
 | Git-history provenance checker | Implemented | `scripts/check_provenance_consistency.py`; strict and pre-commit modes |
 | Provenance regression suite | Implemented | `tests/test_provenance_consistency.py`; validate positive/negative Git-history cases |
 | Quality gate integration | Implemented in code | `scripts/verify_reproducibility.py` captures pre-run state, emits provenance and calls pre-commit checker |
-| Full gate for the new implementation | **Pending** | Run on a clean local checkout after the commit; baseline 22/22 does not cover the new checker/tests |
-| Strict checker against committed new evidence | **Pending** | Commit fresh gate JSON/log/provenance, then run strict checker |
+| Full gate for the new implementation | **Completed — evidence committed** | `results/verification/quality-gate.json` and matching log: 38/38 tests, exit 0, 5.358 s; 3/3 artifacts; both documented decoders exact-match; tested commit `38fbecab7aea8c241243fb50d044aea90ab657f7` |
+| Evidence snapshot | **Committed** | Evidence JSON/log/provenance stored at `29c7e9e8e98d96e20e5172a63a359cfefd22edcc`; historical 22/22 baseline retained separately |
+| Strict checker on final docs checkout | **Needs local confirmation** | Documentation-only changes should preserve technical freshness; run `python scripts/check_provenance_consistency.py` after pulling this documentation commit |
 | New detector/decoder research | Not started in this revision | Do not present proposed experiments as completed results |
 | Submission-package inspection | Not verified | Rebuild and inspect binaries after report/package inputs are finalized |
 
@@ -25,8 +26,8 @@
 **Files:** `scripts/verify_reproducibility.py`, `results/verification/quality-gate.json`, `results/logs/quality-gate-tests.log`, `results/verification/provenance.json`
 
 Steps:
-1. Pull the latest `main` and verify the working tree is clean.
-2. Run `python scripts/verify_reproducibility.py`.
+1. For a new technical revision, pull the latest `main` and verify the working tree is clean.
+2. Run `python scripts/verify_reproducibility.py` only when source/tests/data/dependencies/manifest/gate implementation changed; the current 38/38 run is already committed.
 3. Confirm the script records HEAD and pre-run status before rewriting its own log/JSON.
 4. Confirm all discovered unit/integration/provenance test methods ran and passed; do not hardcode the expected count as 22.
 5. Confirm three official artifact size/SHA-256 checks.
@@ -230,9 +231,9 @@ Acceptance:
 
 ## Recommended execution order
 
-1. P0.1 run the new local gate.
-2. P0.2 commit all gate outputs together and pass strict provenance validation.
-3. P0.3 confirm stale/freshness cases through the regression suite.
+1. P0.1 and P0.2 are complete for tested source revision `38fbecab7aea8c241243fb50d044aea90ab657f7`; 38/38 gate evidence is committed.
+2. Run P0 strict provenance validation on the checkout after this docs-only update; no full gate rerun is needed unless technical inputs changed.
+3. P0.3 stale/freshness behavior is covered by the provenance regression suite included in the 38-test run.
 4. P1.1 Blue 3 sensitivity/ablation.
 5. P1.2 Sleepy Alarm reference-free synchronization.
 6. P1.3 independent steganalysis corpus and held-out detector benchmark.

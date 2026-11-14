@@ -9,10 +9,10 @@ This directory contains committed technical outputs and experiment evidence. Fin
 
 ## Current verification outputs
 
-The previously recorded baseline is a historical verification snapshot. Its tested commit is stored in results/verification/provenance.json; the evidence-packaging commit and current HEAD are derived dynamically from Git history. The baseline did not capture pre-run working-tree state. New provenance checker/tests must be covered by a new full local gate before the evidence is current.
+The 22/22 result is a historical verification baseline; its pre-run working-tree state was not captured. The latest generated-run snapshot is recorded in `results/verification/provenance.json`: tested commit `38fbecab7aea8c241243fb50d044aea90ab657f7`, evidence snapshot commit `29c7e9e8e98d96e20e5172a63a359cfefd22edcc`, branch `main`, and a clean captured pre-run working tree. The current HEAD is derived dynamically by the strict checker; documentation-only commits do not stale the technical gate.
 
-- verification/quality-gate.json: gate result for the run identified by canonical provenance. The prior baseline recorded 22/22 tests, three artifact checks, Blue 3 exact-match and Sleepy Alarm reference-assisted exact-match; do not reuse that count as the result of a newer run.
-- logs/quality-gate-tests.log: full 22-test run corresponding to the source commit recorded in the JSON.
+- verification/quality-gate.json: latest gate result — 38/38 tests passed, exit code 0, runtime 5.358 s; 3/3 artifact checks passed; Blue 3 and Sleepy Alarm reference-assisted exact-match. The older 22/22 result remains a historical baseline.
+- logs/quality-gate-tests.log: matching full 38-test run for tested commit `38fbecab7aea8c241243fb50d044aea90ab657f7`.
 - logs/unit-tests.log: historical six-test log from an older revision; retain for historical debugging only and never cite as current full-suite evidence.
 - artifact_manifest.json: upstream source, byte size and SHA-256 for each of the three pinned official artifacts.
 - environment.json: environment captured by an earlier run. For the environment associated with the latest gate, use the environment object in verification/quality-gate.json.

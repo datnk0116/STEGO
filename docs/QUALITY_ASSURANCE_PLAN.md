@@ -25,26 +25,28 @@ Rubric mức Xuất sắc đòi hỏi: có tư duy thiết kế và so sánh ph�
 **Canonical record:** results/verification/provenance.json  
 **Historical tested revision:** lấy từ quality-gate.json.git.commit; evidence-packaging commit và current HEAD được suy ra bằng strict checker, không hardcode trong snapshot.
 
-Baseline trước khi bổ sung provenance tooling:
+Baseline trước khi bổ sung provenance tooling (giữ nguyên như lịch sử):
 - 22/22 test methods pass, exit code 0.
 - Ba artifact chính thức đúng byte size và SHA-256.
 - Blue 3 exact-match.
 - Sleepy Alarm reference-assisted exact-match.
 - Sleepy Alarm reference-free chưa exact-match (26 ký tự, 49 separator).
 
-Bản migration provenance đánh dấu pre-run working-tree status là **không được ghi nhận**; không suy diễn trạng thái ban đầu từ trường status được chụp sau khi gate đã ghi log. Đây là cách ghi nhận trung thực dữ liệu lịch sử.
+Bản migration provenance đánh dấu pre-run working-tree status của snapshot lịch sử là **không được ghi nhận**; không suy diễn trạng thái ban đầu từ trường status được chụp sau khi gate đã ghi log.
 
-**Trạng thái sau thay đổi hiện tại:** checker và regression tests mới làm thay đổi gate implementation/test suite so với baseline; do đó baseline cũ không xác minh được các thay đổi mới. Sau khi commit patch này, phải chạy full local gate một lần trên working tree sạch. Chỉ khi pre-commit checker pass, evidence được commit và strict checker pass mới được coi là provenance hiện hành. Không cần GitHub Actions hoặc rerun các ma trận robustness nếu input/script/seed/parameters không đổi.
+**Latest generated-run evidence (14 November 2026):** `results/verification/quality-gate.json` và `results/logs/quality-gate-tests.log` ghi nhận 38/38 test methods pass, exit code 0, runtime 5.358 giây; 3/3 artifact đúng byte size/SHA-256; Blue 3 exact-match; Sleepy Alarm reference-assisted exact-match. Tested commit: `38fbecab7aea8c241243fb50d044aea90ab657f7`; branch `main`; evidence-packaging commit: `29c7e9e8e98d96e20e5172a63a359cfefd22edcc`. Pre-run working tree được capture clean với status rỗng. Sleepy Alarm reference-free vẫn thất bại (26 ký tự, 49 separator) và không phải điều kiện PASS của gate.
 
-| Hạng mục | Bằng chứng baseline | Trạng thái sau khi thêm provenance tooling |
+Sau lần chạy này, thay đổi đang thực hiện chỉ thuộc tài liệu; các chỉnh sửa docs-only không làm stale technical gate theo thiết kế checker. Tuy nhiên, cần chạy unit suite và strict provenance checker trên checkout sau khi pull commit tài liệu để xác nhận status blocks/current HEAD. Không cần chạy lại ma trận robustness hoặc full quality gate chỉ để refresh tài liệu. Chỉ chạy lại full gate khi source, tests, challenge data, dependencies, manifest hoặc gate implementation thay đổi.
+
+| Hạng mục | Baseline lịch sử | Evidence mới nhất |
 |---|---|---|
-| Unit/integration tests | 22/22 pass | Cần rerun full suite để bao phủ tests mới |
-| Artifact integrity | 3/3 SHA-256 pass | Pinned inputs không đổi; checker xác minh lại trong gate mới |
-| Official decoders | Blue 3 và Sleepy Alarm reference-assisted exact-match | Cần chạy lại gate mới để đóng evidence |
-| Provenance | Gate JSON có tested commit, docs cũ chưa đồng bộ | Canonical snapshot + checker được bổ sung; cần strict validation sau commit |
-| Submission package | Có binary trong repo, chưa xác minh nội dung/build input | Tách riêng; rebuild/inspect ở giai đoạn đóng gói |
+| Unit/integration tests | 22/22 pass | **38/38 pass**, exit code 0, 5.358 s |
+| Artifact integrity | 3/3 SHA-256 pass | **3/3** byte size/SHA-256 pass |
+| Official decoders | Blue 3 và Sleepy Alarm reference-assisted exact-match | Cả hai tiếp tục **exact-match** |
+| Provenance | Pre-run status không được ghi nhận | Generated snapshot; pre-run clean; tested/evidence commits được ghi và suy ra bằng checker |
+| Submission package | Chưa xác minh nội dung/build input | **NOT_VERIFIED**; vẫn cần rebuild và kiểm tra riêng |
 
-results/logs/unit-tests.log chỉ là log sáu test lịch sử. Log full-suite baseline là results/logs/quality-gate-tests.log; số test trong các lần chạy tiếp theo phải lấy từ JSON/log tương ứng, không hardcode.
+`results/logs/unit-tests.log` chỉ là log sáu test lịch sử. `results/logs/quality-gate-tests.log` là log tương ứng với JSON 38/38 hiện hành; số test của các lần chạy khác phải lấy từ JSON/log đúng cặp, không hardcode.
 
 ## 3. Các hạng mục đã triển khai
 
@@ -80,11 +82,11 @@ Các tài liệu đã được đồng bộ:
 - report/REPORT.md: summary, test evidence, robustness metrics, limitations, future work và conclusion.
 - README.md: quality gate hiện tại, kết quả partial recovery, detector failure và reference-free failure.
 - docs/QUALITY_GATE.md: phân biệt source commit được test với commit đóng gói output.
-- docs/DEFENSE_QA.md: câu trả lời vấn đáp nêu đúng 22/22 test, các metric mới và các giới hạn còn lại.
-- results/README.md: các output đã commit không còn bị đánh dấu pending.
+- docs/DEFENSE_QA.md: câu trả lời vấn đáp nêu gate mới nhất 38/38 test, phân biệt baseline 22/22 lịch sử, các metric mới và giới hạn còn lại.
+- results/README.md: latest gate được mô tả theo đúng 38/38 JSON/log; baseline 22/22 và log sáu test được giữ ở vai trò lịch sử.
 - docs/QUALITY_ASSURANCE_PLAN.md: phân biệt việc đã hoàn tất và hướng nghiên cứu còn mở.
 
-Không ghi lại kết quả lịch sử thành kết quả mới; không diễn giải metric như hiệu năng của quần thể.
+Không ghi lại kết quả lịch sử thành kết quả mới; không diễn giải metric như hiệu năng của quần thể. Các status blocks canonical không bị sửa; strict checker phải được chạy trên checkout sau commit tài liệu.
 
 ## 4. Diễn giải kết quả định lượng phải thống nhất
 
@@ -129,7 +131,7 @@ Benchmark hiện tại:
 - Image: TP=5, TN=12, FP=0, FN=0.
 - Audio: TP=0, TN=8, FP=0, FN=5; recall=0, F1=0.
 
-Positive là các biến thể từ một artifact chính thức mỗi modality; benign controls là synthetic. Do đó image F1=1 không chứng minh generalization. Audio recall=0 là một thất bại thực nghiệm cần giữ nguyên, không hạ threshold bằng cách nhìn vào cùng test set. Muốn cải thiện phải có corpus độc lập, validation để chọn feature/threshold và held-out test chỉ dùng một lần.
+Positive là các biến thể từ một artifact chính thức mỗi modality; benign controls là synthetic. Do đó image F1=1 không chứng minh generalization. Audio recall=0 là một thất bại thực nghiệm cần giữ nguyên. Feature-level audit cho thấy carrier-band ratio của positive xấp xỉ 0,000204, dưới ngưỡng 0,02 khoảng 98 lần, trong khi block-RMS CV xấp xỉ 0,987 vượt ngưỡng 0,15. Vì classifier dùng điều kiện AND, toàn bộ positive bị loại ở carrier-band feature. Feature này được tính trên toàn bộ track ~10,019 s dù ASK payload theo challenge dài 7 s; khả năng cửa sổ toàn track làm pha loãng tỷ lệ năng lượng là giả thuyết cần ablation, không phải nguyên nhân đã được chứng minh. Không tune threshold trên cùng test set; cần corpus độc lập, split theo nguồn, validation cho feature/threshold và held-out test.
 
 ### 4.4. Threat model
 
@@ -142,7 +144,7 @@ Positive là các biến thể từ một artifact chính thức mỗi modality;
 | Tiêu chí | Bằng chứng hiện có | Điều kiện hoàn thiện cuối |
 |---|---|---|
 | Lập kế hoạch và biện minh | Phạm vi hai challenge cùng chủ đề; RQ/H1–H3; so sánh phương án; nguồn gốc artifact và lý do lựa chọn | Giữ các giả định và giới hạn lựa chọn nhất quán trong report/README |
-| Triển khai và tài liệu hóa | Decoder hai challenge; test count được ghi trong provenance của lần gate tương ứng; 3/3 hash đúng; kết quả JSON/CSV và log | Chạy gate trên working copy cuối; build PDF/ZIP; kiểm tra ZIP có đủ source, tests, script, data, report Markdown và evidence |
+| Triển khai và tài liệu hóa | Decoder hai challenge; gate mới nhất 38/38 tests pass; 3/3 hash đúng; JSON/CSV/log/provenance | Chạy unit tests và strict checker trên checkout cuối; build PDF/ZIP; kiểm tra ZIP có đủ source, tests, script, data, report Markdown và evidence |
 | Phân tích kết quả | Exact-match, partial recovery, BER/SER, separator metrics, confusion matrix và phân tích failure | Không nâng kết luận vượt khỏi hai challenge và các phép biến đổi đã thử |
 | Đánh giá, phản biện và tự học | Threat model, validity, detector failure, reference dependency, robustness limits và hướng nghiên cứu tiếp | Phần phản tư cá nhân/logbook chỉ hoàn thiện từ ghi chú và trải nghiệm thật; không suy diễn từ commit hoặc tự tạo thời lượng |
 
@@ -152,8 +154,8 @@ Bảng này là checklist chất lượng dựa trên rubric, không phải tự
 
 | Ưu tiên | Công việc | Điều kiện nghiệm thu |
 |---|---|---|
-| P0 | Chạy `python scripts/verify_reproducibility.py` trên working copy cuối | Exit code 0; số test chạy bằng số test methods được phát hiện; ba hash đúng; hai decoder exact-match trong điều kiện đã mô tả |
-| P0 | Chạy `python scripts/build_submission.py` | DOCX/PDF được sinh từ report Markdown hiện tại; PDF qua kiểm tra số trang; ZIP được tạo và mở/kiểm tra được |
+| P0 | Xác nhận 38/38 gate hiện hành bằng JSON/log và chạy strict provenance checker sau pull | JSON/log nhất quán; strict checker PASS; working tree sạch. Chỉ rerun `verify_reproducibility.py` nếu có thay đổi kỹ thuật làm stale gate |
+| P0 | Chạy `python scripts/build_submission.py --max-main-pages 15` sau khi report chốt | DOCX/PDF được sinh từ report Markdown hiện tại; PDF qua kiểm tra số trang/hiển thị; ZIP được tạo và mở/kiểm tra được |
 | P0 | Kiểm tra nội dung ZIP | Có README, source, tests, scripts, workflow, dữ liệu gốc, kết quả, báo cáo Markdown, references và docs; không có .venv, .git, file tạm hoặc ZIP lồng |
 | P1 | Hoàn thiện trang bìa và tên file | Thay các trường hành chính bằng thông tin đúng; dùng tên file nhất quán theo hướng dẫn môn học |
 | P1 | Hoàn thiện phản tư/logbook | Chỉ ghi những gì người thực hiện xác nhận từ ghi chú thực tế; để trống thời gian không xác định được thay vì dựng lại |
@@ -162,13 +164,14 @@ Bảng này là checklist chất lượng dựa trên rubric, không phải tự
 Các nghiên cứu về detector đa nguồn, reference-free Sleepy Alarm và robustness trên nhiều challenge là hướng phát triển tiếp theo, không được trình bày như kết quả đã hoàn thành.
 ## 7. Command kiểm tra local cuối cùng
 
-Từ thư mục repository:
+Từ thư mục repository sau khi pull commit tài liệu. Vì patch này chỉ sửa tài liệu, không cần chạy lại benchmark hoặc full gate; trước hết kiểm tra unit suite và provenance của evidence đã có:
 
 ~~~bash
-git status --short
+git status --short --branch
 git pull --ff-only origin main
-git log -1 --oneline
-python scripts/verify_reproducibility.py
+git status --short --branch
+python -m unittest discover -s tests -v
+python scripts/check_provenance_consistency.py
 ~~~
 
 Kiểm tra kết quả gate:
@@ -199,24 +202,26 @@ assert all(item["passed"] for item in artifacts.values())
 assert decoders["blue3"]["exact_match"]
 assert decoders["sleepy_alarm_reference_assisted"]["exact_match"]
 assert data["overall_passed"]
-print("LOCAL QUALITY GATE: PASS")
+print("RECORDED QUALITY GATE: PASS")
 PY
 ~~~
 
-Nếu command này pass, không cần chạy GitHub Actions. Nếu quality gate tạo thay đổi mới trong working tree, xem xét trước khi commit:
+Đối với thay đổi source/tests/data/dependencies/gate implementation trong tương lai, chạy full gate và commit cả ba output thành một snapshot:
 
 ~~~bash
-git status --short
-git diff -- results/verification/quality-gate.json results/logs/quality-gate-tests.log
+python scripts/verify_reproducibility.py
+git diff -- results/logs/quality-gate-tests.log results/verification/quality-gate.json results/verification/provenance.json
+git add results/logs/quality-gate-tests.log results/verification/quality-gate.json results/verification/provenance.json
+git commit -m "test: record local provenance verification"
+python scripts/check_provenance_consistency.py
 ~~~
 
-Chỉ commit hai file gate nếu chúng thực sự được tái tạo từ local run và bạn muốn lưu bằng chứng môi trường local:
+Sau khi hoàn thiện nội dung báo cáo, build và kiểm tra riêng gói nộp; trạng thái package hiện vẫn NOT_VERIFIED:
 
 ~~~bash
-git add results/verification/quality-gate.json results/logs/quality-gate-tests.log
-git diff --cached --stat
-git commit -m "test: record local reproducibility verification"
-git push origin main
+python scripts/build_submission.py --max-main-pages 15
+python scripts/check_report_pdf.py
+unzip -l results/submission/STUDENT_UETCN3124_Scripts.zip
 ~~~
 
-Nếu gate thất bại, không commit log như bằng chứng đạt; giữ nguyên output lỗi để xác định nguyên nhân trước.
+Nếu unit tests hoặc provenance checker thất bại, không sửa JSON/log để làm cho PASS; giữ nguyên output để xác định nguyên nhân. Không cần chạy GitHub Actions.

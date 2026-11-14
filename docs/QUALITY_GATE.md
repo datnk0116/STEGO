@@ -16,7 +16,9 @@ This local procedure validates the pinned official challenge artifacts, runs the
 - results/artifact_manifest.json records upstream source, byte size and SHA-256 for each pinned official challenge artifact.
 - The strict checker derives the evidence-packaging commit from Git history by matching the committed Git blobs for the gate JSON and log. It derives current HEAD at check time. Neither value is embedded in the provenance snapshot, avoiding a self-referential commit hash.
 
-The existing 22/22 test result is a historical baseline. Its original run did not capture the pre-run working-tree state, so that fact is explicitly unknown; the old post-generation status field cannot be used to reconstruct it. The canonical migration snapshot preserves this uncertainty. New runs capture the working-tree status before the gate writes any output.
+**Latest committed generated run (14 November 2026):** tested commit `38fbecab7aea8c241243fb50d044aea90ab657f7`, branch `main`; evidence snapshot commit `29c7e9e8e98d96e20e5172a63a359cfefd22edcc`; 38/38 tests passed in 5.358 seconds, exit code 0; 3/3 pinned artifacts passed; Blue 3 exact-match; Sleepy Alarm reference-assisted exact-match (350 symbols, 38 separators, 39 bytes, no byte errors). The pre-run working tree was captured clean. Reference-free Sleepy Alarm still failed (26 decoded characters, 49 separators); this is recorded as a limitation, not hidden by the gate.
+
+The earlier 22/22 test result is a historical baseline. Its original run did not capture the pre-run working-tree state, so that fact is explicitly unknown; the old post-generation status field cannot be used to reconstruct it. The canonical migration snapshot preserves this uncertainty. The 38/38 generated run above is the latest recorded gate and captures the working-tree status before the gate writes any output.
 
 ## Local verification
 

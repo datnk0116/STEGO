@@ -11,7 +11,7 @@
 **Sinh viên:** ______________________________ — **MSSV:** __________________  
 **Lớp:** __________________ — **Ngày nộp:** ____ / ____ / 2026 — **Hạn nộp:** ____ / ____ / 2026
 
-> **Trạng thái bằng chứng kỹ thuật:** Baseline 22/22 (baseline lịch sử) test pass và ba artifact đúng SHA-256 được lưu trong canonical provenance snapshot. Đây là lần chạy lịch sử, không bao phủ provenance checker và regression tests vừa được bổ sung. Sau khi commit thay đổi source/tests này, phải chạy lại full local quality gate trước khi khẳng định trạng thái PASS hiện hành. Sleepy Alarm reference-free vẫn thất bại và audio detector vẫn có recall=0 trên benchmark hiện tại; không loại bỏ các giới hạn này.
+> **Trạng thái bằng chứng kỹ thuật mới nhất (14/11/2026):** Quality gate ghi nhận **38/38 tests pass**, exit code 0, thời gian 5,358 giây; **3/3 artifact** đúng byte size/SHA-256; Blue 3 exact-match và Sleepy Alarm reference-assisted exact-match. Source commit được kiểm thử: `38fbecab7aea8c241243fb50d044aea90ab657f7`; commit đóng gói evidence: `29c7e9e8e98d96e20e5172a63a359cfefd22edcc`. Working tree trước lần chạy được ghi nhận clean. Kết quả **22/22** vẫn được giữ như baseline lịch sử, không thay thế bằng số mới. Sleepy Alarm reference-free vẫn thất bại và audio detector vẫn có recall=0 trên benchmark hiện tại; các giới hạn này không bị loại bỏ.
 
 ---
 
@@ -91,7 +91,7 @@ Các giả thuyết:
 | Tiêu chí | Điểm tối đa | Minh chứng chính |
 |---|---:|---|
 | Lập kế hoạch và biện minh | 2,0 | Mục 1: RQ/H1–H3, so sánh phương án, lý do chọn hai challenge cùng chủ đề |
-| Triển khai và tài liệu hóa | 4,0 | Mục 3–8: artifact và SHA-256, lệnh, decoder, baseline lịch sử 22/22 test đã pass; số lượng test của lần chạy mới phải lấy động từ provenance, hình và CSV/JSON đã lưu |
+| Triển khai và tài liệu hóa | 4,0 | Mục 3–8: artifact và SHA-256, lệnh, decoder; gate mới nhất 38/38 tests pass, baseline 22/22 được giữ riêng như lịch sử; hình và CSV/JSON đã lưu |
 | Phân tích kết quả | 2,0 | Mục 2, 5, 6, 9, 10: chứng minh toán học, 350 symbol ASK, lỗi và điều kiện giải |
 | Đánh giá, phản biện và tự học | 2,0 | Mục 11.1–11.9: hạn chế định lượng, threat model, validity, phản biện hai decoder, benchmark detector, ma trận khắc phục và kế hoạch học tiếp |
 
@@ -364,13 +364,13 @@ Các lệnh cài môi trường, phân tích, giải mã và xác minh Sleepy Al
 | scripts/verify_reproducibility.py | Quality gate: SHA-256, unit/integration tests, hai decoder chính thức và environment |
 | tests/ | Test suite gồm hồi quy tổng hợp, integration trên artifact chính thức, metric và provenance consistency; quality gate đếm số test method động từ source |
 
-`results/logs/unit-tests.log` là log lịch sử của sáu regression tests cũ. Snapshot baseline 22/22 được nhận diện bởi `results/verification/provenance.json` và cặp gate JSON/log tương ứng. Snapshot đó không bao phủ provenance checker/tests mới; sau khi commit thay đổi hiện tại, cần chạy lại full local gate và tạo evidence mới.
+`results/logs/unit-tests.log` là log lịch sử của sáu regression tests cũ. Snapshot 22/22 là baseline lịch sử trước khi bổ sung provenance checker. Gate mới nhất tại `results/verification/quality-gate.json` và `results/logs/quality-gate-tests.log` ghi nhận 38/38 tests pass, exit code 0, trên source commit `38fbecab7aea8c241243fb50d044aea90ab657f7`; ba artifact đúng hash và hai decoder chính thức exact-match trong điều kiện đã nêu. Thông tin run đầy đủ và hash của evidence nằm trong `results/verification/provenance.json`.
 
 ~~~bash
 python scripts/verify_reproducibility.py
 ~~~
 
-Baseline gate trước khi bổ sung provenance tooling đã ghi nhận 22/22 tests, ba hash đúng và hai decoder exact-match trong điều kiện đã mô tả. Tested commit được lưu trong canonical provenance; evidence commit được suy ra từ Git blob history. Vì source/test đã thay đổi khi bổ sung checker, phải chạy lại gate để tạo snapshot mới trước khi xem kết quả hiện hành là PASS.
+Gate mới nhất đã chạy trên working tree sạch được capture trước khi tạo output: 38/38 tests pass trong 5,358 giây, exit code 0; ba artifact đúng byte size/SHA-256; Blue 3 exact-match; Sleepy Alarm reference-assisted exact-match. Tested commit `38fbecab7aea8c241243fb50d044aea90ab657f7` được ghi trong JSON; evidence snapshot được commit tại `29c7e9e8e98d96e20e5172a63a359cfefd22edcc`. Strict checker suy ra evidence commit và current HEAD từ Git history, không hardcode vào snapshot. Chỉ cần chạy lại full gate khi có thay đổi kỹ thuật làm stale evidence; chỉnh sửa tài liệu đơn thuần không làm stale test gate.
 
 ## 8. Thiết kế thí nghiệm robustness
 
@@ -448,7 +448,7 @@ Benchmark seed 20261114 gồm các biến thể positive từ hai artifact chín
 | Image | 5 | 12 | 0 | 0 | 1,00 | 1,00 | 1,00 | 0,00 |
 | Audio | 0 | 8 | 0 | 5 | 0,00 | 0,00 | 0,00 | 0,00 |
 
-Điểm ảnh hoàn hảo không được diễn giải thành độ chính xác 100% trên ảnh nói chung: positive được tạo từ cùng một challenge và benign là dữ liệu tổng hợp. Ngược lại, detector audio **không phát hiện được bất kỳ positive nào** (FN=5, recall=0). Hai đặc trưng carrier-band energy và block-RMS CV cùng ngưỡng hiện tại chưa đủ phân biệt mẫu Sleepy Alarm. FPR=0 trên tám benign audio cũng không chứng minh detector không báo động nhầm trong thực tế.
+Điểm ảnh hoàn hảo không được diễn giải thành độ chính xác 100% trên ảnh nói chung: positive được tạo từ cùng một challenge và benign là dữ liệu tổng hợp. Ngược lại, detector audio **không phát hiện được bất kỳ positive nào** (FN=5, recall=0). Đối chiếu feature trong `benchmark.csv` với `src/steganalysis.py` cho thấy carrier-band energy ratio của positive xấp xỉ 0,000204, thấp hơn ngưỡng 0,02 khoảng 98 lần; block-RMS CV xấp xỉ 0,987, vượt ngưỡng 0,15. Hàm phân loại yêu cầu đồng thời cả hai điều kiện, nên carrier-band feature làm tất cả positive bị loại dù RMS CV đã cao. Đây là lời giải thích trực tiếp cho confusion matrix hiện tại, không chứng minh nguyên nhân phổ quát cho audio khác. FPR=0 trên tám benign audio cũng không chứng minh detector không báo động nhầm trong thực tế. Không điều chỉnh threshold trên chính tập benchmark này; cần corpus độc lập, split theo nguồn và validation để chọn feature/threshold trước khi đánh giá held-out test.
 
 | Chế độ Sleepy Alarm | Reference | Symbol | Separator | Độ dài | Format hợp lệ | Exact-match |
 |---|---|---:|---:|---:|---|---|
@@ -532,8 +532,8 @@ Blue 3 có cơ chế xác định và ổn định hơn vì PNG bảo toàn giá
 4. **Robustness Blue 3 thấp trong ma trận mở rộng.** Chỉ 1/9 biến thể exact-match (Gaussian blur radius 0,3). Trong tám biến thể FAIL, sáu vẫn tạo candidate 50 ký tự để đo partial recovery: brightness 0,9 có 47/50 vị trí đúng, edit distance 3, similarity 94%; brightness 1,1 có 28/50 vị trí đúng, edit distance 20, similarity 60%; contrast 0,9 có edit distance 48, similarity 4%; contrast 1,1, crop 16 px và Gaussian noise sigma 2,0 có edit distance 50. Gaussian noise sigma 0,5 và 1,0 không tạo candidate ở độ dài baseline, nên edit distance được để null. Đây là khác biệt giữa exact-match thất bại và không còn candidate để đánh giá.
 5. **Audio nhạy với điều kiện biến đổi.** Ma trận mở rộng có 7/23 PASS (bao gồm baseline). Trung bình số học trên 23 trial, bao gồm baseline, là SER 12,31%, BER 12,97%, separator precision 77,07% và recall 93,14%. Ví dụ target-side AWGN ở SNR 20 dB có SER 20,57% và BER 22,76%; reference-side AWGN ở 10 dB có SER 60,00% và BER 63,78%. Bốn phép gain một phía trong ma trận asymmetric ban đầu đều FAIL, trong khi hai phép resampling một phía PASS. Các giá trị trung bình này chỉ mô tả tập trial đã định trước, không phải ước lượng hiệu năng trên một quần thể audio.
 6. **Quy mô mẫu hạn chế.** Nghiên cứu chỉ có hai challenge chính thức; các biến thể sinh từ một artifact không độc lập thống kê. Chưa có khoảng tin cậy, repeated runs trên nhiều payload hoặc kiểm định chéo theo challenge.
-7. **Bằng chứng kiểm thử đã được đồng bộ ở mức source/evidence.** Quality gate ghi nhận 22/22 tests pass, exit code 0, trên source commit `historical tested revision`; log và JSON đã được lưu trong commit `historical evidence-packaging revision`. `results/logs/unit-tests.log` vẫn chỉ là log lịch sử 6 test và không được dùng thay cho quality-gate log. Nếu source hoặc tests thay đổi sau revision được kiểm thử, cần chạy lại gate.
-8. **Chưa có benchmark trực tiếp với công cụ ngoài.** Phần đối chiếu Aperi'Solve, The-A-Files và ragibson/Steganography dựa trên README/tài liệu công khai; không cài đặt, không chạy cùng corpus, không đo thời gian hoặc metric.
+7. **Bằng chứng kiểm thử đã được đồng bộ ở mức source/evidence.** Gate mới nhất ghi nhận 38/38 tests pass, exit code 0, runtime 5,358 giây trên source commit `38fbecab7aea8c241243fb50d044aea90ab657f7`; evidence JSON/log/provenance được đóng gói tại commit `29c7e9e8e98d96e20e5172a63a359cfefd22edcc`. Working tree trước lần chạy được capture là clean. Baseline 22/22 vẫn là kết quả lịch sử; `results/logs/unit-tests.log` là log sáu test cũ và không được dùng thay quality-gate log. Các chỉnh sửa docs-only không làm stale technical gate; thay đổi source, tests, data, dependencies, manifest hoặc gate implementation cần chạy lại gate và lưu evidence mới.
+8. **Chưa có benchmark thực nghiệm đầy đủ với công cụ ngoài.** Phần đối chiếu Aperi'Solve, The-A-Files và ragibson/Steganography hiện dựa trên README/tài liệu công khai; chưa cài đặt và chạy cùng corpus, nên không có số liệu thời gian hoặc metric để so sánh. Riêng Blue 3 có reference solver chính thức [3] cùng xử lý artifact bằng modal RGB, quét độ dài ứng viên và tổng sai khác theo vùng; đây là đối chứng thuật toán phù hợp để chạy trên cùng `blue.png`, nhưng repository hiện chưa lưu kết quả chạy side-by-side. Không xem việc đọc source là benchmark đã hoàn tất; lệnh tái hiện đối chứng được đưa vào checklist cuối.
 
 ### 11.3. Phản biện kết quả và đánh giá tính hợp lệ
 
@@ -543,7 +543,7 @@ Các câu hỏi phản biện trọng yếu được phân tích theo threat mod
 
 | Ưu tiên | Việc cần làm | Tiêu chí nghiệm thu |
 |---|---|---|
-| P0 — baseline lịch sử; cần rerun | Quality gate | 22/22 tests pass; ba artifact đúng hash; Blue 3 và Sleepy Alarm (có reference) exact-match; JSON/log đã commit |
+| P0 — đã có evidence mới nhất | Quality gate | 38/38 tests pass; exit code 0; 3/3 artifact đúng hash; Blue 3 và Sleepy Alarm (có reference) exact-match; JSON/log/provenance đã commit |
 | P1 | Phân tích feature và hiệu chuẩn detector audio trên validation độc lập | Recall/F1 báo cáo trên held-out test; không chọn ngưỡng từ test |
 | P1 | Mở rộng corpus benign/stego nhiều nguồn | Split theo artifact/challenge, không để biến thể cùng nguồn rơi vào nhiều tập |
 | P2 | Cải thiện reference-free Sleepy Alarm | Báo BER, byte exact-match và tỷ lệ payload phục hồi trên nhiều bản ghi |
@@ -554,7 +554,7 @@ Không điều chỉnh ngưỡng chỉ để biến năm positive hiện tại t
 
 ### 11.5. Nhật ký và bằng chứng
 
-Bằng chứng kỹ thuật có thể tái kiểm tra được lưu theo từng lớp: artifact và SHA-256 trong `data/` và `results/artifact_manifest.json`; log quality gate 22/22 tests trong `results/logs/quality-gate-tests.log`; báo cáo gate tại `results/verification/quality-gate.json`; kết quả Blue 3 trong `results/blue3/`; kết quả audio exact-match trong `results/sleepy_alarm/solver.json`; các ma trận robustness trong CSV/JSON; và lần giải mã Sleepy Alarm thất bại ban đầu trong `results/2026-11-14/initial-run.md`. Log sáu test cũ chỉ giữ vai trò lịch sử. `quality-gate.json` xác định source commit được kiểm tra; commit `historical evidence-packaging revision` là commit lưu bằng chứng sau khi chạy.
+Bằng chứng kỹ thuật có thể tái kiểm tra được lưu theo từng lớp: artifact và SHA-256 trong `data/` và `results/artifact_manifest.json`; log quality gate **38/38 tests** trong `results/logs/quality-gate-tests.log`; báo cáo gate tại `results/verification/quality-gate.json`; provenance tại `results/verification/provenance.json`; kết quả Blue 3 trong `results/blue3/`; kết quả audio exact-match trong `results/sleepy_alarm/solver.json`; các ma trận robustness trong CSV/JSON; và lần giải mã Sleepy Alarm thất bại ban đầu trong `results/2026-11-14/initial-run.md`. Log sáu test cũ chỉ giữ vai trò lịch sử; baseline 22/22 cũng được giữ riêng. `quality-gate.json` xác định source commit được kiểm tra (`38fbecab7aea8c241243fb50d044aea90ab657f7`); evidence snapshot đã được lưu tại commit `29c7e9e8e98d96e20e5172a63a359cfefd22edcc`.
 
 ### 11.6. Tự đánh giá quá trình học tập và bài học rút ra
 
@@ -597,7 +597,7 @@ Việc thử 49 độ dài rồi chọn chuỗi theo định dạng flag là tì
 
 #### 11.7.4. Phản biện Sleepy Alarm
 
-Reference là dependency thiết yếu: reference-free chỉ khôi phục 26 ký tự, có 49 separator thay vì 38 và không đạt exact-match; reference-assisted khôi phục đủ 39 ký tự. Vì vậy không gọi decoder hiện tại là blind.
+Reference là dependency thiết yếu đối với kết quả hiện tại: reference-free chạy trực tiếp trên MP3 trộn, không trừ track gốc; solver vẫn giả định carrier 8 kHz, baud 50, pha bắt đầu và thời lượng truyền 7 giây, sau đó phân cụm ba mức biên độ toàn cục bằng quantile/k-means đơn giản. Kết quả có 350 symbol nhưng tạo 49 separator thay vì 38, 20 nhóm bit không đủ 8 bit, giải được 26 ký tự và không exact-match. Các con số cho thấy lỗi phân đoạn/phân loại symbol; riêng evidence này chưa tách định lượng đóng góp của nền nhạc, timing, pha hay phân cụm. Reference-assisted trừ track gốc trước khi đo residual và khôi phục đủ 39 ký tự. Vì vậy không gọi decoder hiện tại là blind.
 
 Correlation xấp xỉ 0,999 chủ yếu giúp xác định độ trễ/tương đồng, không bảo đảm hai track cùng scale. Gain một phía làm phần nền sau phép trừ không triệt tiêu tương ứng, khiến ba cụm ASK có thể chồng lấn hoặc lệch. Coherent I/Q projection còn giả định biết carrier 8 kHz, sample rate, pha và symbol timing 882 mẫu; sai lệch clock/pha có thể giảm năng lượng chiếu. Chọn kênh trái là đúng với generator của challenge nhưng không phải giả định tổng quát cho mọi file stereo.
 
@@ -605,7 +605,7 @@ Correlation xấp xỉ 0,999 chủ yếu giúp xác định độ trễ/tương 
 
 Benchmark có 17 ảnh (TP=5, TN=12, FP=0, FN=0) và 13 audio (TP=0, TN=8, FP=0, FN=5). Năm positive của mỗi modality đều xuất phát từ một artifact; benign controls là dữ liệu tổng hợp. Vì vậy image F1=1 chỉ cho thấy heuristic nhận diện họ mẫu Blue 3, không chứng minh generalization.
 
-Với audio, carrier-band energy ratio của positive khoảng 0,000204, thấp hơn ngưỡng 0,02; block-RMS CV khoảng 0,987 nhưng detector yêu cầu đồng thời cả hai điều kiện nên bỏ sót toàn bộ positive. Đây là bằng chứng heuristic hiện tại không phù hợp với mẫu Sleepy Alarm trong benchmark, không phải lý do để hạ threshold ngay trên cùng tập dữ liệu. Cần validation độc lập, giữ test set riêng và báo confusion matrix/precision/recall/F1/FPR. FPR=0 trên tám mẫu audio tổng hợp không chứng minh không có false positive thực tế.
+Với audio, carrier-band energy ratio của positive khoảng 0,000204, thấp hơn ngưỡng 0,02 khoảng 98 lần; block-RMS CV khoảng 0,987 vượt ngưỡng 0,15. Do `classify_audio` chỉ gắn nhãn khi cả hai điều kiện đúng, feature carrier-band đang chặn toàn bộ positive trong benchmark hiện tại. Feature được tính trên toàn bộ first channel của file bằng periodogram, trong khi phần ASK theo source chỉ kéo dài 7 giây trong bản ghi khoảng 10 giây; đây là giả thuyết thiết kế hợp lý về sự pha loãng đặc trưng nhưng chưa được xác minh bằng ablation và không nên gọi là nguyên nhân duy nhất. Không tune threshold trên chính tập benchmark này; cần corpus độc lập, split theo nguồn, validation để chọn feature/threshold, ablation (carrier-band-only, RMS-only và kết hợp) rồi mới khóa held-out test. FPR=0 trên tám mẫu audio tổng hợp không chứng minh không có false positive thực tế.
 
 #### 11.7.6. Diễn giải robustness và kết luận
 
@@ -623,14 +623,14 @@ Kết luận được dữ liệu hỗ trợ là: hai decoder khôi phục đún
 | Dataset nhỏ, positive cùng nguồn | Rất cao | Corpus độc lập; split theo artifact/challenge |
 | Threshold đặt thủ công | Cao | Chọn threshold trên validation, không trên test |
 | Thiếu metric cover | Trung bình | PSNR/SSIM cho ảnh, metric audio phù hợp khi có cover |
-| Evidence regression | Thấp sau khi có gate | Giữ log sáu test ở vai trò lịch sử; nếu sửa source/tests thì chạy lại quality gate và lưu source commit được kiểm thử |
+| Evidence regression | Thấp sau khi có gate 38/38 | Giữ log sáu test và baseline 22/22 ở vai trò lịch sử; docs-only không làm stale gate, còn thay đổi source/tests/data/dependencies/manifest/gate implementation phải chạy lại quality gate và lưu source commit được kiểm thử |
 | Chưa benchmark tool ngoài | Trung bình | Cố định tool/version/corpus và so sánh metric |
 
 ### 11.9. Kế hoạch thực nghiệm tiếp theo và điều kiện dừng
 
 | Ưu tiên | Thí nghiệm | Biến/chỉ số | Điều kiện nghiệm thu |
 |---|---|---|---|
-| P0 — baseline lịch sử; cần rerun | Xác nhận baseline | Commit source, 22 tests, exact-match, hash | Đã có quality-gate JSON/log; source commit được ghi rõ |
+| P0 — đã đóng với evidence mới nhất | Xác nhận quality gate | Tested commit `38fbecab...`, 38/38 tests, exact-match, 3/3 hash | JSON/log/provenance đã commit; strict checker cần xác nhận trên checkout hiện tại |
 | P1 | Audio detector đa nguồn | Carrier, gain, SNR, codec; precision/recall/F1/FPR | Test độc lập, không tuning trên test |
 | P2 | Image robustness sweep | JPEG, crop, noise, resize; BER/recovery | Có đường cong theo cường độ |
 | P2 | Reference-free audio | Carrier offset, phase, baud, stereo; BER/exact-match | So sánh cùng corpus với reference-assisted |
@@ -644,7 +644,7 @@ P0 (quality gate) và lần chạy P1 (partial-recovery metrics) đã hoàn tấ
 
 Robustness khác nhau theo phép biến đổi: Blue 3 đạt 1/9 biến thể mở rộng; Sleepy Alarm đạt 4/4 phép biến đổi paired, 3/6 phép asymmetric và 7/23 trial ở ma trận mở rộng. Detector audio có recall=0 trên benchmark hiện tại; reference-free Sleepy Alarm thất bại. Các kết quả này giới hạn phạm vi kết luận: decoder làm việc trên challenge cụ thể, không chứng minh phát hiện tổng quát hay blind decoding.
 
-Giá trị đồ án nằm ở decoder tự triển khai, phân tích giả định, giữ lại lỗi trung gian, đối chiếu ground truth và lượng hóa giới hạn. Revision được kiểm chứng hiện có 22/22 tests pass, các artifact đúng hash và cả hai decoder exact-match trong điều kiện đã nêu. Bộ partial-recovery metrics đã được chạy và lưu. Hướng nghiên cứu tiếp theo là mở rộng corpus độc lập cho detector, cải thiện reference-free audio và khảo sát robustness trên nhiều mức cường độ/nguồn dữ liệu.
+Giá trị đồ án nằm ở decoder tự triển khai, phân tích giả định, giữ lại lỗi trung gian, đối chiếu ground truth và lượng hóa giới hạn. Revision source `38fbecab7aea8c241243fb50d044aea90ab657f7` được quality gate xác minh có 38/38 tests pass, ba artifact đúng hash và cả hai decoder exact-match trong điều kiện đã nêu; evidence snapshot được commit tại `29c7e9e8e98d96e20e5172a63a359cfefd22edcc`. Baseline 22/22 vẫn được giữ như kết quả lịch sử. Bộ partial-recovery metrics đã được chạy và lưu. Hướng nghiên cứu tiếp theo là mở rộng corpus độc lập cho detector, cải thiện reference-free audio và khảo sát robustness trên nhiều mức cường độ/nguồn dữ liệu.
 
 ## Tài liệu tham khảo
 
@@ -712,7 +712,7 @@ python src/experiments/sleepy_alarm_robustness_matrix.py data/sleepy_alarm/morni
 
 Các hạng mục kỹ thuật sau đã có bằng chứng trong repository; trước khi nộp chỉ cần xác nhận bản build cuối cùng không bị thay đổi:
 - [ ] Điền họ tên, MSSV, lớp, ngày nộp và hạn nộp trên trang đầu và metadata.
-- [x] Quality gate đã ghi nhận 22/22 tests pass, ba artifact khớp hash và hai decoder exact-match (Sleepy Alarm dùng reference); quality-gate JSON/log đã được commit.
+- [x] Quality gate mới nhất đã ghi nhận 38/38 tests pass, exit code 0, ba artifact khớp hash và hai decoder exact-match (Sleepy Alarm dùng reference); evidence JSON/log/provenance đã được commit. Baseline 22/22 được giữ riêng như lịch sử.
 - [x] Hai ma trận robustness mới đã chạy, có JSON/CSV và partial-recovery metrics; cập nhật diễn giải trong mục 8.5 và 11.7.6.
 - [ ] Hoàn thiện logbook bằng giờ làm thực tế và rà soát phản tư cá nhân tại mục 11.5; không ước lượng thời lượng.
 - [ ] Mở PDF cuối và kiểm tra từng trang ở mức phóng đại đọc được: không mất chữ, không cắt hình, bảng không tràn lề, công thức hiển thị đúng.

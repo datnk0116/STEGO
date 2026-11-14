@@ -75,7 +75,7 @@ Kết quả đã đo: baseline PASS; target-only gain 0,5× FAIL (46 separator),
 ## 6. Bằng chứng cần mở khi vấn đáp
 
 - Manifest và SHA-256 của ba artifact.
-- Log unit-tests.log chỉ là lịch sử sáu regression tests. Tested commit được đọc từ canonical provenance; evidence commit được suy ra bằng strict checker. Không dùng số test của baseline lịch sử để mô tả lần chạy mới.
+- Log `unit-tests.log` chỉ là lịch sử sáu regression tests. Gate mới nhất ghi 38/38 tests pass, exit code 0, 5,358 giây trên tested commit `38fbecab7aea8c241243fb50d044aea90ab657f7`; evidence commit `29c7e9e8e98d96e20e5172a63a359cfefd22edcc`. Baseline 22/22 được giữ riêng như lịch sử. Tested commit lấy từ canonical provenance; evidence commit/current HEAD phải được strict checker suy ra từ Git.
 - Blue 3 solver log và hình diagnostics.
 - Sleepy Alarm solver JSON: số symbol, tâm cụm, byte lỗi, exact-match.
 - Hai file CSV robustness.
@@ -129,7 +129,7 @@ Benchmark tạo benign controls tổng hợp bằng seed 20261114, cùng các bi
 
 **Làm sao chạy thử giải mã audio không reference?**
 
-Chạy `python src/solve_challenges.py sleepy-alarm data/sleepy_alarm/morning_n_breakfast.mp3` và không truyền `--reference`. Bằng chứng hiện tại: 350 symbol, 49 separator, giải ra 26 ký tự và format không hợp lệ. Đây là thất bại có ý nghĩa trong threat model blind, không phải thành công; cần phương pháp đồng bộ/ước lượng nền không phụ thuộc track gốc.
+Chạy `python src/solve_challenges.py sleepy-alarm data/sleepy_alarm/morning_n_breakfast.mp3` và không truyền `--reference`. Nhánh reference-free dùng raw mixed recording, không trừ track gốc; vẫn giả định carrier 8 kHz, baud 50, pha bắt đầu 0 và thời lượng 7 giây, sau đó phân cụm ba mức amplitude trên toàn bộ symbol. Bằng chứng hiện tại: 350 symbol, 49 separator, giải ra 26 ký tự và có các nhóm bit không đủ 8 bit nên format không hợp lệ. Đây là thất bại có ý nghĩa trong threat model blind, không phải thành công. Các số đo cho thấy lỗi tách separator/symbol, nhưng chưa cô lập định lượng nguyên nhân do nền nhạc, timing, pha hay clustering; hướng nghiên cứu là ước lượng timing/carrier/phase/noise floor và mức amplitude từ target-only, giữ kết quả reference-assisted làm baseline riêng.
 
 **Thí nghiệm robustness mới bổ sung gì?**
 
@@ -147,7 +147,7 @@ Cross-correlation chuẩn hóa chủ yếu phản ánh tương đồng hình d�
 
 **Tại sao detector audio có recall bằng 0?**
 
-Detector yêu cầu đồng thời carrier-band energy ratio >= 0,02 và block-RMS coefficient of variation >= 0,15. Positive audio trong benchmark có carrier ratio khoảng 0,000204, thấp hơn ngưỡng hơn hai bậc độ lớn; dù RMS CV cao khoảng 0,987, điều kiện AND vẫn làm detector bỏ qua tất cả positive. Không nên chỉ hạ threshold dựa trên cùng benchmark; phải dùng validation độc lập, giữ test set riêng.
+Detector yêu cầu đồng thời carrier-band energy ratio >= 0,02 và block-RMS coefficient of variation >= 0,15. Năm positive audio trong benchmark có carrier ratio khoảng 0,000204 (thấp hơn ngưỡng khoảng 98 lần), trong khi RMS CV khoảng 0,987 (cao hơn ngưỡng). Vì điều kiện là AND, carrier-band feature làm cả năm positive bị loại. Feature periodogram hiện đo trên toàn bộ first channel của file khoảng 10,019 giây, dù payload ASK theo challenge dài 7 giây; cửa sổ toàn file có thể pha loãng đặc trưng nhưng đây mới là giả thuyết cần ablation, không phải nguyên nhân đã được xác minh. Không nên chỉ hạ threshold dựa trên cùng benchmark; cần corpus độc lập, split theo nguồn, validation/ablation và held-out test riêng.
 
 **Ảnh detector có precision/recall/F1 = 1 có chứng minh detector tốt?**
 
@@ -167,11 +167,11 @@ Không. Thử nghiệm paired áp dụng cùng phép biến đổi lên target v
 
 **Em sẽ ưu tiên cải tiến điều gì đầu tiên?**
 
-Quality gate P0 đã hoàn tất: 22/22 tests pass, ba artifact đúng hash và hai decoder exact-match trong điều kiện đã nêu; log/JSON đã được commit. Ưu tiên kỹ thuật tiếp theo là (1) xây dựng corpus detector đa nguồn có validation/test độc lập, (2) nghiên cứu reference-free synchronization cho Sleepy Alarm, và (3) mở rộng robustness theo cường độ. Không tối ưu threshold trên test set.
+Quality gate P0 đã có evidence mới nhất: 38/38 tests pass, exit code 0, 3/3 artifact đúng hash, Blue 3 và Sleepy Alarm reference-assisted exact-match; tested commit `38fbecab7aea8c241243fb50d044aea90ab657f7`, evidence commit `29c7e9e8e98d96e20e5172a63a359cfefd22edcc`. Kết quả 22/22 chỉ là baseline lịch sử. Ưu tiên kỹ thuật tiếp theo là (1) xây dựng corpus detector đa nguồn có validation/test độc lập, (2) nghiên cứu reference-free synchronization cho Sleepy Alarm, và (3) mở rộng robustness theo cường độ. Không tối ưu threshold trên test set.
 
 **Những kết luận nào không được phép đưa ra?**
 
-Không được nói STEGO là detector steganography tổng quát; không nói Sleepy Alarm hoạt động blind; không nói Blue 3 payload chắc chắn bị xóa sau JPEG/resize; không dùng FPR=0 từ tám mẫu synthetic để khẳng định không có false positive. Chỉ khẳng định số test pass theo cặp quality-gate JSON/log được provenance xác nhận. Baseline 22/22 là kết quả lịch sử; sau khi thay source/tests phải chạy lại gate và không dùng log cũ sáu test.
+Không được nói STEGO là detector steganography tổng quát; không nói Sleepy Alarm hoạt động blind; không nói Blue 3 payload chắc chắn bị xóa sau JPEG/resize; không dùng FPR=0 từ tám mẫu synthetic để khẳng định không có false positive. Chỉ khẳng định số test pass theo cặp quality-gate JSON/log được provenance xác nhận: hiện là 38/38 trên tested commit `38fbecab7aea8c241243fb50d044aea90ab657f7`; 22/22 là baseline lịch sử và log `unit-tests.log` vẫn chỉ có sáu test cũ. Sau khi thay source/tests/data/dependencies/gate implementation phải chạy lại full gate; tài liệu-only không làm stale technical gate.
 
 ## 11. Trả lời ngắn gọn về điểm yếu
 
@@ -200,5 +200,5 @@ Script lấy candidate được tạo ở độ dài baseline flag, rồi so sá
 
 **Lệnh nào xác nhận revision có thể tái lập?**
 
-Chạy `python scripts/verify_reproducibility.py`. Bằng chứng phải được kiểm tra qua results/verification/provenance.json. Tested commit nằm trong snapshot; evidence commit và HEAD được strict checker suy ra từ Git. Baseline 22/22 chỉ là lịch sử; khi sửa source/tests, chạy lại gate trước khi nộp.
+Trên checkout đã pull bản cập nhật tài liệu, chạy `python -m unittest discover -s tests -v` và `python scripts/check_provenance_consistency.py`. Gate hiện hành 38/38 đã được lưu trong JSON/log/provenance; strict checker sẽ suy ra evidence commit và HEAD. Chỉ chạy `python scripts/verify_reproducibility.py` nếu source/tests/data/dependencies/manifest/gate implementation thay đổi; baseline 22/22 vẫn là lịch sử.
 
