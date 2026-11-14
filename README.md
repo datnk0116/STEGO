@@ -16,6 +16,8 @@ No flag, runtime, metric, or successful experiment is claimed unless it is produ
 - `report/REPORT.md`: report aligned with UET.CN3124 rubric.
 - `src/blue3/`: image inspection and pixel-difference analysis.
 - `src/solve_challenges.py`: independent Blue 3 and Sleepy Alarm solvers.
+- `src/audio_alignment.py`: reference resampling and cross-correlation alignment.
+- `tests/`: synthetic regression tests for both decoders/alignment.
 - `src/experiments/robustness.py`: controlled perturbation generation for robustness tests.
 - `src/sleepy_alarm/`: audio inspection and frequency-domain analysis.
 - `scripts/`: deterministic setup and integrity checks.
@@ -44,6 +46,14 @@ python src/solve_challenges.py sleepy-alarm data/sleepy_alarm/morning_n_breakfas
 ```
 
 The original MP3 reference is downloaded by the same script. When `--reference` is supplied, the analyzer and solver resample the reference to the challenge sample rate if needed, estimate sample offset by cross-correlation, and analyze only the aligned overlap. The printed alignment metadata (lag, overlap duration and normalized correlation) must be recorded; a low correlation means the subtraction may not be trustworthy.
+
+## Tests
+
+Run synthetic regression tests (no challenge artifacts required):
+
+```bash
+python -m unittest discover -s tests -v
+```
 
 ## Reproducibility
 
