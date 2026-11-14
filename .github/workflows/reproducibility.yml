@@ -27,17 +27,17 @@ jobs:
         with:
           python-version: "3.14"
 
-      - name: Install uv and Python dependencies
+      - name: Install uv and project dependencies
         run: |
           python -m pip install --upgrade uv
           uv pip install --system -r requirements.txt
 
-      - name: Install PDF and archive tools
+      - name: Install report and archive tools
         run: |
           sudo apt-get update
           sudo apt-get install -y pandoc libreoffice-writer poppler-utils fonts-noto-core zip
 
-      - name: Prepare evidence directories
+      - name: Prepare evidence folders
         run: |
           mkdir -p results/logs results/blue3/figures results/blue3/robustness
           mkdir -p results/sleepy_alarm results/submission
@@ -48,34 +48,37 @@ jobs:
           python - <<'PY'
           import json, platform, sys
           from importlib.metadata import version
-          names = ["Pillow", "numpy", "scipy", "matplotlib", "soundfile"]
+          packages = ["Pillow", "numpy", "scipy", "matplotlib", "soundfile", "python-docx"]
           data = {
               "platform": platform.platform(),
               "architecture": platform.machine(),
               "python": sys.version,
-              "packages": {name: version(name) for name in names},
+              "packages": {name: version(name) for name in packages},
           }
           with open("results/environment.json", "w", encoding="utf-8") as f:
               json.dump(data, f, indent=2, ensure_ascii=False)
           PY
 
-      - name: Verify official artifact sizes and hashes
+      - name: Verify official artifact sizes and SHA-256
         run: |
           python scripts/download_artifacts.py all | tee results/logs/artifact-download.txt
           shasum -a 256 data/blue3/blue.png data/sleepy_alarm/*.mp3 | tee results/logs/artifact-sha256.txt
           python - <<'PY'
           import hashlib, json
           from pathlib import Path
-          files = {
+          sources = {
               "data/blue3/blue.png": "https://github.com/BYU-CSA/old-ctf-challenges/tree/master/forensics-steganography/blue-3",
               "data/sleepy_alarm/morning_n_breakfast.mp3": "https://github.com/ImaginaryCTF/ImaginaryCTF-2024-Challenges/tree/main/Forensics/Sleepy%20Alarm",
               "data/sleepy_alarm/morning_n_breakfast_original.mp3": "https://github.com/ImaginaryCTF/ImaginaryCTF-2024-Challenges/tree/main/Forensics/Sleepy%20Alarm",
           }
           manifest = []
-          for name, source in files.items():
+          for name, source in sources.items():
               path = Path(name)
-              digest = hashlib.sha256(path.read_bytes()).hexdigest()
-              manifest.append({"path": name, "bytes": path.stat().st_size, "sha256": digest, "source": source})
+              manifest.append({
+                  "path": name, "bytes": path.stat().st_size,
+                  "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                  "source": source,
+              })
           Path("results/artifact_manifest.json").write_text(
               json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8"
           )
@@ -86,20 +89,22 @@ jobs:
           set -o pipefail
           python -m unittest discover -s tests -v 2>&1 | tee results/logs/unit-tests.log
 
-      - name: Reproduce Blue 3 analysis and robustness
+      - name: Reproduce Blue 3 and robustness tests
+        id: blue3
         run: |
           set -o pipefail
-          python src/blue3/analyze.py data/blue3/blue.png --output results/blue3/analysis.json 2>&1 | tee results/logs/blue3-analysis.log
-          python src/solve_challenges.py blue3 data/blue3/blue.png 2>&1 | tee results/logs/blue3-solver.log
-          python src/blue3/visualize.py data/blue3/blue.png --length 50 --out-dir results/blue3/figures 2>&1 | tee results/logs/blue3-visualize.log
-          python src/experiments/blue3_robustness.py data/blue3/blue.png --out results/blue3/robustness 2>&1 | tee results/logs/blue3-robustness.log
+          python src/blue3/analyze.py data/blue3/blue.png             --output results/blue3/analysis.json             2>&1 | tee results/logs/blue3-analysis.log
+          python src/solve_challenges.py blue3 data/blue3/blue.png             2>&1 | tee results/logs/blue3-solver.log
+          python src/blue3/visualize.py data/blue3/blue.png             --length 50 --out-dir results/blue3/figures             2>&1 | tee results/logs/blue3-visualize.log
+          python src/experiments/blue3_robustness.py data/blue3/blue.png             --out results/blue3/robustness             2>&1 | tee results/logs/blue3-robustness.log
 
       - name: Analyze official Sleepy Alarm MP3 pair
+        id: audio_analysis
         run: |
           set -o pipefail
-          python src/sleepy_alarm/analyze.py data/sleepy_alarm/morning_n_breakfast.mp3             --reference data/sleepy_alarm/morning_n_breakfast_original.mp3             --out-dir results/sleepy_alarm             > results/sleepy_alarm/analysis.json
+          python src/sleepy_alarm/analyze.py             data/sleepy_alarm/morning_n_breakfast.mp3             --reference data/sleepy_alarm/morning_n_breakfast_original.mp3             --out-dir results/sleepy_alarm             > results/sleepy_alarm/analysis.json
 
-      - name: Decode official Sleepy Alarm and verify exact ground truth
+      - name: Decode Sleepy Alarm and verify the full official flag
         id: sleepy
         continue-on-error: true
         run: |
@@ -107,9 +112,9 @@ jobs:
           python - <<'PY'
           import json
           from pathlib import Path
-          data = json.loads(Path("results/sleepy_alarm/solver.json").read_text())
-          if not data.get("success") or not data.get("ground_truth_match"):
-              raise SystemExit("Sleepy Alarm did not match the exact official ground truth.")
+          result = json.loads(Path("results/sleepy_alarm/solver.json").read_text())
+          if not result.get("success") or not result.get("ground_truth_match"):
+              raise SystemExit("Sleepy Alarm did not match the complete official flag.")
           print("Sleepy Alarm exact ground-truth verification: PASS")
           PY
 
@@ -118,16 +123,18 @@ jobs:
         run: |
           python src/experiments/sleepy_alarm_robustness.py             data/sleepy_alarm/morning_n_breakfast.mp3             --reference data/sleepy_alarm/morning_n_breakfast_original.mp3             --expected 'ictf{1_sl33py_NaYuKi_alarm_2a634dc1bb2}'             --out-dir results/sleepy_alarm/robustness             > results/sleepy_alarm/robustness/run.json
 
-      - name: Build PDF and source ZIP
-        if: steps.sleepy.outcome == 'success'
+      - name: Build draft or verified PDF and source ZIP
+        if: always() && !cancelled() && steps.blue3.outcome == 'success' && steps.audio_analysis.outcome == 'success'
         run: |
-          pandoc report/REPORT.md             --from markdown+tex_math_dollars+pipe_tables             --standalone --toc --toc-depth=2             --metadata lang=vi-VN             --metadata title="Phân tích và đánh giá kỹ thuật Steganography"             --metadata author="[HỌ VÀ TÊN] — [MSSV]"             --output results/submission/STUDENT_UETCN3124_CTF_Report.docx
+          python scripts/create_reference_docx.py --out results/submission/reference.docx
+          pandoc report/REPORT.md             --from markdown+tex_math_dollars+pipe_tables             --resource-path=report:.             --standalone --toc --toc-depth=2             --reference-doc=results/submission/reference.docx             --metadata lang=vi-VN             --metadata title="Phân tích và đánh giá kỹ thuật Steganography"             --metadata author="[HỌ VÀ TÊN] — [MSSV]"             --output results/submission/STUDENT_UETCN3124_CTF_Report.docx
           mkdir -p /tmp/lo-profile
           libreoffice -env:UserInstallation=file:///tmp/lo-profile --headless             --convert-to pdf --outdir results/submission             results/submission/STUDENT_UETCN3124_CTF_Report.docx
           pdfinfo results/submission/STUDENT_UETCN3124_CTF_Report.pdf             | tee results/submission/pdf-metadata.txt
-          zip -r results/submission/STUDENT_UETCN3124_Scripts.zip             README.md requirements.txt data src tests scripts references report/REPORT.md results             -x "results/submission/STUDENT_UETCN3124_Scripts.zip"                "results/submission/STUDENT_UETCN3124_CTF_Report.docx"                "*/__pycache__/*" "*.pyc" ".venv/*"
+          python scripts/check_report_pdf.py             results/submission/STUDENT_UETCN3124_CTF_Report.pdf --max-main-pages 15
+          zip -r results/submission/STUDENT_UETCN3124_Scripts.zip             README.md requirements.txt data src tests scripts references report/REPORT.md results             -x "results/submission/*.zip"                "results/submission/*.docx"                "results/submission/*.pdf"                "*/__pycache__/*" "*.pyc" ".venv/*"
 
-      - name: Upload full run evidence
+      - name: Upload all run evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -154,3 +161,9 @@ jobs:
           else
             echo "No generated evidence changes to commit."
           fi
+
+      - name: Fail the job when Sleepy Alarm has not been verified
+        if: always() && !cancelled() && steps.sleepy.outcome != 'success'
+        run: |
+          echo "::error::Sleepy Alarm has not yet matched the full official 39-character flag."
+          exit 1
