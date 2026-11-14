@@ -129,6 +129,11 @@ jobs:
         run: |
           python scripts/create_reference_docx.py --out results/submission/reference.docx
           pandoc report/REPORT.md             --from markdown+tex_math_dollars+pipe_tables             --resource-path=report:.             --standalone --toc --toc-depth=2             --reference-doc=results/submission/reference.docx             --metadata lang=vi-VN             --metadata title="Phân tích và đánh giá kỹ thuật Steganography"             --metadata author="[HỌ VÀ TÊN] — [MSSV]"             --output results/submission/STUDENT_UETCN3124_CTF_Report.docx
+          python scripts/fix_report_docx.py \
+            results/submission/STUDENT_UETCN3124_CTF_Report.docx \
+            --out results/submission/STUDENT_UETCN3124_CTF_Report_fixed.docx
+          mv results/submission/STUDENT_UETCN3124_CTF_Report_fixed.docx \
+            results/submission/STUDENT_UETCN3124_CTF_Report.docx
           mkdir -p /tmp/lo-profile
           libreoffice -env:UserInstallation=file:///tmp/lo-profile --headless             --convert-to pdf --outdir results/submission             results/submission/STUDENT_UETCN3124_CTF_Report.docx
           pdfinfo results/submission/STUDENT_UETCN3124_CTF_Report.pdf             | tee results/submission/pdf-metadata.txt
