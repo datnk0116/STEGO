@@ -107,29 +107,36 @@ def solve_sleepy(path: Path, carrier_hz: float = 8000.0,
     if low <= 0 or high >= sr / 2:
         raise ValueError("sample rate too low for selected carrier band")
 
-    # The official MATLAB generator writes the added ASK waveform to the
-    # first audio channel only. Do not average stereo channels: that halves
-    # the ASK amplitude and causes the zero/one thresholds to overlap.
+    # The official MATLAB generator adds ASK to the first/left channel only.
+    # Do not average stereo channels: doing so halves the signal amplitude.
     analysis_channel = 0
     channel_signal = signal[:, analysis_channel]
-    sos = butter(4, [low, high], btype="bandpass", fs=sr, output="sos")
-    band = sosfiltfilt(sos, channel_signal)
-    envelope = np.abs(hilbert(band))
 
     samples_per_bit = sr / baud
     symbol_count = int(round(transmission_seconds * baud))
-    # Reconstruct the original distributed-track timeline above, including
-    # any leading samples excluded from the aligned overlap. The ASK clock
-    # therefore starts at sample zero again.
     phase_offset = 0
+
+    # Coherent per-symbol amplitude detection. Each 50-baud symbol contains
+    # exactly 160 carrier cycles at 8 kHz when fs=44.1 kHz. Project each
+    # 882-sample block onto sine/cosine bases at the known carrier; this avoids
+    # the Hilbert/filter edge transient that corrupted the first symbols.
     levels = []
     for i in range(symbol_count):
-        bit_start = phase_offset + i * samples_per_bit
-        start = int(round(bit_start + 0.25 * samples_per_bit))
-        end = int(round(bit_start + 0.75 * samples_per_bit))
-        if end > len(envelope):
+        bit_start = int(round(phase_offset + i * samples_per_bit))
+        bit_end = int(round(phase_offset + (i + 1) * samples_per_bit))
+        if bit_end > len(channel_signal):
             break
-        levels.append(float(np.median(envelope[start:end])))
+        segment = channel_signal[bit_start:bit_end].astype(np.float64, copy=False)
+        if segment.size < 8:
+            break
+        sample_index = np.arange(bit_start, bit_end, dtype=np.float64)
+        phase = 2.0 * np.pi * carrier_hz * sample_index / sr
+        # Remove DC only; the sine/cosine projection rejects components not
+        # coherent with the 8 kHz carrier over the full symbol window.
+        segment = segment - float(np.mean(segment))
+        in_phase = (2.0 / segment.size) * float(np.dot(segment, np.cos(phase)))
+        quadrature = (2.0 / segment.size) * float(np.dot(segment, np.sin(phase)))
+        levels.append(float(np.hypot(in_phase, quadrature)))
     if len(levels) != symbol_count:
         raise ValueError(
             f"expected {symbol_count} symbols for {transmission_seconds}s at {baud} baud, "
@@ -191,7 +198,10 @@ def solve_sleepy(path: Path, carrier_hz: float = 8000.0,
             "ASK payload starts at aligned overlap sample zero; leading MP3 encoder-delay samples were discarded."
             if alignment_info else "No reference alignment was requested."
         ),
+        "amplitude_measurement": "coherent sine/cosine projection per symbol",
         "amplitude_cluster_centers": [float(x) for x in centers],
+        "symbol_amplitude_estimates": [float(x) for x in levels],
+        "symbol_labels": symbols,
         "symbol_counts": {
             "separator": symbols.count(" "),
             "bit_0": symbols.count("0"),
