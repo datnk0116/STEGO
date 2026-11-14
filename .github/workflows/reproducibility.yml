@@ -139,6 +139,12 @@ jobs:
       - name: Commit generated evidence to main
         if: always() && !cancelled()
         run: |
+          git fetch origin main
+          remote_sha=$(git rev-parse origin/main)
+          if [ "$remote_sha" != "$GITHUB_SHA" ]; then
+            echo "Skipping evidence commit from stale run $GITHUB_SHA; main is now $remote_sha."
+            exit 0
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add results/
