@@ -61,6 +61,17 @@ Các giả thuyết:
 - **H2 — Sleepy Alarm:** Nếu tách được thành phần quanh 8 kHz, giữ đúng đồng hồ symbol 50 baud và phân biệt được ba trạng thái biên độ, có thể phục hồi 350 symbol tương ứng 39 byte và 38 dấu phân cách.
 - **H3 — Độ bền:** JPEG recompression/resize có thể phá hủy quan hệ pixel tuyệt đối của Blue 3; resampling, filtering hoặc clipping có thể làm sai biên độ/thời điểm symbol của Sleepy Alarm.
 
+### 1.5. Liên hệ trực tiếp với rubric
+
+| Tiêu chí | Điểm tối đa | Nội dung trong báo cáo | Bằng chứng quyết định |
+|---|---:|---|---|
+| 1. Lập kế hoạch và biện minh | 2,0 | Mục 1: mục tiêu, câu hỏi nghiên cứu, so sánh phương án và lý do chọn cặp challenge | Phạm vi thống nhất; so sánh hai hướng giải và lý do chọn |
+| 2. Triển khai và tài liệu hóa | 4,0 | Mục 3–8: nguồn dữ liệu, môi trường, lệnh, decoder, kiểm thử và log | Hash artifact; ảnh terminal; output solver; hình phân tích; log test và robustness |
+| 3. Phân tích kết quả | 2,0 | Mục 2, 5, 6, 9, 10: mô hình toán học, điều kiện giải, lỗi và góc nhìn phòng thủ | Derivation Blue 3; ASK 350 symbol; phân tích lần giải mã thất bại và lần chạy cuối |
+| 4. Đánh giá, phản biện và tự học | 2,0 | Mục 11: hạn chế, white-box/black-box, false positive và hướng cải tiến | Nhật ký làm việc thực tế; so sánh phương án; kết quả thí nghiệm và tự phản biện |
+
+Bảng này là bản đồ đối chiếu với rubric, không phải tự chấm điểm. Điểm số chỉ do giảng viên quyết định dựa trên báo cáo và khả năng trình diễn lại.
+
 ### 1.4. Tiêu chí xác nhận thành công
 
 | Challenge | Tiêu chí kỹ thuật | Trạng thái hiện tại |
