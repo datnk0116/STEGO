@@ -29,6 +29,8 @@ A passing synthetic unit test does not prove that the official challenge artifac
 - `references/REFERENCES.md`: cited primary sources and technical documentation.
 - `docs/DEFENSE_QA.md`: oral-defense questions for explaining the implementation and limits.
 - `docs/PERSONAL_REFLECTION_TEMPLATE.md`: prompts for the student's own reflection; never invent personal experience or hours.
+- `docs/QUALITY_GATE.md`: local artifact/test verification procedure.
+- `docs/PLAN_9_6.md`: detailed acceptance plan for the 9.6/10 target.
 
 ## Environment setup
 
@@ -155,7 +157,7 @@ The report includes a dedicated critical-evaluation section covering the threat 
 - The audio heuristic detector has recall=0 on the current small benchmark (TP=0, FN=5).
 - The image detector's perfect score is challenge-family-specific and based on synthetic controls plus derivatives of one source artifact.
 - Blue 3 extended robustness passes 1/9 variants; Sleepy Alarm's one-sided robustness passes 3/6 variants.
-- The historical unit-test log covers six tests only, while source currently contains 11 test cases; rerun the suite before claiming current full-suite success.
+- The historical unit-test log covers six tests only, while source now contains 22 test methods; rerun the local quality gate before claiming current full-suite success.
 
 See `report/REPORT.md` section 11.7–11.9, `docs/DEFENSE_QA.md`, and `docs/QUALITY_GATE.md` for the threat model, validity discussion, defense questions, and reproducible verification procedure. These findings describe the committed experiments only and are not claims about all steganography methods.
 
