@@ -29,6 +29,8 @@ A passing synthetic unit test does not prove that the official challenge artifac
 - `references/REFERENCES.md`: cited primary sources and technical documentation.
 - `docs/DEFENSE_QA.md`: oral-defense questions for explaining the implementation and limits.
 - `docs/PERSONAL_REFLECTION_TEMPLATE.md`: prompts for the student's own reflection; never invent personal experience or hours.
+- `docs/DEFENSE_QA.md`: oral-defense questions for explaining the implementation and limits.
+- `docs/PERSONAL_REFLECTION_TEMPLATE.md`: prompts for the student's own reflection; never invent personal experience or hours.
 
 ## Environment setup
 
