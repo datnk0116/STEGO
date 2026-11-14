@@ -4,9 +4,9 @@
 **Tên đề tài:** Phân tích và đánh giá kỹ thuật ẩn tin trên ảnh và âm thanh qua Blue 3 (BYUCTF) và Sleepy Alarm (ImaginaryCTF 2024)  
 **Chủ đề CTF chính:** Steganography  
 **Sinh viên:** [HỌ VÀ TÊN] — **MSSV:** [MSSV]  
-**Lớp:** [LỚP] — **Ngày nộp:** [NGÀY NỘP]
+**Lớp:** [LỚP] — **Ngày nộp:** [NGÀY NỘP] — **Hạn nộp:** [HẠN NỘP]
 
-> **Trạng thái bằng chứng:** Blue 3 đã được chạy trên artifact chính thức và khôi phục đúng flag theo đối chiếu với README của ban tổ chức. Sleepy Alarm đã được tải, xác minh hash và chạy thử; lần giải mã đầu tiên thất bại. Một phiên bản decoder đã được điều chỉnh theo source generator, nhưng kết quả trên MP3 chính thức của phiên bản mới chưa được chạy xác nhận. Các nội dung chưa có log không được xem là kết quả đã hoàn thành.
+> **Trạng thái bằng chứng:** Blue 3 và Sleepy Alarm đều đã được giải từ artifact chính thức, đối chiếu với ground truth của ban tổ chức. Sleepy Alarm khôi phục đúng 39 ký tự, 350 symbol và 38 separator; sáu regression tests pass. Thí nghiệm robustness Blue 3 và bốn thí nghiệm audio theo cặp target/reference đã có kết quả đo trong results/. Nhật ký thời lượng làm việc cá nhân vẫn cần được người thực hiện điền theo thời gian thực tế.
 
 ---
 
@@ -14,7 +14,7 @@
 
 Đồ án khảo sát hai cơ chế steganography khác nhau trong cùng một chủ đề CTF. Blue 3 (BYUCTF) ẩn từng ký tự trong tổng sai khác giá trị RGB của các vùng vuông nằm trên đường chéo ảnh. Sleepy Alarm (ImaginaryCTF 2024) nhúng chuỗi bit bằng điều chế biên độ ASK trên sóng mang 8 kHz, tốc độ 50 baud, rồi trộn tín hiệu này vào bản nhạc báo thức.
 
-Đối với Blue 3, công cụ tự viết đã phân tích ảnh PNG 512 × 512, xác định màu nền RGB (64, 77, 205), thử 49 độ dài ứng viên và khôi phục chuỗi 50 ký tự. Chuỗi kết quả trùng với flag do ban tổ chức công bố. Đối với Sleepy Alarm, hai MP3 được xác minh bằng SHA-256 và đồng bộ bằng cross-correlation; lần giải mã đầu tiên cho kết quả sai do xử lý sai kênh stereo, sai khoảng thời gian payload và ngưỡng biên độ chưa phù hợp với tín hiệu MP3. Từ source MATLAB chính thức, quy trình đã được điều chỉnh để phân tích kênh trái, 350 symbol đầu trong 7 giây và ba cụm biên độ. Kết quả cuối của lần chạy sửa đổi vẫn đang chờ xác minh.
+Đối với Blue 3, công cụ tự viết phân tích ảnh PNG 512 × 512, suy luận màu nền RGB (64, 77, 205), thử 49 độ dài ứng viên và khôi phục chính xác flag 50 ký tự. Đối với Sleepy Alarm, decoder căn chỉnh hai MP3 bằng cross-correlation, bảo toàn prefix chưa chồng lấp, phân tích kênh trái và dùng coherent sine/cosine projection trên từng cửa sổ 882 mẫu. Kết quả trên MP3 chính thức gồm 350 symbol, 38 separator, 39 byte và chuỗi 39 ký tự trùng toàn bộ bitmap ground truth của creator. Bốn thí nghiệm audio robustness theo cặp target/reference đều khôi phục chính xác thông điệp.
 
 Đóng góp của đồ án gồm decoder Blue 3 có chế độ tự suy luận màu nền, decoder ASK có căn chỉnh tham chiếu và xác minh exact-match, công cụ tạo hình phân tích ảnh/âm thanh, bộ kiểm thử hồi quy tổng hợp, workflow CI chạy trên artifact chính thức và kịch bản thí nghiệm độ bền. Báo cáo phân biệt kết quả đo được, kết quả tham khảo từ source upstream và các thí nghiệm chưa thực hiện.
 
