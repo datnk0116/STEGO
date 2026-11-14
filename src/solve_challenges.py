@@ -80,7 +80,8 @@ def _three_level_cluster(values: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
 
 def solve_sleepy(path: Path, carrier_hz: float = 8000.0,
                  baud: float = 50.0, reference: Path | None = None,
-                 transmission_seconds: float = 7.0) -> dict:
+                 transmission_seconds: float = 7.0,
+                 expected_text: str | None = None) -> dict:
     raw_target, sr = sf.read(path, always_2d=True, dtype="float64")
     signal = raw_target
     alignment_info = None
@@ -90,16 +91,13 @@ def solve_sleepy(path: Path, carrier_hz: float = 8000.0,
             raw_target, int(sr), original, int(original_sr)
         )
         residual = aligned_target - aligned_reference
-        target_start = int(alignment_info["target_start_sample"])
-        if alignment_info["channel_handling"] == "downmixed_to_mono":
-            raw_prefix = raw_target.mean(axis=1, keepdims=True)
-        else:
-            raw_prefix = raw_target
-        # Keep the distributed file's leading samples before the matched
-        # overlap. Otherwise cross-correlation cropping could discard the
-        # beginning of the 7-second payload, including the first flag bits.
-        prefix = raw_prefix[:target_start] if target_start > 0 else raw_prefix[:0]
-        signal = np.concatenate((prefix, residual), axis=0)
+        # The distributed MP3 is a re-encoded copy of the original track.
+        # The cross-correlation offset includes MP3 encoder delay/priming.
+        # Therefore the aligned residual starts at the original signal time
+        # zero, which is also where the ASK payload begins. Do NOT prepend
+        # the unaligned encoder-delay samples: they are not part of the
+        # generator's 7-second transmission.
+        signal = residual
 
     if not 0 < baud <= 1000:
         raise ValueError("baud must be in (0, 1000]")
@@ -165,6 +163,13 @@ def solve_sleepy(path: Path, carrier_hz: float = 8000.0,
     decoded_text = "".join(decoded)
     expected_prefix_ok = decoded_text.startswith("ictf{")
     expected_suffix_ok = decoded_text.endswith("}")
+    format_valid = (
+        len(chunks) == 39 and not errors and len(decoded_text) == 39
+        and expected_prefix_ok and expected_suffix_ok
+    )
+    ground_truth_match = (
+        decoded_text == expected_text if expected_text is not None else None
+    )
     return {
         "samplerate_hz": int(sr),
         "channels": int(signal.shape[1]),
@@ -176,10 +181,11 @@ def solve_sleepy(path: Path, carrier_hz: float = 8000.0,
         "expected_symbol_count": symbol_count,
         "measured_symbol_count": len(levels),
         "symbol_clock_phase_samples_after_alignment": phase_offset,
-        "reference_prefix_samples_preserved": (
-            int(alignment_info["target_start_sample"]) if alignment_info else 0
-        ),
         "reference_alignment": alignment_info,
+        "alignment_interpretation": (
+            "ASK payload starts at aligned overlap sample zero; leading MP3 encoder-delay samples were discarded."
+            if alignment_info else "No reference alignment was requested."
+        ),
         "amplitude_cluster_centers": [float(x) for x in centers],
         "symbol_counts": {
             "separator": symbols.count(" "),
@@ -192,10 +198,14 @@ def solve_sleepy(path: Path, carrier_hz: float = 8000.0,
         "decoded_length": len(decoded_text),
         "flag_prefix_ok": expected_prefix_ok,
         "flag_suffix_ok": expected_suffix_ok,
+        "format_valid": format_valid,
+        "expected_text_provided": expected_text is not None,
+        "ground_truth_match": ground_truth_match,
+        "decoded_utf8_hex": decoded_text.encode("utf-8", errors="replace").hex(),
         "errors": errors,
         "success": (
-            len(chunks) == 39 and not errors and len(decoded_text) == 39
-            and expected_prefix_ok and expected_suffix_ok
+            bool(format_valid and ground_truth_match)
+            if expected_text is not None else None
         ),
         "note": (
             "The amplitude clusters are estimated from the measured residual. "
@@ -216,9 +226,13 @@ def main() -> int:
     a.add_argument("--baud", type=float, default=50.0)
     a.add_argument("--transmission-seconds", type=float, default=7.0)
     a.add_argument("--reference", type=Path, help="Optional original audio; resample and align before subtraction")
+    a.add_argument("--expected", type=str, help="Optional exact ground-truth flag for independent verification")
     args = parser.parse_args()
     if args.challenge == "blue3":
-        result, attempts = solve_blue(args.image, args.max_len, tuple(args.base_color))
+        result, attempts = solve_blue(
+            args.image, args.max_len,
+            tuple(args.base_color) if args.base_color is not None else None
+        )
         print("Candidate:", result if result else "NOT FOUND")
         print("Attempts:", len(attempts))
         if result:
@@ -226,7 +240,14 @@ def main() -> int:
             return 0
         return 2
     import json
-    print(json.dumps(solve_sleepy(args.audio, args.carrier, args.baud, reference=args.reference, transmission_seconds=args.transmission_seconds), indent=2))
+    result = solve_sleepy(
+        args.audio, args.carrier, args.baud,
+        reference=args.reference,
+        transmission_seconds=args.transmission_seconds,
+        expected_text=args.expected,
+    )
+    print(json.dumps(result, indent=2, ensure_ascii=False))
+    return 0 if result["format_valid"] else 2
     return 0
 
 if __name__ == "__main__":
