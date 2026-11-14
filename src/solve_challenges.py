@@ -163,6 +163,11 @@ def solve_sleepy(path: Path, carrier_hz: float = 8000.0,
     decoded_text = "".join(decoded)
     expected_prefix_ok = decoded_text.startswith("ictf{")
     expected_suffix_ok = decoded_text.endswith("}")
+    if expected_text is not None and (
+        len(expected_text) != 39 or not expected_text.startswith("ictf{")
+        or not expected_text.endswith("}")
+    ):
+        raise ValueError("--expected must be a 39-character ictf{...} flag")
     format_valid = (
         len(chunks) == 39 and not errors and len(decoded_text) == 39
         and expected_prefix_ok and expected_suffix_ok
@@ -247,7 +252,11 @@ def main() -> int:
         expected_text=args.expected,
     )
     print(json.dumps(result, indent=2, ensure_ascii=False))
-    return 0 if result["format_valid"] else 2
+    if not result["format_valid"]:
+        return 2
+    if args.expected is not None and not result["ground_truth_match"]:
+        return 3
+    return 0
     return 0
 
 if __name__ == "__main__":
