@@ -8,7 +8,7 @@
 
 > **Sidenote hành chính:** Các trường thông tin cá nhân trên trang bìa hiện chưa được điền trong repository. Theo phạm vi rà soát kỹ thuật hiện tại, các trường này được xem là phần hành chính cần bổ sung khi xuất bản nộp bài, không dùng để đánh giá mức độ hoàn thành kỹ thuật của đồ án.
 
-> **Trạng thái bằng chứng:** Blue 3 và Sleepy Alarm đều đã được giải từ artifact chính thức, đối chiếu với ground truth của ban tổ chức. Sleepy Alarm khôi phục đúng 39 ký tự, 350 symbol và 38 separator; sáu regression tests pass. Thí nghiệm robustness Blue 3 và bốn thí nghiệm audio theo cặp target/reference đã có kết quả đo trong results/. Nhật ký thời lượng làm việc cá nhân vẫn cần được người thực hiện điền theo thời gian thực tế.
+> **Trạng thái bằng chứng:** Blue 3 và Sleepy Alarm đều đã được giải từ artifact chính thức, đối chiếu với ground truth của ban tổ chức. Sleepy Alarm khôi phục đúng 39 ký tự, 350 symbol và 38 separator. Repository hiện có 11 test case (6 test hồi quy cũ và 5 test steganalysis mới), nhưng log đã lưu chỉ xác nhận lần chạy cũ gồm 6 test; cần chạy lại toàn bộ suite để xác nhận trạng thái hiện tại. Các script benchmark detector và robustness mở rộng đã được bổ sung nhưng chưa có output được xác minh trong repository. Nhật ký thời lượng làm việc cá nhân vẫn cần được người thực hiện điền theo thời gian thực tế.
 
 ---
 
@@ -88,7 +88,7 @@ Các giả thuyết:
 | Tiêu chí | Điểm tối đa | Minh chứng chính |
 |---|---:|---|
 | Lập kế hoạch và biện minh | 2,0 | Mục 1: RQ/H1–H3, so sánh phương án, lý do chọn hai challenge cùng chủ đề |
-| Triển khai và tài liệu hóa | 4,0 | Mục 3–8: artifact và SHA-256, lệnh, decoder, 6 regression tests, hình và CSV/JSON CI |
+| Triển khai và tài liệu hóa | 4,0 | Mục 3–8: artifact và SHA-256, lệnh, decoder, 11 test case trong source (chưa xác nhận cùng một lần chạy), hình và CSV/JSON đã lưu |
 | Phân tích kết quả | 2,0 | Mục 2, 5, 6, 9, 10: chứng minh toán học, 350 symbol ASK, lỗi và điều kiện giải |
 | Đánh giá, phản biện và tự học | 2,0 | Mục 11: giới hạn reference-assisted, false positives, robustness và logbook cá nhân |
 
@@ -555,14 +555,16 @@ Blue 3 có cơ chế xác định và ổn định hơn vì PNG bảo toàn giá
 
 ### 11.2. Hạn chế hiện tại
 
-1. Sleepy Alarm được giải bằng file tham chiếu gốc; đây là lợi thế white-box. Decoder không-reference chưa được triển khai/đánh giá.
+1. Sleepy Alarm đã có pipeline thử nghiệm reference-free trong `src/experiments/steganalysis_benchmark.py`, đồng thời solver hỗ trợ bỏ `--reference`; tuy nhiên chưa có kết quả chạy được lưu để xác nhận khả năng tách tín hiệu không cần track gốc. Kết quả exact-match đã xác nhận hiện tại vẫn là reference-assisted.
 2. Thí nghiệm bất đối xứng cho thấy bốn phép gain một phía làm decoder thất bại; hai phép resampling một phía vẫn PASS. Decoder hiện nhạy với chênh lệch gain giữa target và reference.
-3. Chưa xây dựng tập ảnh/audio lành tính để đo false-positive rate; dấu hiệu phát hiện hiện mới ở mức heuristic.
+3. Đã bổ sung synthetic benign controls và pipeline tính confusion matrix/precision/recall/F1/FPR trong benchmark, nhưng chưa chạy và chưa có corpus lành tính thực tế, độc lập. Vì vậy hiện chưa có FPR đo được có thể dùng để đánh giá hiệu năng thực tế.
 4. Mẫu nghiên cứu chỉ gồm hai challenge, không đại diện cho toàn bộ kỹ thuật steganography.
 5. Blue 3 là thuật toán đặc thù; việc decoder thất bại sau JPEG/resize không chứng minh payload bị xóa và không thể suy rộng cho mọi phương pháp steganography.
 6. Runtime được đo trong CI và một lần chạy local; chưa phải benchmark hiệu năng tổng quát.
 
 ### 11.3. Phản biện, đối chiếu hệ sinh thái và hướng cải tiến
+
+Repository đã bổ sung `src/steganalysis.py` làm baseline heuristic có thể giải thích, `src/experiments/steganalysis_benchmark.py` để tạo synthetic controls và tính confusion matrix, cùng hai script robustness mở rộng cho ảnh và audio. Đây là phần triển khai mã nguồn, chưa phải kết quả thực nghiệm: chưa có output benchmark/robustness tương ứng được lưu và kiểm tra. Ngưỡng detector vẫn cố định theo heuristic, chưa được hiệu chuẩn; synthetic controls không đại diện corpus đời thực. Do đó không báo cáo precision/recall/F1/FPR như kết quả đã đo cho đến khi chạy script và lưu output.
 
 Cần phân biệt ba nhiệm vụ thường bị gộp làm một: (i) phát hiện file có dấu hiệu chứa dữ liệu ẩn (steganalysis), (ii) nhận dạng họ thuật toán/định dạng nhúng, và (iii) trích xuất đúng payload (decoding). Hai decoder trong đồ án chủ yếu giải quyết nhiệm vụ (iii) khi đã có giả thuyết cụ thể về cơ chế; các heuristic ở mục 9 mới hỗ trợ nhiệm vụ (i), chưa phải detector được hiệu chuẩn. Vì vậy, exact-match trên challenge không chứng minh hệ thống có thể phát hiện steganography trên file tùy ý.
 
@@ -574,19 +576,20 @@ Với audio, The-A-Files mô tả khung đánh giá rộng hơn, tách payload r
 
 **Giới hạn của Sleepy Alarm.** Decoder dùng track gốc làm reference, do đó có thông tin phụ mà người phân tích ngoài thực tế có thể không có. Bốn phép gain một phía thất bại cho thấy pipeline nhạy với mismatch biên độ giữa target và reference. Hai phép resampling một phía PASS chỉ áp dụng cho đúng round-trip đã thử; không đại diện cho clock drift, time stretch, crop, codec khác, lọc thông dải hoặc truyền qua kênh âm học.
 
-**Kế hoạch cải tiến có thể kiểm chứng:**
-1. **Mở rộng corpus:** bổ sung file lành tính và file stego từ nhiều nguồn; tách tập phát triển và tập kiểm thử để tránh điều chỉnh ngưỡng trên chính dữ liệu đánh giá.
+**Các bước tiếp theo có thể kiểm chứng:**
+1. **Chạy và lưu kết quả các pipeline mới:** chạy test suite, benchmark detector, robustness mở rộng Blue 3 và ma trận audio; kiểm tra từng CSV/JSON và cập nhật số liệu thực tế. Đây là bước xác minh code đã có, không được mô tả như kết quả đã hoàn tất trước khi chạy.
+2. **Mở rộng corpus:** bổ sung file lành tính và file stego từ nhiều nguồn; tách tập phát triển và tập kiểm thử để tránh điều chỉnh ngưỡng trên chính dữ liệu đánh giá.
 2. **Đánh giá detection:** báo cáo confusion matrix, precision, recall, F1 và false-positive rate ở các ngưỡng đã công bố; không chỉ báo cáo flag decode thành công/thất bại.
 3. **Đánh giá extraction:** với audio, báo cáo bit error rate (BER), byte exact-match và tỷ lệ payload phục hồi; lặp nhiều seed/biến thể nếu generator có thành phần ngẫu nhiên.
 4. **Đánh giá robustness:** xây ma trận cường độ cho gain, clipping, resampling, crop, filtering và codec; phân biệt biến đổi đồng bộ với bất đối xứng.
 5. **Giảm phụ thuộc reference:** thử detector không-reference dựa trên peak/spectrogram và mô hình nhiễu nền; so sánh trực tiếp với reference-assisted decoder trên cùng corpus.
 6. **Tăng khả năng tái lập:** cố định seed, ghi phiên bản thư viện, hash input, tham số, runtime và output máy đọc được cho từng trial.
 
-Các bước trên là kế hoạch nghiên cứu tiếp theo, không phải kết quả đã thực hiện trong phiên bản hiện tại.
+Các mục 2–6 là hướng nghiên cứu tiếp theo; mục 1 là việc xác minh bắt buộc đối với các script đã được thêm nhưng chưa chạy.
 
 ### 11.4. Nhật ký và bằng chứng
 
-Bằng chứng có thể tái kiểm tra được lưu theo từng lớp: artifact và SHA-256 trong `data/` và `results/artifact_manifest.json`; log lệnh trong `results/logs/`; sáu regression tests trong `results/logs/unit-tests.log`; kết quả Blue 3 trong `results/blue3/`; kết quả audio exact-match trong `results/sleepy_alarm/solver.json`; và các thí nghiệm robustness trong hai tệp CSV. `results/2026-11-14/initial-run.md` giữ lại lần giải mã Sleepy Alarm thất bại đầu tiên để đối chiếu với phiên bản cuối. Thời lượng làm việc và trải nghiệm cá nhân không thể suy ra từ commit; người thực hiện cần ghi đúng thời gian thực tế trong logbook, không ước lượng.
+Bằng chứng có thể tái kiểm tra được lưu theo từng lớp: artifact và SHA-256 trong `data/` và `results/artifact_manifest.json`; log lệnh trong `results/logs/`; log `results/logs/unit-tests.log` là lần chạy lịch sử gồm sáu test cũ, chưa bao gồm năm test steganalysis mới; kết quả Blue 3 trong `results/blue3/`; kết quả audio exact-match trong `results/sleepy_alarm/solver.json`; và các thí nghiệm robustness trong hai tệp CSV. `results/2026-11-14/initial-run.md` giữ lại lần giải mã Sleepy Alarm thất bại đầu tiên để đối chiếu với phiên bản cuối. Thời lượng làm việc và trải nghiệm cá nhân không thể suy ra từ commit; người thực hiện cần ghi đúng thời gian thực tế trong logbook, không ước lượng.
 
 ### 11.5. Tự đánh giá quá trình học tập và bài học rút ra
 
@@ -598,7 +601,7 @@ Một bài học quan trọng khác là phải phân biệt chỉ số trung gia
 
 Từ hai trường hợp trên, quy trình làm việc được rút ra là: (1) đọc source/generator để hình thành mô hình có thể kiểm tra; (2) ghi lại giả định và điều kiện biên trước khi viết decoder; (3) dùng log và phép thử có khả năng bác bỏ giả thuyết; (4) giữ nguyên artifact gốc và ghi hash; (5) xác minh kết quả bằng ground truth độc lập; và (6) báo cáo cả trường hợp thất bại thay vì chỉ chọn kết quả thuận lợi. Đây cũng là cơ sở để phân biệt phần đã chứng minh với phần mới là hướng nghiên cứu tiếp theo.
 
-Về giới hạn tự đánh giá, đồ án chưa triển khai một detector tổng quát, chưa xây dựng corpus lành tính đủ lớn để đo false-positive rate và chưa có decoder Sleepy Alarm hoạt động khi không có reference. Các hạn chế này cho thấy hướng học tập tiếp theo nên tập trung vào steganalysis không cần biết trước thuật toán, thiết kế thí nghiệm thống kê trên nhiều mẫu và đánh giá đồng thời khả năng phát hiện, chất lượng tín hiệu, độ bền và độ chính xác trích xuất. Phần tự đánh giá này được xây dựng từ các quyết định kỹ thuật và kết quả có thể kiểm tra trong repository; không suy diễn cảm nhận cá nhân hoặc số giờ làm việc khi không có nhật ký xác nhận.
+Về giới hạn tự đánh giá, đồ án mới có heuristic detector và synthetic benchmark controls, chưa có detector tổng quát hoặc corpus lành tính thực tế đủ lớn để đánh giá false-positive rate; pipeline reference-free đã được viết nhưng chưa có kết quả chạy được lưu để xác nhận khả năng hoạt động. Các hạn chế này cho thấy hướng học tập tiếp theo nên tập trung vào steganalysis không cần biết trước thuật toán, thiết kế thí nghiệm thống kê trên nhiều mẫu và đánh giá đồng thời khả năng phát hiện, chất lượng tín hiệu, độ bền và độ chính xác trích xuất. Phần tự đánh giá này được xây dựng từ các quyết định kỹ thuật và kết quả có thể kiểm tra trong repository; không suy diễn cảm nhận cá nhân hoặc số giờ làm việc khi không có nhật ký xác nhận.
 
 ## 12. Kết luận
 
@@ -606,7 +609,7 @@ Về giới hạn tự đánh giá, đồ án chưa triển khai một detector 
 
 Các thí nghiệm cho thấy decoder Blue 3 không còn tìm được candidate sau JPEG quality 95/85/70 hoặc resize 0,75×/0,5×. Sleepy Alarm exact-match trong cả bốn trường hợp audio theo cặp; với biến đổi bất đối xứng, chỉ 3/6 phép thử PASS: hai phép resampling một phía thành công, còn bốn phép gain một phía thất bại. Kết quả cho thấy việc giữ tương quan nền cao không đủ để bảo đảm phân loại ASK đúng khi thang biên độ giữa target và reference không đồng nhất. Kết luận chỉ giới hạn ở hai challenge và đúng pipeline thực nghiệm này, không suy rộng thành nhận định cho mọi thuật toán steganography.
 
-Giá trị kỹ thuật của đồ án nằm ở việc tự triển khai hai decoder, giữ lại và phân tích lần giải mã thất bại, kiểm chứng bằng sáu regression tests, dùng artifact có SHA-256 và lượng hóa robustness bằng CSV/JSON. Hướng tiếp theo là xây dựng decoder Sleepy Alarm không cần reference, thử biến đổi bất đối xứng và đánh giá false positives trên tập ảnh/audio lành tính.
+Giá trị kỹ thuật của đồ án nằm ở việc tự triển khai hai decoder, giữ lại và phân tích lần giải mã thất bại, kiểm chứng bằng sáu regression tests, dùng artifact có SHA-256 và lượng hóa robustness bằng CSV/JSON. Hướng tiếp theo trước mắt là chạy và lưu kết quả cho test suite/benchmark/robustness scripts mới, sau đó mở rộng corpus thực tế, hiệu chuẩn detector và cải thiện khả năng giải mã Sleepy Alarm không cần reference.
 
 ## Tài liệu tham khảo
 
@@ -662,13 +665,20 @@ python src/solve_challenges.py sleepy-alarm data/sleepy_alarm/morning_n_breakfas
 # Paired and asymmetric robustness
 python src/experiments/sleepy_alarm_robustness.py data/sleepy_alarm/morning_n_breakfast.mp3 --reference data/sleepy_alarm/morning_n_breakfast_original.mp3 --expected 'ictf{1_sl33py_NaYuKi_alarm_2a634dc1bb2}'
 python src/experiments/sleepy_alarm_asymmetric_robustness.py data/sleepy_alarm/morning_n_breakfast.mp3 --reference data/sleepy_alarm/morning_n_breakfast_original.mp3 --expected 'ictf{1_sl33py_NaYuKi_alarm_2a634dc1bb2}'
+
+# New steganalysis and expanded robustness scripts (run before quoting results)
+python -m unittest discover -s tests -v
+python src/experiments/steganalysis_benchmark.py
+python src/experiments/blue3_extended_robustness.py data/blue3/blue.png
+python src/experiments/sleepy_alarm_robustness_matrix.py data/sleepy_alarm/morning_n_breakfast.mp3 --reference data/sleepy_alarm/morning_n_breakfast_original.mp3 --expected 'ictf{1_sl33py_NaYuKi_alarm_2a634dc1bb2}'
 ~~~
 
 ## Phụ lục B — Checklist hoàn thiện trước khi nộp
 
 Các hạng mục kỹ thuật sau đã có bằng chứng trong repository; trước khi nộp chỉ cần xác nhận bản build cuối cùng không bị thay đổi:
 - [ ] Điền họ tên, MSSV, lớp, ngày nộp và hạn nộp trên trang đầu và metadata.
-- [ ] Hoàn thiện logbook bằng giờ làm thực tế và viết phản tư cá nhân tại mục 11.5; không ước lượng thời lượng.
+- [ ] Chạy lại toàn bộ test suite (hiện có 11 test case trong source), lưu log mới thay cho log lịch sử 6 test; chạy benchmark detector và hai robustness script mới, kiểm tra output CSV/JSON.
+- [ ] Hoàn thiện logbook bằng giờ làm thực tế và rà soát phản tư cá nhân tại mục 11.5; không ước lượng thời lượng.
 - [ ] Mở PDF cuối và kiểm tra từng trang ở mức phóng đại đọc được: không mất chữ, không cắt hình, bảng không tràn lề, công thức hiển thị đúng.
 - [ ] Xác nhận phần nội dung chính không vượt 15 trang; phụ lục và tài liệu tham khảo nằm ngoài phạm vi đếm theo assignment.
 - [ ] Mở ZIP cuối, kiểm tra có `data/`, `src/`, `tests/`, `scripts/`, `references/`, `report/` và `results/`; không có `.venv`, cache hoặc secrets.
