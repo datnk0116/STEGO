@@ -1,154 +1,212 @@
-# Kế hoạch nâng STEGO lên mục tiêu 9.6/10
+# Kế hoạch và trạng thái nghiệm thu STEGO — mục tiêu tối thiểu 9,6/10
 
-## 1. Phạm vi và nguyên tắc chấm
+## 1. Phạm vi chấm và nguyên tắc
 
-Đối chiếu theo rubric UET.CN3124:
+Đối chiếu rubric UET.CN3124:
 - Tiêu chí 1 — Lập kế hoạch và biện minh: 2,0 điểm (CLO5).
 - Tiêu chí 2 — Triển khai và tài liệu hóa: 4,0 điểm (CLO4).
 - Tiêu chí 3 — Phân tích kết quả: 2,0 điểm (CLO4).
 - Tiêu chí 4 — Đánh giá, phản biện và tự học: 2,0 điểm (CLO5).
 
-Mục tiêu 9,6/10 là **điểm mục tiêu có điều kiện**, không phải điểm được bảo đảm. Giảng viên vẫn có thể yêu cầu trình diễn lại decoder, chạy script và vấn đáp. Đánh giá này chỉ xét source, test, dữ liệu, log, kết quả JSON/CSV và tài liệu Markdown trong repository; không dùng thông tin cá nhân hoặc DOCX/PDF/ZIP để tính điểm.
+Mục tiêu 9,6/10 là mục tiêu có điều kiện, không phải cam kết điểm. Kế hoạch này tập trung vào source, tests, dữ liệu challenge, kết quả JSON/CSV, logs kỹ thuật và Markdown. Không dùng thông tin cá nhân, DOCX/PDF/ZIP hoặc logbook để đánh giá phần kỹ thuật trong phạm vi rà soát này. Phần tự học được đánh giá qua lập luận phản biện kỹ thuật đã có; trải nghiệm cá nhân không được bịa hoặc suy ra từ commit.
 
-Tài liệu học phần yêu cầu một chủ đề CTF nhất quán, khuyến nghị khoảng 30 giờ làm việc cá nhân, quy trình từng bước, bằng chứng trung gian, phần tùy biến/mở rộng, góc nhìn tấn công/phòng thủ và tự đánh giá. Logbook phải dựa trên hoạt động thật. Không điền giờ, ảnh chụp, thao tác hoặc trải nghiệm chưa thực hiện.
+Rubric mức Xuất sắc đòi hỏi: có tư duy thiết kế và so sánh phương án; tài liệu hóa sâu, quy trình đáng tin cậy và tái hiện được; phân tích chặt chẽ cả rủi ro/dấu hiệu phát hiện/biện pháp khắc phục; đánh giá chín chắn, có nguồn và chỉ ra hướng học tiếp.
 
-## 2. Chẩn đoán điểm nghẽn
+## 2. Trạng thái repository đã xác minh
 
-| Hạng mục | Hiện trạng đã xác minh | Tác động tới điểm |
+**Repository:** datnk0116/STEGO  
+**Branch:** main  
+**Source commit được quality gate kiểm thử:** 11cd5e3216e779b6101b22cd891689ecdf9b8e54  
+**Commit lưu log/JSON và robustness outputs:** 3015d5ddcab12fb99d53158c4029750d7b8805b3
+
+Commit lưu bằng chứng không thay đổi source hoặc test so với source commit được quality gate kiểm thử. Quality-gate JSON vì vậy ghi source commit được kiểm thử, không phải commit đóng gói bằng chứng về sau.
+
+| Hạng mục | Bằng chứng hiện hành | Trạng thái |
 |---|---|---|
-| Hai challenge chính thức | Blue 3 và Sleepy Alarm đều có decoder exact-match và artifact/hash | Điểm mạnh của CLO4 |
-| Unit tests | Source cũ có 11 test methods; log cũ chỉ chứng minh 6 tests | Chưa đủ bằng chứng cho revision mới |
-| Integration | Trước thay đổi chưa có test tự động chạy cả hai artifact chính thức | Có nguy cơ test synthetic pass nhưng artifact thật lỗi |
-| Robustness ảnh | Chủ yếu có PASS/FAIL; chưa có mức khôi phục một phần | Phân tích kết quả chưa định lượng sâu |
-| Robustness audio | 23 trial, 7 PASS; JSON cũ chưa có BER/symbol error từng trial | Chưa thấy được mức độ lỗi khi exact-match FAIL |
-| Reproducibility | Có lệnh rời rạc nhưng chưa có một quality gate tổng hợp hash, environment, tests và decoder | Khó xác minh một revision từ đầu đến cuối |
-| Detector | Ảnh F1=1 trên mẫu nhỏ cùng nguồn; audio recall=0 | Cần tiếp tục diễn giải trung thực, không được tuning trên test |
-| Tự học/logbook | Có mô tả kỹ thuật và lịch sử debug, nhưng giờ bắt đầu/kết thúc còn trống | Chưa đủ bằng chứng cho quá trình học tập cá nhân |
+| Unit/integration tests | 22/22 pass, exit code 0; log quality-gate-tests.log | Đã đạt |
+| Artifact integrity | 3/3 file đúng byte size và SHA-256 | Đã đạt |
+| Blue 3 chính thức | Exact-match flag 50 ký tự; 49 candidate attempts | Đã đạt |
+| Sleepy Alarm chính thức | Reference-assisted exact-match; 350 symbol, 38 separator, 39 byte, 0 byte errors | Đã đạt |
+| Sleepy Alarm reference-free | 350 symbol, 49 separator, 26 ký tự; format invalid, exact-match fail | Giới hạn đã đo và công khai |
+| Blue 3 extended robustness | 9 biến thể, 1 exact-match; partial character metrics có trong JSON/CSV | Đã đạt |
+| Sleepy Alarm robustness matrix | 23 trial, 7 exact-match; BER/SER/separator metrics có trong JSON/CSV | Đã đạt |
+| Steganalysis benchmark | Image TP=5/TN=12/FP=0/FN=0; audio TP=0/TN=8/FP=0/FN=5 | Đã đo; giới hạn rõ |
+| Phân tích và phản biện | Có RQ/giả thuyết, threat model, validity, tấn công/phòng thủ, limitations và next experiments | Đã đồng bộ với evidence |
 
-## 3. Thay đổi đã triển khai trên main
+Lưu ý: results/logs/unit-tests.log là log lịch sử sáu test, không phải bằng chứng hiện hành. Bằng chứng 22/22 nằm trong results/logs/quality-gate-tests.log và results/verification/quality-gate.json.
 
-### 3.1. Kiểm thử trên artifact chính thức
+## 3. Các hạng mục đã triển khai
 
-Đã thêm `tests/test_official_artifacts.py` với ba integration tests:
-1. Kiểm tra SHA-256 của cả ba artifact challenge/reference.
-2. Chạy Blue 3 trên PNG chính thức và xác nhận flag đầy đủ.
-3. Chạy Sleepy Alarm trên MP3 chính thức với reference, xác nhận 350 symbol, 38 separator, 39 byte, không lỗi byte và exact-match.
+### P0 — Xác minh baseline và tính tái lập: HOÀN TẤT
 
-### 3.2. Kiểm thử metric
+Quality gate scripts/verify_reproducibility.py đã:
+1. Chạy python -m unittest discover -s tests -v.
+2. Xác nhận 22 test methods đã chạy đúng số lượng và đều pass.
+3. Kiểm tra kích thước và SHA-256 của ba artifact chính thức.
+4. Chạy Blue 3 và Sleepy Alarm reference-assisted trên artifact gốc.
+5. Ghi Git commit, branch, trạng thái working tree, hệ điều hành, Python và package versions.
+6. Lưu JSON và log.
 
-Đã thêm `tests/test_robustness_metrics.py` và `src/experiments/robustness_metrics.py`:
-- Blue 3: Levenshtein edit distance, character position accuracy và normalized edit similarity.
-- Sleepy Alarm: bit error rate (BER), symbol error rate, separator precision và recall.
-- Có test cho trường hợp chính xác, sai bit, thiếu separator, candidate thiếu và độ dài stream không hợp lệ.
+Kết quả đã commit:
+- results/verification/quality-gate.json
+- results/logs/quality-gate-tests.log
 
-Source dự kiến có 22 test methods: 11 test methods cũ + 3 integration tests + 8 metric tests. **Chưa tuyên bố 22 test đã pass** cho đến khi quality gate chạy trên máy của người thực hiện.
+### P1 — Định lượng partial recovery: HOÀN TẤT
 
-### 3.3. Nâng cấp robustness output
+Blue 3:
+- src/experiments/robustness_metrics.py bổ sung Levenshtein edit distance, position accuracy và normalized edit similarity.
+- Candidate thiếu được ghi null cho edit distance, không bị tính sai thành khoảng cách 0.
+- results/blue3/extended_robustness/extended_robustness.json và CSV có 9 biến thể và metrics từng biến thể.
 
-- `blue3_extended_robustness.py`: ghi thêm candidate ở độ dài baseline và metric khôi phục ký tự.
-- `sleepy_alarm_robustness_matrix.py`: ghi BER, symbol error rate, separator precision/recall cho từng trial và tổng hợp trung bình.
-- Output historical 1/9 và 7/23 không bị sửa ngược hoặc gán metric chưa đo. Cần chạy lại để sinh JSON/CSV mới.
+Sleepy Alarm:
+- Đã bổ sung bit error rate (BER), symbol error rate (SER), separator precision và recall theo từng trial.
+- Ground truth chỉ được sử dụng sau extraction để chấm symbol stream; không được dùng để tạo payload trong decoder.
+- results/sleepy_alarm/robustness_matrix/robustness_matrix.json và CSV có đủ 23 trial và aggregate metrics.
 
-### 3.4. Quality gate một lệnh
+### P2 — Đồng bộ tài liệu với bằng chứng: HOÀN TẤT TRONG REVISION NÀY
 
-Đã thêm `scripts/verify_reproducibility.py` và `docs/QUALITY_GATE.md`. Quality gate:
-- Chạy toàn bộ unittest suite.
-- Kiểm tra số byte và SHA-256 của ba artifact.
-- Chạy hai decoder trên artifact chính thức.
-- Ghi reference-free result như một phép đo giới hạn, không coi thất bại reference-free là lỗi của quality gate.
-- Ghi Git commit, branch, working-tree status, Python/package versions.
-- Ghi kết quả ở `results/verification/quality-gate.json` và `results/logs/quality-gate-tests.log`.
+Các tài liệu đã được đồng bộ:
+- report/REPORT.md: summary, test evidence, robustness metrics, limitations, future work và conclusion.
+- README.md: quality gate hiện tại, kết quả partial recovery, detector failure và reference-free failure.
+- docs/QUALITY_GATE.md: phân biệt source commit được test với commit đóng gói output.
+- docs/DEFENSE_QA.md: câu trả lời vấn đáp nêu đúng 22/22 test, các metric mới và các giới hạn còn lại.
+- results/README.md: các output đã commit không còn bị đánh dấu pending.
+- docs/PLAN_9_6.md: phân biệt việc đã hoàn tất và hướng nghiên cứu còn mở.
 
-### 3.5. Đồng bộ tài liệu
+Không ghi lại kết quả lịch sử thành kết quả mới; không diễn giải metric như hiệu năng của quần thể.
 
-Đã cập nhật report, README và Q&A để giải thích integration testing, metric partial recovery và cách xác minh revision. Không viết detector audio thành công hơn thực tế; benchmark hiện tại vẫn là TP=0, FN=5 ở audio.
+## 4. Diễn giải kết quả định lượng phải thống nhất
 
-## 4. Mục tiêu điểm theo rubric
+### 4.1. Blue 3
 
-| Tiêu chí | Điểm mục tiêu | Điều kiện cần chứng minh |
+Ma trận có 9 phép biến đổi và 1/9 exact-match. Tuy nhiên, exact-match không mô tả hết partial recovery:
+
+| Biến thể | Position accuracy | Edit distance | Normalized similarity |
+|---|---:|---:|---:|
+| Brightness 0,9 | 94% (47/50) | 3 | 94% |
+| Brightness 1,1 | 56% (28/50) | 20 | 60% |
+| Contrast 0,9 | 0% theo vị trí | 48 | 4% |
+| Contrast 1,1 | 0% | 50 | 0% |
+| Gaussian blur 0,3 | 100% | 0 | 100% |
+| Crop 16 px | 0% | 50 | 0% |
+| Gaussian noise sigma 0,5 | Không có candidate độ dài baseline | null | 0% |
+| Gaussian noise sigma 1,0 | Không có candidate độ dài baseline | null | 0% |
+| Gaussian noise sigma 2,0 | 0% | 50 | 0% |
+
+Tám trường hợp không exact-match không đồng nghĩa tám trường hợp đều không tạo candidate: sáu trường hợp có chuỗi độ dài 50 để đo lỗi ký tự; hai trường hợp noise sigma 0,5 và 1,0 không có candidate ở độ dài baseline. Đây là khác biệt quan trọng cần nêu khi bảo vệ.
+
+### 4.2. Sleepy Alarm
+
+Ma trận mở rộng có 23 trial, 7 exact-match (bao gồm baseline). Các aggregate là trung bình số học không trọng số của metric theo trial, có tính baseline:
+- Mean symbol error rate: 12,31%.
+- Mean bit error rate: 12,97%.
+- Mean separator precision: 77,07%.
+- Mean separator recall: 93,14%.
+
+Một vài trường hợp để giải thích:
+- Baseline: BER=0, SER=0, 38/38 separator.
+- Target AWGN 20 dB: SER=20,57%, BER=22,76%.
+- Target AWGN 10 dB: SER=55,14%, BER=57,37%.
+- Reference AWGN 20 dB: SER=27,43%, BER=30,77%.
+- Reference AWGN 10 dB: SER=60,00%, BER=63,78%.
+
+Không được gọi những giá trị mean này là hiệu năng trên mọi audio; chúng chỉ tóm tắt 23 trial trên một cặp file challenge cụ thể. Paired robustness (4/4), asymmetric robustness (3/6) và extended matrix (7/23) là ba nhóm thử nghiệm khác điều kiện, không được gộp thành một tỷ lệ.
+
+### 4.3. Steganalysis detector
+
+Benchmark hiện tại:
+- Image: TP=5, TN=12, FP=0, FN=0.
+- Audio: TP=0, TN=8, FP=0, FN=5; recall=0, F1=0.
+
+Positive là các biến thể từ một artifact chính thức mỗi modality; benign controls là synthetic. Do đó image F1=1 không chứng minh generalization. Audio recall=0 là một thất bại thực nghiệm cần giữ nguyên, không hạ threshold bằng cách nhìn vào cùng test set. Muốn cải thiện phải có corpus độc lập, validation để chọn feature/threshold và held-out test chỉ dùng một lần.
+
+### 4.4. Threat model
+
+- Blue 3: decoder sử dụng giả định về generator và cấu trúc vùng của challenge; không đại diện một blind detector phổ quát.
+- Sleepy Alarm: kết quả thành công hiện là reference-assisted; reference-free đã chạy nhưng thất bại. Không được gọi Sleepy Alarm là blind decoding.
+- Correlation gần 1 chỉ hỗ trợ ước lượng alignment, không bảo đảm scale của hai track tương thích hoặc phân loại ASK đúng.
+
+## 5. Ước lượng theo rubric sau đồng bộ
+
+Đây là mục tiêu tự đánh giá dựa trên bằng chứng repository, không phải điểm bảo đảm:
+
+| Tiêu chí | Mục tiêu | Điều kiện |
 |---|---:|---|
-| 1. Lập kế hoạch và biện minh | 1,9/2,0 | Một chủ đề thống nhất; hai challenge bổ trợ; có RQ/giả thuyết; so sánh lựa chọn; nguồn rõ ràng |
-| 2. Triển khai và tài liệu hóa | 3,9/4,0 | 22 tests pass tại commit cuối; hash ba artifact đúng; cả hai decoder exact-match; log/JSON ghi cùng revision; script tái chạy được |
-| 3. Phân tích kết quả | 1,9/2,0 | Có BER, symbol error, separator precision/recall và character edit distance; giải thích cả PASS lẫn FAIL; không tổng quát hóa từ một artifact |
-| 4. Đánh giá, phản biện và tự học | 1,9/2,0 | Threat model/validity/limitations rõ; phản biện đúng; trích nguồn minh bạch; logbook giờ thật và phản tư cá nhân có bằng chứng |
-| **Tổng mục tiêu** | **9,6/10** | Chỉ có cơ sở nhắm tới sau khi hoàn thành các điều kiện bên dưới |
+| 1. Lập kế hoạch và biện minh | 1,9/2,0 | Phạm vi nhất quán, so sánh lựa chọn, RQ/giả thuyết, nguồn và lý do chọn rõ |
+| 2. Triển khai và tài liệu hóa | 3,9/4,0 | 22/22 tests đã pass, hash đúng, hai decoder exact-match có điều kiện, output kỹ thuật tái lập |
+| 3. Phân tích kết quả | 1,9/2,0 | Phân tích chính xác cả exact-match và partial recovery, metric, thất bại, phòng thủ và giới hạn |
+| 4. Đánh giá, phản biện và tự học | 1,9/2,0 | Threat model, validity, giới hạn và kế hoạch học tiếp chín chắn; không nhận quá mức kết luận |
+| **Tổng mục tiêu** | **9,6/10** | Cần người thực hiện hiểu và trình diễn được code; giảng viên quyết định điểm cuối |
 
-## 5. Kế hoạch nghiệm thu chi tiết
+## 6. Công việc còn lại và tiêu chí dừng
 
-### P0 — Đồng bộ local với main và chạy quality gate
+| Ưu tiên | Công việc còn lại | Tiêu chí nghiệm thu |
+|---|---|---|
+| P3 | Kiểm tra lại trên môi trường local của người thực hiện | Gate exit 0; 22/22 test; hash đúng; hai decoder exact-match |
+| P4 | Chuẩn bị trình diễn kỹ thuật | Giải thích được Blue 3 pixel sum, ASK/IQ detection, alignment, BER/SER và giới hạn reference |
+| Nghiên cứu tiếp theo | Detector audio trên corpus độc lập | Split theo nguồn; threshold chỉ chọn trên validation; báo held-out confusion matrix |
+| Nghiên cứu tiếp theo | Reference-free Sleepy Alarm | Decoder không cần track gốc và được kiểm chứng trên nhiều file độc lập |
+| Nghiên cứu tiếp theo | Robustness nhiều challenge/cover | Có nhiều mẫu độc lập, sweep theo cường độ, metric và khoảng tin cậy phù hợp |
 
-**Thao tác:** Pull code mới, chạy quality gate.
+Các mục nghiên cứu tiếp theo không được trình bày như kết quả đã đạt. Không cần chạy lại ma trận robustness nếu source, input và tham số không thay đổi; output hiện tại đã được commit. Không cần gọi GitHub Actions cho quality gate.
 
-**Đạt khi:**
-- 22 test methods chạy thành công.
-- Ba artifact có SHA-256 khớp manifest.
-- Blue 3 khôi phục đúng flag chính thức.
-- Sleepy Alarm có reference đạt exact-match 39 ký tự, 350 symbol, 38 separator.
-- JSON chất lượng và log test lưu được cùng commit SHA.
+## 7. Command kiểm tra local cuối cùng
 
-**Không đạt nếu:** bất kỳ hash sai, test fail, decoder không exact-match hoặc log không ghi revision.
+Từ thư mục repository:
 
-### P1 — Tạo kết quả partial-recovery mới
-
-**Thao tác:** Chạy lại Blue 3 extended robustness và Sleepy Alarm robustness matrix sau khi pull.
-
-**Đạt khi:**
-- CSV/JSON Blue 3 có candidate tại baseline length (nếu decoder tạo được), edit distance và normalized similarity; trường hợp không có candidate phải ghi unavailable/null.
-- CSV/JSON audio có BER, symbol error rate, separator precision/recall cho đủ 23 trial.
-- Baseline vẫn exact-match.
-- Có thể giải thích vì sao một phép biến đổi làm exact-match FAIL nhưng vẫn còn/không còn khôi phục một phần.
-
-**Lưu ý:** Không đặt mục tiêu phải tăng tỷ lệ PASS. Mục tiêu là đo và giải thích đúng.
-
-### P2 — Đối chiếu report với output thực tế
-
-**Thao tác:** Sau khi chạy P0/P1, so sánh:
-- `results/verification/quality-gate.json`
-- `results/logs/quality-gate-tests.log`
-- `results/blue3/extended_robustness/extended_robustness.json`
-- `results/sleepy_alarm/robustness_matrix/robustness_matrix.json`
-
-Cập nhật số test, commit SHA, BER/edit-distance và thời gian chạy vào report chỉ theo output thật. Không chép số liệu historical nếu kết quả revision mới khác.
-
-### P3 — Hoàn thiện logbook và phản tư cá nhân
-
-**Thao tác thủ công bắt buộc:**
-- Mở `results/logbook-template.csv`.
-- Điền ngày, giờ bắt đầu/kết thúc, thời lượng, mục tiêu/giả thuyết, command, kết quả, bài học và đường dẫn bằng chứng từ lịch sử làm việc thật.
-- Đảm bảo tổng thời lượng phản ánh khối lượng khoảng 30 giờ theo yêu cầu học phần. Nếu không thể xác minh một khoảng giờ, để trống và giải thích; không dựng số.
-- Viết 3–5 đoạn phản tư cá nhân: kiến thức xuất phát, giả thuyết từng bị bác bỏ, tài liệu/API tự học, lần thất bại đáng nhớ, điều hiểu sâu hơn sau khi debug và kế hoạch học tiếp.
-- Chuẩn bị khả năng giải thích lại từng phần code; repository là bài cá nhân và giảng viên có quyền yêu cầu trình diễn.
-
-**Đạt khi:** logbook và reflection mô tả trải nghiệm thật, có đường dẫn evidence/commit phù hợp, không chỉ lặp lại nội dung do công cụ tạo.
-
-### P4 — Commit bằng chứng kỹ thuật
-
-Chỉ commit các file log/JSON/CSV mới sau khi kiểm tra:
-- Kết quả được sinh từ revision hiện tại.
-- Không sửa artifact gốc trong `data/`.
-- Không thêm secrets hoặc file môi trường.
-- Không stage DOCX/PDF/ZIP nếu phạm vi commit chỉ là bằng chứng kỹ thuật.
-- Working tree và commit SHA được ghi trong quality-gate JSON.
-
-## 6. Command nghiệm thu
-
-Các command copy/paste đầy đủ được đặt ở câu trả lời triển khai cùng cuộc hội thoại. Tối thiểu cần chạy:
-
-```bash
+~~~bash
+git status --short
 git pull --ff-only origin main
+git log -1 --oneline
 python scripts/verify_reproducibility.py
-python src/experiments/blue3_extended_robustness.py data/blue3/blue.png
-python src/experiments/sleepy_alarm_robustness_matrix.py \
-  data/sleepy_alarm/morning_n_breakfast.mp3 \
-  --reference data/sleepy_alarm/morning_n_breakfast_original.mp3 \
-  --expected 'ictf{1_sl33py_NaYuKi_alarm_2a634dc1bb2}'
-```
+~~~
 
-Sau khi kiểm tra các output, stage riêng các file `results/logs/quality-gate-tests.log`, `results/verification/quality-gate.json`, và các JSON/CSV robustness mới. Không commit kết quả chưa kiểm tra.
+Kiểm tra kết quả gate:
 
-## 7. Rủi ro còn lại không thể giải bằng cách viết thêm tài liệu
+~~~bash
+python - <<'PY'
+import json
+from pathlib import Path
 
-1. Detector audio hiện recall=0. Muốn cải thiện phải có corpus độc lập và validation/test đúng cách; không hạ threshold chỉ để làm đẹp benchmark hiện tại.
-2. Sleepy Alarm vẫn reference-assisted. Không gọi là blind decoding cho đến khi có một thuật toán không cần reference và có kiểm chứng độc lập.
-3. Hai challenge là quy mô nhỏ. BER/partial-recovery giúp phân tích sâu hơn nhưng không biến chúng thành corpus đại diện.
-4. Điểm 9,6 phụ thuộc vào chất lượng trình diễn và phản tư cá nhân. Không thể bảo đảm điểm số hoặc thay thế trải nghiệm thực tế bằng generated text.
+p = Path("results/verification/quality-gate.json")
+data = json.loads(p.read_text(encoding="utf-8"))
+
+tests = data["unit_tests"]
+artifacts = data["artifact_integrity"]
+decoders = data["official_decoder_verification"]
+
+print("Tested source commit:", data["git"]["commit"])
+print("Tests:", tests["tests_run"], "/", tests["expected_test_methods"])
+print("Tests passed:", tests["passed"])
+print("Artifacts:", {name: item["passed"] for name, item in artifacts.items()})
+print("Blue 3 exact:", decoders["blue3"]["exact_match"])
+print("Sleepy Alarm exact:", decoders["sleepy_alarm_reference_assisted"]["exact_match"])
+print("Overall:", data["overall_passed"])
+
+assert tests["tests_run"] == tests["expected_test_methods"] == 22
+assert tests["passed"]
+assert all(item["passed"] for item in artifacts.values())
+assert decoders["blue3"]["exact_match"]
+assert decoders["sleepy_alarm_reference_assisted"]["exact_match"]
+assert data["overall_passed"]
+print("LOCAL QUALITY GATE: PASS")
+PY
+~~~
+
+Nếu command này pass, không cần chạy GitHub Actions. Nếu quality gate tạo thay đổi mới trong working tree, xem xét trước khi commit:
+
+~~~bash
+git status --short
+git diff -- results/verification/quality-gate.json results/logs/quality-gate-tests.log
+~~~
+
+Chỉ commit hai file gate nếu chúng thực sự được tái tạo từ local run và bạn muốn lưu bằng chứng môi trường local:
+
+~~~bash
+git add results/verification/quality-gate.json results/logs/quality-gate-tests.log
+git diff --cached --stat
+git commit -m "test: record local reproducibility verification"
+git push origin main
+~~~
+
+Nếu gate thất bại, không commit log như bằng chứng đạt; giữ nguyên output lỗi để xác định nguyên nhân trước.
