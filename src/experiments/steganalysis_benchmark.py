@@ -30,9 +30,10 @@ def main():
     p.add_argument("--blue3",type=Path,default=Path("data/blue3/blue.png"))
     p.add_argument("--sleepy",type=Path,default=Path("data/sleepy_alarm/morning_n_breakfast.mp3"))
     p.add_argument("--reference",type=Path,default=Path("data/sleepy_alarm/morning_n_breakfast_original.mp3"))
+    p.add_argument("--expected",default="ictf{1_sl33py_NaYuKi_alarm_2a634dc1bb2}")
     p.add_argument("--out",type=Path,default=Path("results/steganalysis"))
     args=p.parse_args()
-    for path in (args.blue3,args.sleepy):
+    for path in (args.blue3,args.sleepy,args.reference):
         if not path.is_file(): p.error(f"missing challenge artifact: {path}")
     args.out.mkdir(parents=True,exist_ok=True)
     rows=[]
@@ -74,19 +75,24 @@ def main():
             path=d/f"stego_sleepy_gain_{i}.wav"
             sf.write(path,source_audio*gain,source_sr)
             add(path,"audio","stego","derived_from_official_stego")
-        # A separate reference-free extraction trial; success is reported, not assumed.
-        try:
-            no_ref=solve_sleepy(args.sleepy)
-            no_ref_result={"reference_used":False,"format_valid":no_ref["format_valid"],
-              "decoded_length":no_ref["decoded_length"],"symbol_count":no_ref["measured_symbol_count"],
-              "separator_count":no_ref["symbol_counts"]["separator"],"errors":no_ref["errors"],
-              "decoded_text":no_ref["decoded_text"],"status":"completed"}
-        except Exception as exc:
-            no_ref_result={"reference_used":False,"status":"failed",
-              "error_type":type(exc).__name__,"error":str(exc)}
-        no_ref_result["note"]="No-reference mode uses the distributed audio directly; exact correctness requires independent expected text."
-        with (args.out/"reference_free_trial.json").open("w",encoding="utf-8") as f:
-            json.dump(no_ref_result,f,indent=2,ensure_ascii=False)
+        # Compare both extraction modes on identical target bytes.
+        trials={}
+        for label,reference_path in (("reference_free",None),("reference_assisted",args.reference)):
+            try:
+                result=solve_sleepy(args.sleepy,reference=reference_path,expected_text=args.expected)
+                trials[label]={"status":"completed","reference_used":reference_path is not None,
+                  "format_valid":result["format_valid"],"ground_truth_match":result["ground_truth_match"],
+                  "success":result["success"],"decoded_length":result["decoded_length"],
+                  "symbol_count":result["measured_symbol_count"],
+                  "separator_count":result["symbol_counts"]["separator"],
+                  "errors":result["errors"],"decoded_text":result["decoded_text"]}
+            except Exception as exc:
+                trials[label]={"status":"failed","reference_used":reference_path is not None,
+                  "error_type":type(exc).__name__,"error":str(exc)}
+        trial_result={"expected_text_used_only_for_validation":True,"trials":trials,
+          "note":"Reference-free and reference-assisted results are kept separate; expected text is used only for exact-match validation, never extraction."}
+        with (args.out/"reference_comparison.json").open("w",encoding="utf-8") as f:
+            json.dump(trial_result,f,indent=2,ensure_ascii=False)
     summaries={}
     for kind in ("image","audio"):
         subset=[r for r in rows if r["kind"]==kind]
@@ -97,7 +103,7 @@ def main():
         w=csv.DictWriter(f,fieldnames=list(rows[0])); w.writeheader(); w.writerows(rows)
     result={"dataset_note":"Only two positive official challenge artifacts; benign controls are deterministic synthetic samples, not a representative real-world corpus.",
             "seed":20261114,"thresholds":"fixed heuristics in src/steganalysis.py; not learned or calibrated",
-            "metrics":summaries,"reference_free_trial":"reference_free_trial.json",
+            "metrics":summaries,"reference_comparison":"reference_comparison.json",
             "csv":"benchmark.csv"}
     (args.out/"benchmark.json").write_text(json.dumps(result,indent=2,ensure_ascii=False)+"\n",encoding="utf-8")
     print(json.dumps(result,indent=2,ensure_ascii=False))
