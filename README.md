@@ -88,9 +88,9 @@ python src/experiments/sleepy_alarm_robustness.py \
 Additional one-sided robustness experiment (transforms target and reference separately):
 
 ```bash
-python src/experiments/sleepy_alarm_asymmetric_robustness.py \\
-  data/sleepy_alarm/morning_n_breakfast.mp3 \\
-  --reference data/sleepy_alarm/morning_n_breakfast_original.mp3 \\
+python src/experiments/sleepy_alarm_asymmetric_robustness.py \
+  data/sleepy_alarm/morning_n_breakfast.mp3 \
+  --reference data/sleepy_alarm/morning_n_breakfast_original.mp3 \
   --expected 'ictf{1_sl33py_NaYuKi_alarm_2a634dc1bb2}'
 ```
 
