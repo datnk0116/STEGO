@@ -616,6 +616,94 @@ Các thí nghiệm cho thấy decoder Blue 3 không còn tìm được candidate
 
 Giá trị kỹ thuật của đồ án nằm ở việc tự triển khai hai decoder, giữ lại và phân tích lần giải mã thất bại, kiểm chứng bằng các regression tests đã lưu log lịch sử (sáu test trong lần chạy cũ; năm test mới cần xác nhận lại), dùng artifact có SHA-256 và lượng hóa robustness bằng CSV/JSON. Hướng tiếp theo trước mắt là chạy và lưu kết quả cho test suite/benchmark/robustness scripts mới, sau đó mở rộng corpus thực tế, hiệu chuẩn detector và cải thiện khả năng giải mã Sleepy Alarm không cần reference.
 
+### 11.7. Phản biện sâu: threat model, validity và diễn giải kết quả
+
+#### 11.7.1. Threat model và giả định đầu vào
+
+Đồ án hiện khảo sát hai bài toán khôi phục payload từ artifact CTF đã biết nguồn gốc, không phải triển khai một hệ thống phát hiện ẩn tin tổng quát trong môi trường vận hành. Vì vậy cần phân biệt ba vai trò:
+
+| Vai trò | Mục tiêu | Thông tin/điều kiện được giả định |
+|---|---|---|
+| Người nhúng tin (sender) | Che giấu thông điệp trong cover | Biết thuật toán nhúng và vật mang tin |
+| Người phân tích có tri thức challenge | Phát hiện/khôi phục payload | Có mô tả challenge, có thể có creator source hoặc reference audio |
+| Người phân tích mù (blind analyst) | Phát hiện/khôi phục khi không biết trước thuật toán hoặc cover | Chỉ có file nghi vấn; không mặc nhiên có khóa, source hay reference |
+
+Blue 3 được giải theo hướng gần white-box ở bước hiểu thuật toán từ creator source, sau đó kiểm tra decoder trực tiếp trên PNG. Sleepy Alarm hiện là reference-assisted: track gốc được dùng để ước lượng phần nền và lấy residual. Đây là khác biệt về threat model, không phải chi tiết triển khai nhỏ. Hai lời giải do đó chứng minh khả năng tái hiện challenge có điều kiện, chưa chứng minh năng lực phân tích mù.
+
+#### 11.7.2. Đánh giá validity theo bốn lớp
+
+| Loại validity | Rủi ro trong đồ án | Tác động lên kết luận | Cách kiểm soát tiếp theo |
+|---|---|---|---|
+| Construct validity | Exact-match được dùng làm tiêu chí giải mã, nhưng không đo chất lượng cảm nhận, dung lượng hay detectability | Có thể đúng payload nhưng không chứng minh vật mang tin khó bị phát hiện | Báo riêng payload recovery, chất lượng tín hiệu/ảnh và detectability |
+| Internal validity | Reference MP3 có thể đã qua encoder/processing khác target; gain một phía làm mất tương thích thang biên độ | Lỗi có thể do pipeline căn chỉnh/chuẩn hóa chứ không chỉ do kỹ thuật nhúng | Ghi rõ mọi phép biến đổi, kiểm tra channel, gain, clipping, lag và residual |
+| External validity | Chỉ hai challenge chính thức; các positive mở rộng là biến thể của cùng nguồn | Không thể khái quát sang ảnh tự nhiên, nhạc khác, codec hoặc thuật toán khác | Thu thập corpus đa nguồn, đa payload và chia tập theo artifact |
+| Conclusion validity | Mẫu nhỏ, chưa có khoảng tin cậy/kiểm định lặp; threshold detector đặt thủ công | Không có cơ sở kết luận hiệu năng tổng quát hoặc khác biệt có ý nghĩa thống kê | Tăng số mẫu độc lập, báo uncertainty và giữ test set chưa dùng |
+
+#### 11.7.3. Phản biện riêng đối với Blue 3
+
+**Điểm mạnh của phép tổng sai khác.** Nếu ảnh là PNG không mất dữ liệu, nền B=(64,77,205) đúng, vùng R_i được xác định đúng và mọi thao tác nhúng chỉ tăng một đơn vị kênh, tổng Δ_i loại bỏ sự phụ thuộc vào vị trí pixel ngẫu nhiên. Điều này giải thích vì sao decoder không cần tái tạo lựa chọn ngẫu nhiên của creator.
+
+**Điểm yếu mang tính cấu trúc.** Decoder phụ thuộc đồng thời vào màu nền, độ dài L, kích thước ảnh và cách chia vùng. Nếu màu nền bị ước lượng sai một đơn vị trên mỗi pixel, sai số tổng có thể tăng theo diện tích vùng s²; khi đó phép so sánh ASCII bị phá vỡ. Nếu resize/crop, ranh giới R_i không còn trùng với vùng nhúng ban đầu. JPEG còn làm thay đổi giá trị pixel do lượng tử hóa và tái tạo khối. Vì vậy độ nhạy quan sát được không bất ngờ, nhưng cũng không thể từ đó kết luận payload đã bị xóa.
+
+**Phản biện về 49 ứng viên độ dài.** Việc thử nhiều L rồi chọn chuỗi có cấu trúc flag là một dạng tìm kiếm tham số có điều kiện theo định dạng. Nó hợp lý với challenge có prefix/format đã biết, nhưng không phải cách suy luận độ dài phổ quát. Với payload không theo format, có thể có nhiều ứng viên hoặc không có ứng viên; cần tiêu chí độc lập như checksum, redundancy hoặc mô hình mã hóa được công bố trước.
+
+**Tính khó phát hiện.** Ảnh gần như đơn sắc với modal RGB fraction rất cao và chỉ 49 màu RGB phân biệt có thể là dấu hiệu bất thường rõ rệt. Do đó việc giải mã dễ không đồng nghĩa kỹ thuật nhúng có tính tàng hình cao. Heuristic ảnh nhận dạng mẫu này trong benchmark, nhưng benchmark chưa chứng minh độ chính xác trên ảnh tự nhiên.
+
+#### 11.7.4. Phản biện riêng đối với Sleepy Alarm
+
+**Reference là một dependency thiết yếu.** Pipeline tính residual target-reference để loại âm thanh nền. Kết quả reference-free chỉ giải được 26 ký tự, tạo 49 separator thay vì 38 và không đạt format/exact-match. Vì vậy không được mô tả decoder là blind hoặc reference-independent.
+
+**Tương đồng nền không đồng nghĩa đồng nhất biên độ.** Cross-correlation xấp xỉ 0,999 trong các thử nghiệm gain một phía, nhưng decoder vẫn sai byte. Correlation chuẩn hóa chủ yếu hỗ trợ xác định độ trễ/cấu trúc tương đồng; nó không tự bảo đảm residual có cùng scale hoặc ba cụm ASK vẫn tách được. Gain trên target mà không gain reference (hoặc ngược lại) làm thay đổi độ lớn thành phần nền còn lại sau phép trừ; residual có thể không còn ba cụm tương ứng separator/bit 0/bit 1. Đây là giải thích phù hợp với dữ liệu hiện có, nhưng muốn khẳng định nhân quả đầy đủ cần log phân bố cluster và residual theo từng biến thể.
+
+**Coherent I/Q projection có giả định đồng bộ.** Phép chiếu sine/cosine theo cửa sổ 882 mẫu dựa trên carrier 8 kHz, sample rate, pha và thời điểm bắt đầu symbol đã biết. Sai số clock hoặc carrier offset có thể làm giảm năng lượng chiếu và thay đổi ước lượng biên độ. K-means/three-level clustering có thể phân loại sai khi các cụm chồng lấn, bị lệch hoặc có outlier. Trong tương lai cần ước lượng timing/carrier tự động, đo khoảng cách giữa cluster, kiểm tra độ ổn định của phân loại và có ngưỡng từ chối khi confidence thấp.
+
+**Lựa chọn kênh trái là challenge-specific.** Generator cộng ASK vào channel đầu tiên. Điều này đúng với source challenge nhưng không thể mặc định mọi audio steganography đều nhúng vào kênh trái. Một công cụ tổng quát cần kiểm tra từng kênh và cả quan hệ pha/biên độ giữa kênh, đồng thời tránh downmix trước khi biết cấu trúc stereo.
+
+#### 11.7.5. Diễn giải lại benchmark detector
+
+Benchmark hiện tại là phép thử khả năng chạy pipeline trên một tập dữ liệu có kiểm soát, không phải nghiên cứu phân loại có thiết kế lấy mẫu đại diện.
+
+- Ảnh: TP=5, TN=12, FP=0, FN=0 trên 17 mẫu. Năm positive gồm ảnh Blue 3 gốc và bốn biến thể brightness cùng nguồn; 12 negative là texture/graphic tổng hợp. Mẫu positive có chung dấu hiệu nền gần đồng nhất, nên precision/recall 1,0 chỉ thể hiện khả năng nhận dạng họ mẫu đã biết.
+- Audio: TP=0, TN=8, FP=0, FN=5 trên 13 mẫu. Năm positive gồm MP3 gốc và bốn biến thể gain từ cùng một bản ghi; cả năm đều bị bỏ sót. Feature audio đang dùng tỷ lệ năng lượng trong dải 7,9–8,1 kHz và coefficient of variation của RMS block. Trên dữ liệu hiện có, tỷ lệ năng lượng carrier của audio positive khoảng 0,000204, thấp hơn ngưỡng 0,02 gần hai bậc độ lớn; vì điều kiện phân loại yêu cầu đồng thời hai feature nên detector không gắn cờ. Block RMS CV cao (khoảng 0,987) không đủ bù cho điều kiện carrier ratio. Điều này chỉ ra ngưỡng/feature hiện tại không phù hợp với cách ASK bị trộn vào nền và mã hóa MP3 trong challenge này; không nên sửa bằng cách đơn giản hạ ngưỡng mà không có validation độc lập.
+- FPR=0 không phải chứng minh không có false positive: chỉ có 12 ảnh và 8 audio negative tổng hợp. Một vài lớp nội dung phổ biến (ảnh đồ họa phẳng, nhạc có năng lượng quanh 8 kHz, tín hiệu nhạc cụ có nhịp) có thể làm thay đổi phân bố feature.
+
+Cải tiến hợp lý là tách detector thành các bước triage và xác minh: (1) metadata/format; (2) feature phổ rộng và theo thời gian; (3) so sánh stereo và phát hiện carrier có điều chế; (4) nếu có cover/reference thì residual analysis; (5) xác minh payload. Đánh giá phải báo precision, recall, F1, FPR cùng confusion matrix, confidence interval và kết quả trên test set giữ kín. Không dùng chính các mẫu benchmark hiện tại vừa để chọn threshold vừa để báo cáo hiệu năng cuối.
+
+#### 11.7.6. Vì sao robustness cần được hiểu đúng
+
+Một phép biến đổi có thể tác động lên payload, cover, hoặc sự tương thích giữa hai tín hiệu. Với Sleepy Alarm, biến đổi đồng bộ lên target và reference giữ tương quan và scale tương đối nên 4/4 thử nghiệm theo cặp PASS; biến đổi gain một phía làm scale lệch nên các thử nghiệm gain bất đối xứng FAIL. Resampling một phía vẫn PASS trong hai cấu hình round-trip cụ thể. Vì vậy, kết quả không nên rút gọn thành “audio robust 100%” hoặc “audio robust 43%”: phải ghi rõ nhóm phép biến đổi và điều kiện áp dụng.
+
+Tương tự, Blue 3 có baseline chính xác nhưng chỉ 1/9 phép biến đổi mở rộng PASS. PASS/FAIL exact-match là phép đo nhị phân; nó không cho biết còn khôi phục được bao nhiêu byte hoặc bit. Thí nghiệm tiếp theo nên bổ sung bit error rate (BER), character recovery rate, vùng pixel bị sai, và cường độ biến đổi để xây dựng đường cong suy giảm.
+
+#### 11.7.7. Kết luận phản biện
+
+Kết luận mạnh nhất mà dữ liệu hỗ trợ là: hai decoder đã khôi phục đúng hai payload challenge trong các điều kiện cụ thể; pipeline Blue 3 nhạy với các biến đổi pixel đã thử; pipeline Sleepy Alarm thành công khi có reference và nhạy với thay đổi gain bất đối xứng; detector audio heuristic hiện chưa phát hiện được positive trong benchmark. Đây là kết quả có giá trị học thuật vì chỉ rõ cả điều kiện hoạt động lẫn trường hợp thất bại. Dữ liệu hiện tại không hỗ trợ các tuyên bố rằng hệ thống phát hiện steganography tổng quát, decoder audio hoạt động mù, hoặc thuật toán có robustness cao trong môi trường thực tế.
+
+### 11.8. Ma trận hạn chế — tác động — hành động khắc phục
+
+| Hạn chế | Mức ảnh hưởng | Hành động kỹ thuật | Bằng chứng cần nộp |
+|---|---|---|---|
+| Detector audio recall=0 | Rất cao đối với kết luận steganalysis audio | Phân tích feature, thiết kế feature theo thời gian/đa kênh, hiệu chuẩn trên validation độc lập | Báo cáo confusion matrix, threshold, held-out test |
+| Sleepy Alarm cần reference | Cao đối với khả năng áp dụng blind | Ước lượng nền không reference hoặc thay bằng detector carrier/ASK trực tiếp | So sánh reference-free/reference-assisted trên nhiều audio |
+| Blue 3 nhạy resize/JPEG/noise | Cao đối với khả năng phục hồi sau xử lý ảnh | Tách lỗi vùng, màu nền và sai khác pixel; thử decoder tolerant/error correction | BER và recovery rate theo từng mức biến đổi |
+| Dataset nhỏ, positive phụ thuộc cùng nguồn | Rất cao đối với tổng quát hóa | Thu thập challenge/cover độc lập và chia split theo nguồn | Manifest dataset, nguồn, hash, phân hoạch |
+| Ngưỡng heuristic đặt thủ công | Cao đối với tính khách quan detector | Validation-only threshold selection; không tuning trên test | Tệp cấu hình ngưỡng và log chọn threshold |
+| Thiếu metric chất lượng cover | Trung bình/cao | Tính PSNR/SSIM cho ảnh và SNR/PESQ hoặc metric phù hợp cho audio nếu có cover/reference | Bảng metric kèm giải thích giới hạn |
+| Log test cũ chỉ có sáu test | Cao đối với tính tái lập revision hiện tại | Chạy full suite tại commit nộp bài và lưu stdout/stderr | Log có commit SHA, timestamp, số test |
+| Chưa benchmark tool ngoài | Trung bình | Chọn một số công cụ phù hợp và so sánh trên cùng corpus/điều kiện | Phiên bản, lệnh, runtime, metric và lỗi |
+
+### 11.9. Kế hoạch thực nghiệm tiếp theo và điều kiện dừng
+
+| Giai đoạn | Thí nghiệm | Biến độc lập | Chỉ số/đầu ra | Điều kiện kết thúc |
+|---|---|---|---|---|
+| P0 — xác nhận baseline | Chạy test, solver và benchmark hiện tại | Commit, môi trường | Test count, exact-match, JSON/CSV mới | Tất cả kết quả có hash và lệnh |
+| P1 — audio detector | Tạo tập benign/stego đa nguồn, chia theo nguồn | Carrier, gain, SNR, codec, loại âm thanh | Recall, precision, F1, FPR, PR curve | Có test độc lập; không chọn threshold trên test |
+| P2 — image robustness | Sweep brightness/contrast/noise/crop/resize/JPEG | Cường độ và loại biến đổi | BER, ký tự khôi phục, exact-match | Có đường cong và baseline |
+| P2 — reference-free audio | Thử phát hiện ASK không reference và blind synchronization | Carrier offset, phase, baud, stereo | BER, byte error, exact-match | So sánh trực tiếp với reference-assisted |
+| P3 — generalization | Thử trên challenge/cover chưa xuất hiện trong phát triển | Nguồn dữ liệu, modality, phương pháp | Metric theo từng nhóm và tổng | Không rò rỉ nguồn giữa split |
+
+Các ngưỡng nghiệm thu đề xuất là tiêu chí cho công việc tương lai, không phải kết quả đã đạt. Với detector, ưu tiên tính hợp lệ của test độc lập trước mục tiêu con số; không đặt mục tiêu recall/accuracy rồi điều chỉnh tập kiểm thử để đạt. Với decoder, cần báo cả partial recovery và exact-match để tránh kết luận nhị phân quá mức.
+
 ## Tài liệu tham khảo
 
 [1] BYU-CSA, “Blue 3? — BYUCTF Forensics/Steganography,” README và flag chính thức, repository old-ctf-challenges, commit 18c8f246756e79069c1cb1753c8bfea5e73e31f5. https://github.com/BYU-CSA/old-ctf-challenges/tree/master/forensics-steganography/blue-3
