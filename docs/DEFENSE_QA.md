@@ -95,3 +95,18 @@ Trước buổi bảo vệ, hãy chuẩn bị câu trả lời cụ thể:
 5. Bạn sẽ thiết kế thí nghiệm tiếp theo nào, biến độc lập là gì và đo thành công bằng chỉ số nào?
 
 Không khai khống thời gian, screenshot, thao tác hoặc hoạt động chưa thực hiện.
+
+
+## 8. Đối chiếu với công cụ mã nguồn mở
+
+**Aperi'Solve có gì khác STEGO?**
+Aperi'Solve là nền tảng phân tích ảnh, trực quan hóa bit-plane và tích hợp nhiều công cụ như zsteg, steghide, outguess, exiftool, binwalk và foremost. STEGO không cạnh tranh về độ rộng detector; đồ án tập trung giải thích và tái hiện hai cơ chế challenge cụ thể. Blue 3 dùng tổng sai khác RGB theo vùng, không phải LSB.
+
+**The-A-Files gợi ý điều gì cho đánh giá audio?**
+Repository này tách payload recovery, signal quality, robustness, capacity và detectability, đồng thời mô tả nhiều phương pháp và phép attack. STEGO hiện mới có exact-match và một tập phép biến đổi nhỏ trên một challenge ASK. Muốn mở rộng cần thêm corpus, BER, metric chất lượng và nhiều mức cường độ attack.
+
+**Có thể nói STEGO tốt hơn các repository trên không?**
+Không. Chưa có benchmark trực tiếp trên cùng dữ liệu, cùng môi trường và cùng tiêu chí. Có thể kết luận STEGO có phạm vi hẹp nhưng có phân tích chi tiết hai challenge; không thể kết luận vượt trội về hiệu năng hoặc khả năng phát hiện tổng quát.
+
+**Vì sao chưa dùng Aperi'Solve hoặc LSB tools để giải hai challenge?**
+Các công cụ đó tập trung vào nhiều họ steganography phổ biến, đặc biệt bit-plane/LSB và metadata. Blue 3 dùng tổng sai khác RGB theo vùng; Sleepy Alarm dùng ASK 8 kHz và cần reference alignment. Chúng có thể là công cụ khảo sát bổ sung, nhưng không mặc nhiên là decoder tương thích với hai cơ chế này.
