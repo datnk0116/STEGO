@@ -43,7 +43,17 @@ class SleepyAlarmSolverTests(unittest.TestCase):
             2 * np.pi * 8000 * sample_index / sample_rate
         )
 
-        distributed = background.copy()
+        # Simulate a small encoder-delay/track-alignment lead-in: the target
+        # track's background begins later than the reference. The ASK payload
+        # itself still starts at sample zero of the distributed target.
+        lead_samples = 1729
+        lead_t = np.arange(lead_samples) / sample_rate
+        lead = np.column_stack([
+            0.04 * np.sin(2 * np.pi * 333 * lead_t),
+            0.03 * np.sin(2 * np.pi * 777 * lead_t),
+        ])
+        shifted_background = np.vstack([lead, background[:-lead_samples]])
+        distributed = shifted_background.copy()
         # The upstream MATLAB generator writes the ASK signal to column 1
         # (the first/left channel) only.
         distributed[:sample_count, 0] += carrier
@@ -64,6 +74,7 @@ class SleepyAlarmSolverTests(unittest.TestCase):
         self.assertEqual(result["byte_count"], 39)
         self.assertEqual(result["symbol_counts"]["separator"], 38)
         self.assertEqual(result["analysis_channel"], 0)
+        self.assertGreater(result["reference_prefix_samples_preserved"], 0)
         self.assertEqual(result["errors"], [])
 
 
