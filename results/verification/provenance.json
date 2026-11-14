@@ -1,29 +1,25 @@
 {
   "schema_version": 1,
-  "snapshot_type": "retrospective_migration",
-  "verification_id": null,
-  "created_at_utc": "2026-11-14T08:48:11.032042+00:00",
+  "snapshot_type": "generated_run",
+  "verification_id": "444080f65bea4319a36caf720f539678",
+  "created_at_utc": "2026-11-14T10:54:38.132445+00:00",
   "repository": "datnk0116/STEGO",
   "branch": "main",
-  "tested_commit": "766b4bc209faee944a1949b7021c79b239866e05",
+  "tested_commit": "38fbecab7aea8c241243fb50d044aea90ab657f7",
   "working_tree_before_run": {
-    "captured": false,
-    "clean": null,
-    "status_short": null,
-    "changed_paths": [],
-    "note": "The historical run did not record pre-run status. Existing git.status_short was captured after the gate rewrote its test log and cannot reconstruct the pre-run state."
-  },
-  "working_tree_after_gate_generation": {
-    "status_short": "M results/logs/quality-gate-tests.log"
+    "captured": true,
+    "clean": true,
+    "status_short": "",
+    "changed_paths": []
   },
   "evidence_files": {
     "quality_gate_json": {
       "path": "results/verification/quality-gate.json",
-      "sha256": "be1d24859a4c202eb4ca6d4dbf3877284db6b800b80a6d097e6c9719418658f9"
+      "sha256": "ef09ca3d24592d3a0e5a1a96fc5b35da43bd464bbb113b70c4cb600a8f96b0e6"
     },
     "quality_gate_log": {
       "path": "results/logs/quality-gate-tests.log",
-      "sha256": "a7bd99c3715ae816dcf6db9c04ed1173ff1536b7c26b8e1ba06f51c9c3b1c84f"
+      "sha256": "9cbf2978008bd1777d4e944c12ed9d4851b7939a98288d5d9c5e693a836d2ca1"
     },
     "artifact_manifest": {
       "path": "results/artifact_manifest.json",
@@ -52,8 +48,8 @@
   ],
   "quality_gate": {
     "tests_passed": true,
-    "tests_run": 22,
-    "tests_expected": 22,
+    "tests_run": 38,
+    "tests_expected": 38,
     "exit_code": 0,
     "artifact_integrity_passed": true,
     "blue3_exact_match": true,
@@ -61,13 +57,12 @@
     "overall_passed": true
   },
   "limitations": [
-    "This is a retrospective migration of an existing verification run, not a new execution.",
-    "Sleepy Alarm reference-free extraction is not exact: the recorded run produced 26 characters and 49 separators.",
-    "The audio steganalysis benchmark has recall 0 on the small constructed benchmark; this is not a population-level performance estimate."
+    "Sleepy Alarm reference-free extraction did not exact-match in this run.",
+    "The quality gate validates pinned challenge artifacts and does not establish population-level robustness or general steganalysis."
   ],
   "submission_package": {
     "status": "not_verified",
     "built_from_commit": null,
-    "note": "Binary submission files exist, but their contents and build-input revision have not been independently validated in this migration."
+    "note": "Rebuild and inspect the DOCX/PDF/ZIP after report and package inputs are finalized; package freshness is separate from the technical gate."
   }
 }

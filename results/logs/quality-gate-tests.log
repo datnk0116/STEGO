@@ -6,6 +6,22 @@ test_decodes_with_modal_base_color_in_black_box_mode (test_blue3_solver.Blue3Sol
 test_blue3_official_artifact_exact_flag (test_official_artifacts.OfficialArtifactIntegrationTests.test_blue3_official_artifact_exact_flag) ... ok
 test_official_artifact_sha256 (test_official_artifacts.OfficialArtifactIntegrationTests.test_official_artifact_sha256) ... ok
 test_sleepy_alarm_official_artifact_exact_flag_with_reference (test_official_artifacts.OfficialArtifactIntegrationTests.test_sleepy_alarm_official_artifact_exact_flag_with_reference) ... ok
+test_artifact_hash_mismatch_fails (test_provenance_consistency.ProvenanceConsistencyTests.test_artifact_hash_mismatch_fails) ... ok
+test_documentation_only_commit_does_not_stale_gate (test_provenance_consistency.ProvenanceConsistencyTests.test_documentation_only_commit_does_not_stale_gate) ... ok
+test_gate_log_mismatch_fails (test_provenance_consistency.ProvenanceConsistencyTests.test_gate_log_mismatch_fails) ... ok
+test_gate_summary_mismatch_fails (test_provenance_consistency.ProvenanceConsistencyTests.test_gate_summary_mismatch_fails) ... ok
+test_legacy_commit_is_allowed_inside_historical_block (test_provenance_consistency.ProvenanceConsistencyTests.test_legacy_commit_is_allowed_inside_historical_block) ... ok
+test_missing_required_field_fails (test_provenance_consistency.ProvenanceConsistencyTests.test_missing_required_field_fails) ... ok
+test_non_ancestor_tested_commit_fails (test_provenance_consistency.ProvenanceConsistencyTests.test_non_ancestor_tested_commit_fails) ... ok
+test_nonexistent_tested_commit_fails (test_provenance_consistency.ProvenanceConsistencyTests.test_nonexistent_tested_commit_fails) ... ok
+test_outdated_document_status_block_fails (test_provenance_consistency.ProvenanceConsistencyTests.test_outdated_document_status_block_fails) ... ok
+test_precommit_snapshot_passes_before_evidence_commit (test_provenance_consistency.ProvenanceConsistencyTests.test_precommit_snapshot_passes_before_evidence_commit) ... ok
+test_retrospective_provenance_can_be_committed_after_historical_evidence (test_provenance_consistency.ProvenanceConsistencyTests.test_retrospective_provenance_can_be_committed_after_historical_evidence) ... ok
+test_source_change_after_run_marks_gate_stale (test_provenance_consistency.ProvenanceConsistencyTests.test_source_change_after_run_marks_gate_stale) ... ok
+test_submission_binary_change_marks_package_stale_not_gate_stale (test_provenance_consistency.ProvenanceConsistencyTests.test_submission_binary_change_marks_package_stale_not_gate_stale) ... ok
+test_submission_package_can_be_required_explicitly (test_provenance_consistency.ProvenanceConsistencyTests.test_submission_package_can_be_required_explicitly) ... ok
+test_uncommitted_submission_binary_is_reported (test_provenance_consistency.ProvenanceConsistencyTests.test_uncommitted_submission_binary_is_reported) ... ok
+test_valid_committed_snapshot_passes (test_provenance_consistency.ProvenanceConsistencyTests.test_valid_committed_snapshot_passes) ... ok
 test_blue_exact_candidate_has_full_similarity (test_robustness_metrics.RobustnessMetricsTests.test_blue_exact_candidate_has_full_similarity) ... ok
 test_blue_partial_candidate_reports_edit_distance (test_robustness_metrics.RobustnessMetricsTests.test_blue_partial_candidate_reports_edit_distance) ... ok
 test_expected_ask_stream_has_documented_symbol_count (test_robustness_metrics.RobustnessMetricsTests.test_expected_ask_stream_has_documented_symbol_count) ... ok
@@ -22,6 +38,6 @@ test_textured_image_is_not_flagged (test_steganalysis.SteganalysisTests.test_tex
 test_uniform_image_is_flagged_by_explicit_heuristic (test_steganalysis.SteganalysisTests.test_uniform_image_is_flagged_by_explicit_heuristic) ... ok
 
 ----------------------------------------------------------------------
-Ran 22 tests in 0.949s
+Ran 38 tests in 5.358s
 
 OK

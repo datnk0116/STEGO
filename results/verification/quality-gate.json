@@ -1,10 +1,15 @@
 {
   "schema_version": 1,
-  "created_at_utc": "2026-11-14T08:48:11.032042+00:00",
+  "created_at_utc": "2026-11-14T10:54:38.132445+00:00",
   "git": {
-    "commit": "766b4bc209faee944a1949b7021c79b239866e05",
+    "commit": "38fbecab7aea8c241243fb50d044aea90ab657f7",
     "branch": "main",
-    "status_short": "M results/logs/quality-gate-tests.log"
+    "working_tree_before_run": {
+      "captured": true,
+      "clean": true,
+      "status_short": "",
+      "changed_paths": []
+    }
   },
   "environment": {
     "platform": "macOS-15.7.4-arm64-arm-64bit-Mach-O",
@@ -22,12 +27,12 @@
   "unit_tests": {
     "command": "python -m unittest discover -s tests -v",
     "exit_code": 0,
-    "expected_test_methods": 22,
-    "tests_run": 22,
+    "expected_test_methods": 38,
+    "tests_run": 38,
     "test_count_matches_source": true,
     "passed": true,
     "log": "results/logs/quality-gate-tests.log",
-    "tail": "\ntest_official_artifact_sha256 (test_official_artifacts.OfficialArtifactIntegrationTests.test_official_artifact_sha256) ... ok\ntest_sleepy_alarm_official_artifact_exact_flag_with_reference (test_official_artifacts.OfficialArtifactIntegrationTests.test_sleepy_alarm_official_artifact_exact_flag_with_reference) ... ok\ntest_blue_exact_candidate_has_full_similarity (test_robustness_metrics.RobustnessMetricsTests.test_blue_exact_candidate_has_full_similarity) ... ok\ntest_blue_partial_candidate_reports_edit_distance (test_robustness_metrics.RobustnessMetricsTests.test_blue_partial_candidate_reports_edit_distance) ... ok\ntest_expected_ask_stream_has_documented_symbol_count (test_robustness_metrics.RobustnessMetricsTests.test_expected_ask_stream_has_documented_symbol_count) ... ok\ntest_levenshtein_handles_insertions_and_deletions (test_robustness_metrics.RobustnessMetricsTests.test_levenshtein_handles_insertions_and_deletions) ... ok\ntest_missing_blue_candidate_is_not_reported_as_zero_edit_distance (test_robustness_metrics.RobustnessMetricsTests.test_missing_blue_candidate_is_not_reported_as_zero_edit_distance) ... ok\ntest_sleepy_metrics_count_bit_and_separator_errors_separately (test_robustness_metrics.RobustnessMetricsTests.test_sleepy_metrics_count_bit_and_separator_errors_separately) ... ok\ntest_sleepy_metrics_reject_wrong_symbol_count (test_robustness_metrics.RobustnessMetricsTests.test_sleepy_metrics_reject_wrong_symbol_count) ... ok\ntest_sleepy_perfect_symbol_stream_has_zero_error_rates (test_robustness_metrics.RobustnessMetricsTests.test_sleepy_perfect_symbol_stream_has_zero_error_rates) ... ok\ntest_decodes_39_byte_ask_message_from_first_stereo_channel (test_sleepy_alarm_solver.SleepyAlarmSolverTests.test_decodes_39_byte_ask_message_from_first_stereo_channel) ... ok\ntest_ask_like_modulation_is_flagged (test_steganalysis.SteganalysisTests.test_ask_like_modulation_is_flagged) ... ok\ntest_audio_features_are_finite (test_steganalysis.SteganalysisTests.test_audio_features_are_finite) ... ok\ntest_broadband_noise_is_not_flagged (test_steganalysis.SteganalysisTests.test_broadband_noise_is_not_flagged) ... ok\ntest_textured_image_is_not_flagged (test_steganalysis.SteganalysisTests.test_textured_image_is_not_flagged) ... ok\ntest_uniform_image_is_flagged_by_explicit_heuristic (test_steganalysis.SteganalysisTests.test_uniform_image_is_flagged_by_explicit_heuristic) ... ok\n\n----------------------------------------------------------------------\nRan 22 tests in 0.949s\n\nOK\n"
+    "tail": "d_explicitly) ... ok\ntest_uncommitted_submission_binary_is_reported (test_provenance_consistency.ProvenanceConsistencyTests.test_uncommitted_submission_binary_is_reported) ... ok\ntest_valid_committed_snapshot_passes (test_provenance_consistency.ProvenanceConsistencyTests.test_valid_committed_snapshot_passes) ... ok\ntest_blue_exact_candidate_has_full_similarity (test_robustness_metrics.RobustnessMetricsTests.test_blue_exact_candidate_has_full_similarity) ... ok\ntest_blue_partial_candidate_reports_edit_distance (test_robustness_metrics.RobustnessMetricsTests.test_blue_partial_candidate_reports_edit_distance) ... ok\ntest_expected_ask_stream_has_documented_symbol_count (test_robustness_metrics.RobustnessMetricsTests.test_expected_ask_stream_has_documented_symbol_count) ... ok\ntest_levenshtein_handles_insertions_and_deletions (test_robustness_metrics.RobustnessMetricsTests.test_levenshtein_handles_insertions_and_deletions) ... ok\ntest_missing_blue_candidate_is_not_reported_as_zero_edit_distance (test_robustness_metrics.RobustnessMetricsTests.test_missing_blue_candidate_is_not_reported_as_zero_edit_distance) ... ok\ntest_sleepy_metrics_count_bit_and_separator_errors_separately (test_robustness_metrics.RobustnessMetricsTests.test_sleepy_metrics_count_bit_and_separator_errors_separately) ... ok\ntest_sleepy_metrics_reject_wrong_symbol_count (test_robustness_metrics.RobustnessMetricsTests.test_sleepy_metrics_reject_wrong_symbol_count) ... ok\ntest_sleepy_perfect_symbol_stream_has_zero_error_rates (test_robustness_metrics.RobustnessMetricsTests.test_sleepy_perfect_symbol_stream_has_zero_error_rates) ... ok\ntest_decodes_39_byte_ask_message_from_first_stereo_channel (test_sleepy_alarm_solver.SleepyAlarmSolverTests.test_decodes_39_byte_ask_message_from_first_stereo_channel) ... ok\ntest_ask_like_modulation_is_flagged (test_steganalysis.SteganalysisTests.test_ask_like_modulation_is_flagged) ... ok\ntest_audio_features_are_finite (test_steganalysis.SteganalysisTests.test_audio_features_are_finite) ... ok\ntest_broadband_noise_is_not_flagged (test_steganalysis.SteganalysisTests.test_broadband_noise_is_not_flagged) ... ok\ntest_textured_image_is_not_flagged (test_steganalysis.SteganalysisTests.test_textured_image_is_not_flagged) ... ok\ntest_uniform_image_is_flagged_by_explicit_heuristic (test_steganalysis.SteganalysisTests.test_uniform_image_is_flagged_by_explicit_heuristic) ... ok\n\n----------------------------------------------------------------------\nRan 38 tests in 5.358s\n\nOK\n"
   },
   "artifact_integrity": {
     "blue3": {
