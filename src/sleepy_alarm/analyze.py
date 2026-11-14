@@ -56,16 +56,21 @@ def main() -> int:
         except ValueError as exc:
             p.error(str(exc))
         residual = aligned_target - aligned_ref
-        # Cross-correlation removes the MP3 encoder-delay offset. The
-        # aligned residual therefore begins at source sample zero, where the
-        # creator's 7-second ASK payload starts. Do not prepend encoder-delay
-        # samples from the unaligned distributed file.
-        analysis_signal = residual
+        # The leading samples may contain the beginning of the injected ASK
+        # signal even though they do not overlap the original reference.
+        # Preserve them and append only the aligned residual after that prefix.
+        if alignment_info["channel_handling"] == "downmixed_to_mono":
+            raw_prefix = audio.mean(axis=1, keepdims=True)
+        else:
+            raw_prefix = audio
+        target_start = int(alignment_info["target_start_sample"])
+        prefix = raw_prefix[:target_start] if target_start > 0 else raw_prefix[:0]
+        analysis_signal = np.concatenate((prefix, residual), axis=0)
         reference_info = {
             "file": str(args.reference),
             "sha256": sha256(args.reference),
             **alignment_info,
-            "discarded_encoder_delay_samples": int(alignment_info["target_start_sample"]),
+            "preserved_prefix_samples": int(len(prefix)),
             "difference_rms": float(np.sqrt(np.mean(residual**2))),
             "difference_peak": float(np.max(np.abs(residual))),
         }
@@ -73,7 +78,7 @@ def main() -> int:
     # channel only. Analyze that channel; averaging stereo halves the payload.
     analysis_channel = 0
     analysis_mono = analysis_signal[:, analysis_channel]
-    # Aligned residual sample zero corresponds to the source track start.
+    # Full distributed-stream timeline is restored by prefix + aligned residual.
     symbol_phase = 0
     transmission_samples = int(round(7.0 * sr))
     end_sample = min(len(analysis_mono), symbol_phase + transmission_samples)
@@ -91,7 +96,7 @@ def main() -> int:
     plt.figure(figsize=(12, 3))
     plt.plot(t, analysis_mono, linewidth=0.5)
     plt.xlabel("Time (s)"); plt.ylabel("Amplitude")
-    plt.title("ASK analysis signal (left channel; aligned residual)" if args.reference else "ASK analysis signal (left channel)")
+    plt.title("ASK analysis signal (left channel; preserved prefix + aligned residual)" if args.reference else "ASK analysis signal (left channel)")
     plt.tight_layout(); plt.savefig(waveform_path, dpi=160); plt.close()
     plt.figure(figsize=(12, 4))
     plt.pcolormesh(times, freqs, 20*np.log10(np.maximum(magnitude, 1e-12)),
@@ -110,7 +115,7 @@ def main() -> int:
         plt.figure(figsize=(12, 3))
         plt.plot(np.arange(len(analysis_mono))/sr, analysis_mono, linewidth=0.5)
         plt.xlabel("Time (s)"); plt.ylabel("Amplitude")
-        plt.title("Aligned distributed audio minus original reference")
+        plt.title("Distributed prefix + aligned residual (ASK timeline)")
         plt.tight_layout(); plt.savefig(difference_path, dpi=160); plt.close()
         reference_plot = str(difference_path)
     # Isolate the ASK carrier and inspect its envelope. This complements the
@@ -134,8 +139,8 @@ def main() -> int:
         "file": str(args.audio),
         "analysis_channel": analysis_channel,
         "symbol_clock_phase_samples_after_alignment": symbol_phase,
-        "discarded_encoder_delay_samples": (
-            int(reference_info["discarded_encoder_delay_samples"]) if reference_info else 0
+        "preserved_prefix_samples": (
+            int(reference_info["preserved_prefix_samples"]) if reference_info else 0
         ),
         "expected_ask_symbols": 350, "sha256": sha256(args.audio),
         "format": sf.info(args.audio).format, "subtype": sf.info(args.audio).subtype,
