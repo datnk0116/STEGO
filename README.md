@@ -85,6 +85,17 @@ python src/experiments/sleepy_alarm_robustness.py \
   --expected 'ictf{1_sl33py_NaYuKi_alarm_2a634dc1bb2}'
 ```
 
+Additional one-sided robustness experiment (transforms target and reference separately):
+
+```bash
+python src/experiments/sleepy_alarm_asymmetric_robustness.py \\
+  data/sleepy_alarm/morning_n_breakfast.mp3 \\
+  --reference data/sleepy_alarm/morning_n_breakfast_original.mp3 \\
+  --expected 'ictf{1_sl33py_NaYuKi_alarm_2a634dc1bb2}'
+```
+
+This writes `asymmetric_robustness.json` and `asymmetric_robustness.csv` under `results/sleepy_alarm/asymmetric_robustness/`. The run is intentionally separate from the already measured paired-transform results; do not report outcomes until it has been executed.
+
 The expected flag is taken from the official creator bitmap solely for exact validation. The decoder must reconstruct the text from the distributed MP3; it must not read the expected text as its extraction input. A structural-only run without `--expected` reports `success: null` and `format_valid` separately.
 
 ## Build the submission locally (no GitHub Actions run required)
