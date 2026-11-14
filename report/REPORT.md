@@ -143,9 +143,7 @@ Một ký tự ASCII gồm 8 bit. Flag dài 39 ký tự nên có 312 bit. Genera
 
 Biến đổi Fourier rời rạc:
 
-**DFT:** `X[k] = Σ_(n=0)^(N−1) x[n] · exp(−j·2π·k·n/N)`. Độ phân giải tần số của FFT N điểm là `Δf = f_s / N`.
-
-Độ phân giải tần số của FFT N điểm là Δf = fs/N. FFT trên toàn file phù hợp để xác định peak tần số nhưng không cho biết peak xuất hiện ở thời điểm nào. STFT chia tín hiệu thành các cửa sổ ngắn; spectrogram biểu diễn năng lượng theo thời gian và tần số. Sau khi lọc băng quanh sóng mang, analytic signal/Hilbert transform có thể dùng để lấy envelope, từ đó ước lượng mức biên độ trong phần giữa mỗi symbol.
+**DFT:** `X[k] = Σ_(n=0)^(N−1) x[n] · exp(−j·2π·k·n/N)`. Độ phân giải tần số là `Δf = f_s / N`. FFT trên toàn file phù hợp để xác định peak tần số nhưng không cho biết peak xuất hiện ở thời điểm nào. STFT chia tín hiệu thành các cửa sổ ngắn; spectrogram biểu diễn năng lượng theo thời gian và tần số. Sau khi lọc băng quanh sóng mang, analytic signal/Hilbert transform có thể dùng để lấy envelope, từ đó ước lượng mức biên độ trong phần giữa mỗi symbol.
 
 Đối với Sleepy Alarm, các tham số quan trọng là tần số cắt bộ lọc, kích thước cửa sổ STFT, hop length, vị trí bắt đầu symbol và cách xử lý âm thanh nền. Spectrogram không phải bằng chứng duy nhất; kết luận phải phù hợp với số symbol, mức biên độ, cấu trúc byte và độ dài flag được challenge gợi ý.
 
