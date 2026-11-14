@@ -8,7 +8,7 @@
 
 > **Sidenote hành chính:** Các trường thông tin cá nhân trên trang bìa hiện chưa được điền trong repository. Theo phạm vi rà soát kỹ thuật hiện tại, các trường này được xem là phần hành chính cần bổ sung khi xuất bản nộp bài, không dùng để đánh giá mức độ hoàn thành kỹ thuật của đồ án.
 
-> **Trạng thái bằng chứng:** Blue 3 và Sleepy Alarm đều đã được giải từ artifact chính thức, đối chiếu với ground truth của ban tổ chức. Sleepy Alarm khôi phục đúng 39 ký tự, 350 symbol và 38 separator. Repository hiện có 11 test case (6 test hồi quy cũ và 5 test steganalysis mới), nhưng log đã lưu chỉ xác nhận lần chạy cũ gồm 6 test; cần chạy lại toàn bộ suite để xác nhận trạng thái hiện tại. Benchmark detector và robustness mở rộng đã có JSON/CSV; detector audio recall=0, reference-free audio thất bại, Blue 3 đạt 1/9 và audio matrix đạt 7/23 trial. Nhật ký thời lượng làm việc cá nhân vẫn cần được người thực hiện điền theo thời gian thực tế.
+> **Trạng thái bằng chứng:** Blue 3 và Sleepy Alarm đều đã được giải từ artifact chính thức, đối chiếu với ground truth của ban tổ chức. Sleepy Alarm khôi phục đúng 39 ký tự, 350 symbol và 38 separator. Source hiện có 22 test methods (11 test cũ, 3 integration tests trên artifact chính thức và 8 test metric). Log lịch sử vẫn chỉ xác nhận 6 test ở revision cũ; cần chạy quality gate để xác nhận 22 test trên commit hiện tại. Benchmark detector và robustness mở rộng đã có JSON/CSV; detector audio recall=0, reference-free audio thất bại, Blue 3 đạt 1/9 và audio matrix đạt 7/23 trial. Nhật ký thời lượng làm việc cá nhân vẫn cần được người thực hiện điền theo thời gian thực tế.
 
 ---
 
@@ -88,7 +88,7 @@ Các giả thuyết:
 | Tiêu chí | Điểm tối đa | Minh chứng chính |
 |---|---:|---|
 | Lập kế hoạch và biện minh | 2,0 | Mục 1: RQ/H1–H3, so sánh phương án, lý do chọn hai challenge cùng chủ đề |
-| Triển khai và tài liệu hóa | 4,0 | Mục 3–8: artifact và SHA-256, lệnh, decoder, 11 test case trong source (chưa xác nhận cùng một lần chạy), hình và CSV/JSON đã lưu |
+| Triển khai và tài liệu hóa | 4,0 | Mục 3–8: artifact và SHA-256, lệnh, decoder, 22 test methods trong source (chưa xác nhận pass trên revision hiện tại), hình và CSV/JSON đã lưu |
 | Phân tích kết quả | 2,0 | Mục 2, 5, 6, 9, 10: chứng minh toán học, 350 symbol ASK, lỗi và điều kiện giải |
 | Đánh giá, phản biện và tự học | 2,0 | Mục 11.1–11.9: hạn chế định lượng, threat model, validity, phản biện hai decoder, benchmark detector, ma trận khắc phục và kế hoạch học tiếp |
 
@@ -705,7 +705,7 @@ python src/experiments/sleepy_alarm_robustness_matrix.py data/sleepy_alarm/morni
 
 Các hạng mục kỹ thuật sau đã có bằng chứng trong repository; trước khi nộp chỉ cần xác nhận bản build cuối cùng không bị thay đổi:
 - [ ] Điền họ tên, MSSV, lớp, ngày nộp và hạn nộp trên trang đầu và metadata.
-- [ ] Chạy lại toàn bộ test suite (hiện có 11 test case trong source), lưu log mới thay cho log lịch sử 6 test; chạy benchmark detector và hai robustness script mới, kiểm tra output CSV/JSON.
+- [ ] Chạy `python scripts/verify_reproducibility.py`; xác nhận 22 test methods pass, ba artifact đúng hash và hai decoder exact-match; lưu quality-gate JSON/log cùng commit SHA. Chạy lại hai robustness matrix để sinh BER/edit-distance mới.
 - [ ] Hoàn thiện logbook bằng giờ làm thực tế và rà soát phản tư cá nhân tại mục 11.5; không ước lượng thời lượng.
 - [ ] Mở PDF cuối và kiểm tra từng trang ở mức phóng đại đọc được: không mất chữ, không cắt hình, bảng không tràn lề, công thức hiển thị đúng.
 - [ ] Xác nhận phần nội dung chính không vượt 15 trang; phụ lục và tài liệu tham khảo nằm ngoài phạm vi đếm theo assignment.
