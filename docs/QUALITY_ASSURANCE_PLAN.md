@@ -15,6 +15,8 @@
 
 Kế hoạch này đặt tiêu chí nghiệm thu ở mức cao nhất của rubric, tập trung vào tính đúng đắn, khả năng tái lập, chất lượng bằng chứng và phản biện kỹ thuật. Source, tests, dữ liệu challenge, kết quả JSON/CSV, log kỹ thuật và báo cáo Markdown là các lớp bằng chứng liên kết với nhau. DOCX/PDF/ZIP, thông tin hành chính và logbook là các hạng mục hoàn thiện hồ sơ riêng, vẫn phải được kiểm tra trước khi nộp. Không tự chấm điểm thay giảng viên; không suy diễn trải nghiệm cá nhân hoặc thời lượng làm việc từ commit.
 
+Backlog sửa repository theo từng file, thứ tự phụ thuộc và điều kiện nghiệm thu được duy trì tại [docs/IMPLEMENTATION_ROADMAP.md](IMPLEMENTATION_ROADMAP.md).
+
 Rubric mức Xuất sắc đòi hỏi: có tư duy thiết kế và so sánh phương án; tài liệu hóa sâu, quy trình đáng tin cậy và tái hiện được; phân tích chặt chẽ cả rủi ro/dấu hiệu phát hiện/biện pháp khắc phục; đánh giá chín chắn, có nguồn và chỉ ra hướng học tiếp.
 
 ## 2. Trạng thái provenance và bằng chứng đã ghi nhận

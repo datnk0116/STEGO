@@ -88,7 +88,7 @@ class ProvenanceConsistencyTests(unittest.TestCase):
                 "sleepy_alarm_reference_assisted_exact_match": True, "overall_passed": True,
             },
             "limitations": ["Synthetic fixture only."],
-            "submission_package": {"status": "not_verified", "built_from_commit": None},
+            "submission_package": {"status": "not_verified", "built_from_commit": tested},
         }
         self.writej(PROVENANCE, provenance)
 
@@ -132,7 +132,8 @@ class ProvenanceConsistencyTests(unittest.TestCase):
         self.commit("docs update")
         result = validate_repository(self.root)
         self.assertTrue(result.passed, result.errors)
-        self.assertEqual(result.derived["submission_package_freshness"], "NOT_VERIFIED")
+        self.assertEqual(result.derived["submission_package_freshness"], "STALE")
+        self.assertEqual(result.derived["change_classification"]["technical_gate"], [])
 
     def test_retrospective_provenance_can_be_committed_after_historical_evidence(self):
         gate = self.readj(GATE_JSON)
@@ -149,6 +150,15 @@ class ProvenanceConsistencyTests(unittest.TestCase):
         result = validate_repository(self.root)
         self.assertTrue(result.passed, result.errors)
         self.assertEqual(result.derived["evidence_commit"], self.evidence)
+
+    def test_submission_binary_change_marks_package_stale_not_gate_stale(self):
+        self.write("results/submission/mock.pdf", b"changed submission bytes\n")
+        self.commit("replace package binary")
+        result = validate_repository(self.root)
+        self.assertTrue(result.passed, result.errors)
+        self.assertEqual(result.derived["submission_package_freshness"], "STALE")
+        self.assertEqual(result.derived["change_classification"]["technical_gate"], [])
+        self.assertIn("results/submission/mock.pdf", result.derived["change_classification"]["submission_package"])
 
     def test_artifact_hash_mismatch_fails(self):
         self.write("data/challenge.bin", b"tampered\n")

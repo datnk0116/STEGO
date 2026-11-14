@@ -22,6 +22,8 @@ A passing synthetic unit test does not prove that the official challenge artifac
 
 ## Repository structure
 
+The prioritized remaining work, file-by-file changes and acceptance criteria are tracked in [docs/IMPLEMENTATION_ROADMAP.md](docs/IMPLEMENTATION_ROADMAP.md).
+
 - `data/`: the three official challenge artifacts and provenance notes.
 - `src/solve_challenges.py`: Blue 3 and Sleepy Alarm decoders.
 - `src/audio_alignment.py`: reference resampling and time alignment.

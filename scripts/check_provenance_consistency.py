@@ -15,9 +15,9 @@ HIST_START, HIST_END = "<!-- HISTORICAL_PROVENANCE_START -->", "<!-- HISTORICAL_
 STATUS_BODY = "**Verification provenance:** The canonical run record is results/verification/provenance.json. tested_commit identifies the source revision actually executed. The evidence-packaging commit and current HEAD are derived from Git history by scripts/check_provenance_consistency.py; they are not copied into this snapshot. Documentation-only changes do not stale the technical gate. Changes to source, tests, challenge data, dependencies, artifact manifest, or gate implementation do. Submission-package freshness is assessed separately."
 OLD_REFS = ("a040e3863145038b786ba6719629e636fdf2e565", "a040e38", "3bb2b57790d164a6997ee1afe157a0fc7a8a8807", "3bb2b57")
 GATE_OUTPUTS = {PROVENANCE, GATE_JSON, GATE_LOG}
-TECH_EXACT = {"requirements.txt", "pyproject.toml", "uv.lock", "poetry.lock", "Pipfile", "Pipfile.lock", "setup.cfg", "tox.ini", "pytest.ini", ".python-version", MANIFEST, "scripts/verify_reproducibility.py", "scripts/check_provenance_consistency.py"}
+TECH_EXACT = {"requirements.txt", "pyproject.toml", "uv.lock", "poetry.lock", "Pipfile", "Pipfile.lock", "setup.cfg", "tox.ini", "pytest.ini", ".python-version", "Dockerfile", "Makefile", "setup.py", "environment.yml", ".gitmodules", MANIFEST, "scripts/verify_reproducibility.py", "scripts/check_provenance_consistency.py"}
 TECH_PREFIX = ("src/", "tests/", "data/", ".github/workflows/")
-PACKAGE_EXACT = {"README.md", "requirements.txt", "pyproject.toml", "uv.lock", "poetry.lock", "Pipfile", "Pipfile.lock", "scripts/build_submission.py", "report/REPORT.md"}
+PACKAGE_EXACT = {"README.md", "requirements.txt", "pyproject.toml", "uv.lock", "poetry.lock", "Pipfile", "Pipfile.lock", "Dockerfile", "Makefile", "setup.py", "environment.yml", "scripts/build_submission.py", "report/REPORT.md"}
 PACKAGE_PREFIX = ("src/", "tests/", "scripts/", "data/", "docs/", "references/", "report/")
 RESULT_PREFIX = ("results/blue3/", "results/sleepy_alarm/", "results/steganalysis/")
 
@@ -78,7 +78,10 @@ def changed(root, a, b):
 def classify(paths):
     result = {"technical_gate": [], "submission_package": [], "experiment_results": [], "documentation_only": []}
     for path in paths:
-        if path in GATE_OUTPUTS or path.startswith("results/submission/"): continue
+        if path in GATE_OUTPUTS: continue
+        if path.startswith("results/submission/"):
+            result["submission_package"].append(path)
+            continue
         if path in TECH_EXACT or path.startswith(TECH_PREFIX): result["technical_gate"].append(path)
         elif path in PACKAGE_EXACT or path.startswith(PACKAGE_PREFIX): result["submission_package"].append(path)
         elif path.startswith(RESULT_PREFIX) or path.startswith("results/"): result["experiment_results"].append(path)
