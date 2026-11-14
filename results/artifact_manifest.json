@@ -1,0 +1,20 @@
+[
+  {
+    "path": "data/blue3/blue.png",
+    "bytes": 9406,
+    "sha256": "009dab85bf6ccc5b42b8efa5f959ab6efa0c556b37eb6b4a77a21ec3356b721e",
+    "source": "https://github.com/BYU-CSA/old-ctf-challenges/tree/master/forensics-steganography/blue-3"
+  },
+  {
+    "path": "data/sleepy_alarm/morning_n_breakfast.mp3",
+    "bytes": 179283,
+    "sha256": "bd181876c2d28152b9c3982fd88945d4e681fd93d49477622ea5841a3ff25ae2",
+    "source": "https://github.com/ImaginaryCTF/ImaginaryCTF-2024-Challenges/tree/main/Forensics/Sleepy%20Alarm"
+  },
+  {
+    "path": "data/sleepy_alarm/morning_n_breakfast_original.mp3",
+    "bytes": 160495,
+    "sha256": "d0c283834955e54d68b0bba723ccd194142a428d2de74722e5f1dff3ccbd94ad",
+    "source": "https://github.com/ImaginaryCTF/ImaginaryCTF-2024-Challenges/tree/main/Forensics/Sleepy%20Alarm"
+  }
+]

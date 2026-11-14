@@ -1,0 +1,36 @@
+test_aligns_integer_offset_and_returns_equal_overlap (test_audio_alignment.AudioAlignmentTests.test_aligns_integer_offset_and_returns_equal_overlap) ... ok
+test_channel_mismatch_is_downmixed (test_audio_alignment.AudioAlignmentTests.test_channel_mismatch_is_downmixed) ... ok
+test_resamples_reference_before_alignment (test_audio_alignment.AudioAlignmentTests.test_resamples_reference_before_alignment) ... ok
+test_cli_black_box_mode_does_not_require_base_color (test_blue3_cli.Blue3CliTests.test_cli_black_box_mode_does_not_require_base_color) ... ok
+test_decodes_with_modal_base_color_in_black_box_mode (test_blue3_solver.Blue3SolverTests.test_decodes_with_modal_base_color_in_black_box_mode) ... ok
+test_decodes_39_byte_ask_message_from_first_stereo_channel (test_sleepy_alarm_solver.SleepyAlarmSolverTests.test_decodes_39_byte_ask_message_from_first_stereo_channel) ... ERROR
+
+======================================================================
+ERROR: test_decodes_39_byte_ask_message_from_first_stereo_channel (test_sleepy_alarm_solver.SleepyAlarmSolverTests.test_decodes_39_byte_ask_message_from_first_stereo_channel)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/runner/work/STEGO/STEGO/tests/test_sleepy_alarm_solver.py", line 77, in test_decodes_39_byte_ask_message_from_first_stereo_channel
+    mismatch = solve_sleepy(
+        distributed_path,
+        reference=reference_path,
+        expected_text="ictf{" + ("y" * 33) + "}",
+    )
+  File "/home/runner/work/STEGO/STEGO/src/solve_challenges.py", line 85, in solve_sleepy
+    raw_target, sr = sf.read(path, always_2d=True, dtype="float64")
+                     ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.14.10/x64/lib/python3.14/site-packages/soundfile.py", line 313, in read
+    with SoundFile(file, 'r', samplerate, channels,
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                   subtype, endian, format, closefd) as f:
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.14.10/x64/lib/python3.14/site-packages/soundfile.py", line 708, in __init__
+    self._file = self._open(file, mode_int, closefd)
+                 ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.14.10/x64/lib/python3.14/site-packages/soundfile.py", line 1296, in _open
+    raise LibsndfileError(err, prefix=f"Error opening {self.name!r}: ")
+soundfile.LibsndfileError: Error opening '/tmp/tmplzv1tb7j/distributed.wav': System error.
+
+----------------------------------------------------------------------
+Ran 6 tests in 1.482s
+
+FAILED (errors=1)
