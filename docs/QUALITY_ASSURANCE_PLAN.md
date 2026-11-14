@@ -71,7 +71,7 @@ Các tài liệu đã được đồng bộ:
 - docs/QUALITY_GATE.md: phân biệt source commit được test với commit đóng gói output.
 - docs/DEFENSE_QA.md: câu trả lời vấn đáp nêu đúng 22/22 test, các metric mới và các giới hạn còn lại.
 - results/README.md: các output đã commit không còn bị đánh dấu pending.
-- docs/PLAN_9_6.md: phân biệt việc đã hoàn tất và hướng nghiên cứu còn mở.
+- docs/QUALITY_ASSURANCE_PLAN.md: phân biệt việc đã hoàn tất và hướng nghiên cứu còn mở.
 
 Không ghi lại kết quả lịch sử thành kết quả mới; không diễn giải metric như hiệu năng của quần thể.
 
@@ -126,30 +126,29 @@ Positive là các biến thể từ một artifact chính thức mỗi modality;
 - Sleepy Alarm: kết quả thành công hiện là reference-assisted; reference-free đã chạy nhưng thất bại. Không được gọi Sleepy Alarm là blind decoding.
 - Correlation gần 1 chỉ hỗ trợ ước lượng alignment, không bảo đảm scale của hai track tương thích hoặc phân loại ASK đúng.
 
-## 5. Ước lượng theo rubric sau đồng bộ
+## 5. Tiêu chí nghiệm thu theo rubric
 
-Đây là mục tiêu tự đánh giá dựa trên bằng chứng repository, không phải điểm bảo đảm:
-
-| Tiêu chí | Mục tiêu | Điều kiện |
-|---|---:|---|
-| 1. Lập kế hoạch và biện minh | 1,9/2,0 | Phạm vi nhất quán, so sánh lựa chọn, RQ/giả thuyết, nguồn và lý do chọn rõ |
-| 2. Triển khai và tài liệu hóa | 3,9/4,0 | 22/22 tests đã pass, hash đúng, hai decoder exact-match có điều kiện, output kỹ thuật tái lập |
-| 3. Phân tích kết quả | 1,9/2,0 | Phân tích chính xác cả exact-match và partial recovery, metric, thất bại, phòng thủ và giới hạn |
-| 4. Đánh giá, phản biện và tự học | 1,9/2,0 | Threat model, validity, giới hạn và kế hoạch học tiếp chín chắn; không nhận quá mức kết luận |
-| **Tổng mục tiêu** | **9,6/10** | Cần người thực hiện hiểu và trình diễn được code; giảng viên quyết định điểm cuối |
-
-## 6. Công việc còn lại và tiêu chí dừng
-
-| Ưu tiên | Công việc còn lại | Tiêu chí nghiệm thu |
+| Tiêu chí | Bằng chứng hiện có | Điều kiện hoàn thiện cuối |
 |---|---|---|
-| P3 | Kiểm tra lại trên môi trường local của người thực hiện | Gate exit 0; 22/22 test; hash đúng; hai decoder exact-match |
-| P4 | Chuẩn bị trình diễn kỹ thuật | Giải thích được Blue 3 pixel sum, ASK/IQ detection, alignment, BER/SER và giới hạn reference |
-| Nghiên cứu tiếp theo | Detector audio trên corpus độc lập | Split theo nguồn; threshold chỉ chọn trên validation; báo held-out confusion matrix |
-| Nghiên cứu tiếp theo | Reference-free Sleepy Alarm | Decoder không cần track gốc và được kiểm chứng trên nhiều file độc lập |
-| Nghiên cứu tiếp theo | Robustness nhiều challenge/cover | Có nhiều mẫu độc lập, sweep theo cường độ, metric và khoảng tin cậy phù hợp |
+| Lập kế hoạch và biện minh | Phạm vi hai challenge cùng chủ đề; RQ/H1–H3; so sánh phương án; nguồn gốc artifact và lý do lựa chọn | Giữ các giả định và giới hạn lựa chọn nhất quán trong report/README |
+| Triển khai và tài liệu hóa | Decoder hai challenge; 22/22 test ở gate đã ghi nhận; 3/3 hash đúng; kết quả JSON/CSV và log | Chạy gate trên working copy cuối; build PDF/ZIP; kiểm tra ZIP có đủ source, tests, script, data, report Markdown và evidence |
+| Phân tích kết quả | Exact-match, partial recovery, BER/SER, separator metrics, confusion matrix và phân tích failure | Không nâng kết luận vượt khỏi hai challenge và các phép biến đổi đã thử |
+| Đánh giá, phản biện và tự học | Threat model, validity, detector failure, reference dependency, robustness limits và hướng nghiên cứu tiếp | Phần phản tư cá nhân/logbook chỉ hoàn thiện từ ghi chú và trải nghiệm thật; không suy diễn từ commit hoặc tự tạo thời lượng |
 
-Các mục nghiên cứu tiếp theo không được trình bày như kết quả đã đạt. Không cần chạy lại ma trận robustness nếu source, input và tham số không thay đổi; output hiện tại đã được commit. Không cần gọi GitHub Actions cho quality gate.
+Bảng này là checklist chất lượng dựa trên rubric, không phải tự chấm điểm. Kết quả đánh giá chính thức thuộc về giảng viên.
 
+## 6. Công việc trước khi đóng gói nộp
+
+| Ưu tiên | Công việc | Điều kiện nghiệm thu |
+|---|---|---|
+| P0 | Chạy `python scripts/verify_reproducibility.py` trên working copy cuối | Exit code 0; 22/22 test; ba hash đúng; hai decoder exact-match trong điều kiện đã mô tả |
+| P0 | Chạy `python scripts/build_submission.py` | DOCX/PDF được sinh từ report Markdown hiện tại; PDF qua kiểm tra số trang; ZIP được tạo và mở/kiểm tra được |
+| P0 | Kiểm tra nội dung ZIP | Có README, source, tests, scripts, workflow, dữ liệu gốc, kết quả, báo cáo Markdown, references và docs; không có .venv, .git, file tạm hoặc ZIP lồng |
+| P1 | Hoàn thiện trang bìa và tên file | Thay các trường hành chính bằng thông tin đúng; dùng tên file nhất quán theo hướng dẫn môn học |
+| P1 | Hoàn thiện phản tư/logbook | Chỉ ghi những gì người thực hiện xác nhận từ ghi chú thực tế; để trống thời gian không xác định được thay vì dựng lại |
+| Khi được yêu cầu | Giải thích và tái hiện quy trình | Có thể mở source, nêu giả định, chạy lệnh và giải thích các giới hạn; không cần chuẩn bị thành bài thuyết trình nếu không được yêu cầu |
+
+Các nghiên cứu về detector đa nguồn, reference-free Sleepy Alarm và robustness trên nhiều challenge là hướng phát triển tiếp theo, không được trình bày như kết quả đã hoàn thành.
 ## 7. Command kiểm tra local cuối cùng
 
 Từ thư mục repository:
