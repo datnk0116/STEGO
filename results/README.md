@@ -16,7 +16,7 @@ All committed results must be produced by a recorded run. Use a dated folder suc
 - `sleepy_alarm/robustness/sleepy_alarm_robustness.csv` and `.json`: paired target/reference transform tests, only after baseline succeeds.
 - `sleepy_alarm/asymmetric_robustness/asymmetric_robustness.csv` and `.json`: target-only/reference-only transform tests, including decoded text, errors, clipping and alignment correlation.
 - `steganalysis/benchmark.csv` and `.json`: first-pass image/audio detector benchmark, fixed seed and confusion-matrix metrics; benign controls are synthetic and must not be described as a representative corpus.
-- `steganalysis/reference_free_trial.json`: Sleepy Alarm extraction attempt without the original/reference track; failure is a valid experimental outcome.
+- `steganalysis/reference_comparison.json`: paired comparison of Sleepy Alarm extraction with and without the original/reference track; failure is a valid experimental outcome.
 - `blue3/extended_robustness/`: brightness, contrast, blur, crop and seeded-noise trials.
 - `sleepy_alarm/robustness_matrix/`: one-sided gain, AWGN/SNR, band-pass and resampling trials.
 - Per-experiment command lines and outputs are recorded in the corresponding `results/logs/*.log`, JSON metadata and dated run notes. A consolidated `logs/commands.log` is not currently committed.
