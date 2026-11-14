@@ -90,7 +90,7 @@ Các giả thuyết:
 | Lập kế hoạch và biện minh | 2,0 | Mục 1: RQ/H1–H3, so sánh phương án, lý do chọn hai challenge cùng chủ đề |
 | Triển khai và tài liệu hóa | 4,0 | Mục 3–8: artifact và SHA-256, lệnh, decoder, 11 test case trong source (chưa xác nhận cùng một lần chạy), hình và CSV/JSON đã lưu |
 | Phân tích kết quả | 2,0 | Mục 2, 5, 6, 9, 10: chứng minh toán học, 350 symbol ASK, lỗi và điều kiện giải |
-| Đánh giá, phản biện và tự học | 2,0 | Mục 11: giới hạn reference-assisted, false positives, robustness và logbook cá nhân |
+| Đánh giá, phản biện và tự học | 2,0 | Mục 11.1–11.9: hạn chế định lượng, threat model, validity, phản biện hai decoder, benchmark detector, ma trận khắc phục và kế hoạch học tiếp |
 
 Bảng này là bản đồ đối chiếu với rubric, không phải tự chấm điểm. Điểm số chỉ do giảng viên quyết định dựa trên báo cáo và khả năng trình diễn lại.
 
@@ -612,9 +612,9 @@ Về giới hạn tự đánh giá, đồ án mới có heuristic detector và s
 
 Đồ án đã tái hiện thành công hai challenge cùng chủ đề Steganography nhưng khác miền dữ liệu. Blue 3 được giải bằng tổng sai khác RGB theo vùng đường chéo; Sleepy Alarm được giải bằng ASK 8 kHz/50 baud sau khi đồng bộ reference, bảo toàn prefix và dùng coherent I/Q projection theo từng symbol. Cả hai chuỗi trích xuất đều exact-match với ground truth từ nguồn chính thức.
 
-Các thí nghiệm cho thấy decoder Blue 3 không còn tìm được candidate sau JPEG quality 95/85/70 hoặc resize 0,75×/0,5×. Sleepy Alarm exact-match trong cả bốn trường hợp audio theo cặp; với biến đổi bất đối xứng, chỉ 3/6 phép thử PASS: hai phép resampling một phía thành công, còn bốn phép gain một phía thất bại. Kết quả cho thấy việc giữ tương quan nền cao không đủ để bảo đảm phân loại ASK đúng khi thang biên độ giữa target và reference không đồng nhất. Kết luận chỉ giới hạn ở hai challenge và đúng pipeline thực nghiệm này, không suy rộng thành nhận định cho mọi thuật toán steganography.
+Các thí nghiệm cho thấy decoder Blue 3 không còn tìm được candidate sau JPEG quality 95/85/70 hoặc resize 0,75×/0,5×. Không được diễn giải điều này thành bằng chứng payload bị xóa; đây chỉ là thất bại của decoder đang thử. Sleepy Alarm exact-match trong cả bốn trường hợp audio theo cặp; với biến đổi bất đối xứng, chỉ 3/6 phép thử PASS: hai phép resampling một phía thành công, còn bốn phép gain một phía thất bại. Kết quả cho thấy việc giữ tương quan nền cao không đủ để bảo đảm phân loại ASK đúng khi thang biên độ giữa target và reference không đồng nhất. Kết luận chỉ giới hạn ở hai challenge và đúng pipeline thực nghiệm này, không suy rộng thành nhận định cho mọi thuật toán steganography.
 
-Giá trị kỹ thuật của đồ án nằm ở việc tự triển khai hai decoder, giữ lại và phân tích lần giải mã thất bại, kiểm chứng bằng các regression tests đã lưu log lịch sử (sáu test trong lần chạy cũ; năm test mới cần xác nhận lại), dùng artifact có SHA-256 và lượng hóa robustness bằng CSV/JSON. Hướng tiếp theo trước mắt là chạy và lưu kết quả cho test suite/benchmark/robustness scripts mới, sau đó mở rộng corpus thực tế, hiệu chuẩn detector và cải thiện khả năng giải mã Sleepy Alarm không cần reference.
+Giá trị kỹ thuật của đồ án nằm ở việc tự triển khai hai decoder, giữ lại và phân tích lần giải mã thất bại, kiểm chứng bằng các regression tests đã lưu log lịch sử (sáu test trong lần chạy cũ; năm test mới cần xác nhận lại), dùng artifact có SHA-256 và lượng hóa robustness bằng CSV/JSON. Hướng tiếp theo trước mắt là chạy và lưu kết quả cho test suite/benchmark/robustness scripts mới, sau đó mở rộng corpus thực tế, hiệu chuẩn detector và cải thiện khả năng giải mã Sleepy Alarm không cần reference. Các kết luận được giới hạn đúng threat model: Blue 3 được giải dưới giả định biết cơ chế; Sleepy Alarm hiện cần reference. Detector audio có recall=0 trên benchmark hiện tại, do đó chưa hỗ trợ tuyên bố phát hiện audio steganography hiệu quả.
 
 ### 11.7. Phản biện sâu: threat model, validity và diễn giải kết quả
 
