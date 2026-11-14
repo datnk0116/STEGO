@@ -65,7 +65,7 @@ python src/experiments/blue3_robustness.py data/blue3/blue.png
 
 ### Sleepy Alarm
 
-The official MATLAB generator specifies a 8 kHz carrier, 50 baud, 0.02 s per symbol and a 7-second ASK transmission on the first/left channel. The optional reference file is resampled and aligned by cross-correlation; the unaligned MP3 encoder-delay prefix is discarded.
+The official MATLAB generator specifies a 8 kHz carrier, 50 baud, 0.02 s per symbol and a 7-second ASK transmission on the first/left channel. The optional reference file is resampled and aligned by cross-correlation. The decoder preserves the leading distributed-stream prefix that does not overlap the reference, then appends the aligned residual; this prevents losing the first ASK symbols when the original/distributed MP3 streams have different encoder priming offsets.
 
 ```bash
 python src/sleepy_alarm/analyze.py \
