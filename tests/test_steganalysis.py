@@ -32,6 +32,35 @@ class SteganalysisTests(unittest.TestCase):
         flagged, _ = classify_image(features)
         self.assertFalse(flagged)
 
+
+    def test_ask_like_modulation_is_flagged(self):
+        sr = 44100
+        samples_per_symbol = int(sr / 50)
+        amplitudes = np.tile(np.asarray([0.0, 0.002, 0.005, 0.002]), 40)
+        index = np.arange(len(amplitudes) * samples_per_symbol)
+        symbol = np.repeat(amplitudes, samples_per_symbol)
+        carrier = symbol * np.sin(2 * np.pi * 8000 * index / sr)
+        stereo = np.column_stack([carrier, np.zeros_like(carrier)])
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "ask.wav"
+            sf.write(path, stereo, sr)
+            features = audio_features(path)
+        flagged, reasons = classify_audio(features)
+        self.assertTrue(flagged, features)
+        self.assertEqual(len(reasons), 2)
+
+    def test_broadband_noise_is_not_flagged(self):
+        sr = 44100
+        rng = np.random.default_rng(7)
+        noise = rng.normal(0, 0.04, sr * 2)
+        stereo = np.column_stack([noise, noise * 0.9])
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "noise.wav"
+            sf.write(path, stereo, sr)
+            features = audio_features(path)
+        flagged, _ = classify_audio(features)
+        self.assertFalse(flagged, features)
+
     def test_audio_features_are_finite(self):
         sr = 44100
         t = np.arange(sr, dtype=np.float64) / sr
