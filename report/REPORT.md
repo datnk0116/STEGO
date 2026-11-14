@@ -40,12 +40,12 @@ Mục tiêu cụ thể:
 
 Assignment yêu cầu chọn một chủ đề CTF chính và khuyến nghị một cụm challenge nhất quán gồm hai challenge có liên hệ, hoặc một challenge khó kèm phần mở rộng có ý nghĩa [10]. Hai challenge được chọn đều thuộc hướng steganography, nhưng bổ sung cho nhau về dữ liệu và công cụ.
 
-| Phương án | Vật mang tin | Kỹ thuật chính | Giá trị học tập | Hạn chế khi chọn |
-|---|---|---|---|---|
-| Blue 3 — BYUCTF | PNG | Tổng sai khác RGB theo vùng đường chéo | Có thể suy luận thuật toán, tự viết decoder và kiểm tra tính đúng | Cần suy ra độ dài flag và màu nền |
-| Sleepy Alarm — ImaginaryCTF | MP3 | ASK, FFT/STFT, lọc băng và tách tín hiệu tham chiếu | Có phân tích tín hiệu, đồng bộ, codec và độ bền | MP3 làm thay đổi biên độ; cần xử lý audio cẩn thận |
-| Bài ảnh dùng LSB phổ thông | PNG/BMP | Đọc bit thấp của kênh màu | Dễ tái hiện | Ít chiều sâu nếu chỉ dùng công cụ trích xuất |
-| Bài chỉ dùng Steghide | Ảnh/tệp | Trích payload bằng công cụ đóng gói | Có thể kiểm chứng nhanh | Phụ thuộc passphrase/công cụ; khó thể hiện phân tích thuật toán nếu không mở rộng |
+| Phương án | Cơ chế và giá trị nghiên cứu | Lý do chọn / không chọn |
+|---|---|---|
+| **Blue 3 — BYUCTF (chọn)** | Tổng sai khác RGB theo vùng chéo; tự suy luận và viết decoder | Có artifact, creator source và solver tham khảo; cho phép đối chiếu white-box/black-box |
+| **Sleepy Alarm — ImaginaryCTF (chọn)** | ASK 8 kHz trong audio; phân tích phổ, đồng bộ và khôi phục symbol | Bổ sung miền tín hiệu khác với ảnh; có source tạo tín hiệu và track gốc để kiểm chứng |
+| Bài ảnh LSB phổ thông (không chọn) | Đọc bit thấp của kênh màu; dễ tái hiện | Ít chiều sâu nếu chỉ chạy công cụ; cần phần mở rộng riêng |
+| Steghide (không chọn) | Trích payload bằng công cụ đóng gói | Phụ thuộc passphrase/công cụ; khó so sánh thuật toán nếu thiếu source hoặc biến thể |
 
 Blue 3 được ưu tiên vì source mô tả thuật toán cụ thể, ảnh đầu vào có sẵn và có thể tự kiểm tra từ dữ liệu. Sleepy Alarm bổ sung một bài toán tín hiệu khác hẳn, đồng thời tạo điều kiện phân tích sự khác nhau giữa dữ liệu gốc, tín hiệu đã trộn và tín hiệu sau nén MP3. Việc chọn hai bài không nhằm tăng số lượng flag mà nhằm tạo phép so sánh có cùng chủ đề nhưng khác miền biểu diễn.
 
@@ -63,20 +63,20 @@ Các giả thuyết:
 
 ### 1.4. Tiêu chí xác nhận thành công
 
-| Challenge | Tiêu chí kỹ thuật | Trạng thái hiện tại |
+| Challenge | Điều kiện xác nhận | Kết quả đã đo |
 |---|---|---|
-| Blue 3 | Khôi phục đủ chuỗi; khớp định dạng và đối chiếu flag chính thức; ghi hash và thông số ảnh | Đã đạt trên lần chạy cục bộ; cần chạy lại sau thay đổi chế độ tự suy luận màu nền |
-| Sleepy Alarm | 350 symbol; 38 separator; 39 byte; prefix ictf{; suffix }; không có byte lỗi; đối chiếu generator | Chưa đạt trên lần chạy đầu; phiên bản decoder mới đang chờ xác minh |
-| Robustness | Mỗi biến thể có trạng thái giải mã và tham số biến đổi được ghi lại | Đã có script tạo biến thể; chưa có kết quả đo |
+| Blue 3 | Khôi phục flag, đối chiếu nguồn chính thức, ghi hash và thông số ảnh | Đạt: flag 50 ký tự; 49 độ dài ứng viên; PNG RGB 512 × 512 |
+| Sleepy Alarm | 350 symbol, 38 separator, 39 byte; không byte lỗi; exact-match ground truth | Đạt: 39/39 ký tự; prefix/suffix hợp lệ; errors rỗng; ground_truth_match=true |
+| Robustness | Chạy decoder trên biến thể và ghi tham số | Đạt trong phạm vi đã thử: 5 biến thể ảnh và 3 biến thể audio; mọi biến thể audio khớp flag |
 
 ### 1.5. Liên hệ trực tiếp với rubric
 
-| Tiêu chí | Điểm tối đa | Nội dung trong báo cáo | Bằng chứng quyết định |
-|---|---:|---|---|
-| 1. Lập kế hoạch và biện minh | 2,0 | Mục 1: mục tiêu, câu hỏi nghiên cứu, so sánh phương án và lý do chọn cặp challenge | Phạm vi thống nhất; so sánh hai hướng giải và lý do chọn |
-| 2. Triển khai và tài liệu hóa | 4,0 | Mục 3–8: nguồn dữ liệu, môi trường, lệnh, decoder, kiểm thử và log | Hash artifact; ảnh terminal; output solver; hình phân tích; log test và robustness |
-| 3. Phân tích kết quả | 2,0 | Mục 2, 5, 6, 9, 10: mô hình toán học, điều kiện giải, lỗi và góc nhìn phòng thủ | Derivation Blue 3; ASK 350 symbol; phân tích lần giải mã thất bại và lần chạy cuối |
-| 4. Đánh giá, phản biện và tự học | 2,0 | Mục 11: hạn chế, white-box/black-box, false positive và hướng cải tiến | Nhật ký làm việc thực tế; so sánh phương án; kết quả thí nghiệm và tự phản biện |
+| Tiêu chí | Điểm tối đa | Minh chứng chính |
+|---|---:|---|
+| Lập kế hoạch và biện minh | 2,0 | Mục 1: RQ/H1–H3, so sánh phương án, lý do chọn hai challenge cùng chủ đề |
+| Triển khai và tài liệu hóa | 4,0 | Mục 3–8: artifact và SHA-256, lệnh, decoder, 6 regression tests, hình và CSV/JSON CI |
+| Phân tích kết quả | 2,0 | Mục 2, 5, 6, 9, 10: chứng minh toán học, 350 symbol ASK, lỗi và điều kiện giải |
+| Đánh giá, phản biện và tự học | 2,0 | Mục 11: giới hạn reference-assisted, false positives, robustness và logbook cá nhân |
 
 Bảng này là bản đồ đối chiếu với rubric, không phải tự chấm điểm. Điểm số chỉ do giảng viên quyết định dựa trên báo cáo và khả năng trình diễn lại.
 
@@ -176,19 +176,19 @@ X[k]=\sum_{n=0}^{N-1}x[n]e^{-j2\pi kn/N}
 
 Các artifact được lấy từ repository chính thức, tải về bằng script có kiểm tra kích thước và tính SHA-256 cục bộ.
 
-| Artifact | Nguồn | Kích thước | SHA-256 cục bộ |
-|---|---|---:|---|
-| blue.png | BYU-CSA, Blue 3 | 9.406 bytes | 009dab85bf6ccc5b42b8efa5f959ab6efa0c556b37eb6b4a77a21ec3356b721e |
-| morning_n_breakfast.mp3 | ImaginaryCTF, file phân phối | 179.283 bytes | bd181876c2d28152b9c3982fd88945d4e681fd93d49477622ea5841a3ff25ae2 |
-| morning_n_breakfast_original.mp3 | ImaginaryCTF, audio tham chiếu | 160.495 bytes | d0c283834955e54d68b0bba723ccd194142a428d2de74722e5f1dff3ccbd94ad2 |
+- **Blue 3 — blue.png:** 9.406 bytes; SHA-256 `009dab85bf6ccc5b42b8efa5f959ab6efa0c556b37eb6b4a77a21ec3356b721e`.
+- **Sleepy Alarm — morning_n_breakfast.mp3:** 179.283 bytes; SHA-256 `bd181876c2d28152b9c3982fd88945d4e681fd93d49477622ea5841a3ff25ae2`.
+- **Track tham chiếu — morning_n_breakfast_original.mp3:** 160.495 bytes; SHA-256 `d0c283834955e54d68b0bba723ccd194142a428d2de74722e5f1dff3ccbd94ad2`.
+
+Ba artifact chính thức được lưu nguyên bản trong data/; nguồn và commit upstream được liệt kê tại [1]–[5].
 
 Blue 3 có định dạng PNG, mode RGB, kích thước 512 × 512, 262.144 pixel; Pillow không báo metadata key. Các giá trị kênh quan sát được:
 
-| Kênh | Min | Max | Mean | Std | Số giá trị duy nhất |
-|---|---:|---:|---:|---:|---:|
-| R | 64 | 68 | 64,006634 | 0,093454 | 5 |
-| G | 77 | 81 | 77,006531 | 0,094254 | 5 |
-| B | 205 | 209 | 205,006535 | 0,094233 | 5 |
+| Kênh | Miền giá trị | Mean ± Std | Số giá trị |
+|---|---:|---:|---:|
+| R | 64–68 | 64,006634 ± 0,093454 | 5 |
+| G | 77–81 | 77,006531 ± 0,094254 | 5 |
+| B | 205–209 | 205,006535 ± 0,094233 | 5 |
 
 Các giá trị min/max nhất quán với mô hình nền (64,77,205) được tăng từng đơn vị. Tuy nhiên, chỉ các thống kê này chưa đủ chứng minh payload; bằng chứng quyết định là tổng sai khác theo đúng phân vùng và kết quả giải mã đối chiếu với flag chính thức.
 
