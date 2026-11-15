@@ -1,7 +1,0 @@
-{
-  "trial_count": 23,
-  "pass_count": 7,
-  "mean_bit_error_rate": 0.1297380156075808,
-  "mean_symbol_error_rate": 0.1231055900621118,
-  "csv": "results/sleepy_alarm/robustness_matrix/robustness_matrix.csv"
-}

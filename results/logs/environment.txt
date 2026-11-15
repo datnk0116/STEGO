@@ -1,8 +1,0 @@
-Python: 3.14.10 (main, Oct 26 2026, 14:17:03) [GCC 15.2.0]
-Platform: Linux-7.0.0-1019-azure-x86_64-with-glibc2.43
-Architecture: x86_64
-Pillow: 13.0.0
-numpy: 2.5.4
-scipy: 1.18.1
-matplotlib: 3.11.2
-soundfile: 0.14.0
