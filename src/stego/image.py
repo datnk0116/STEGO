@@ -1,8 +1,7 @@
 from pathlib import Path
-import re
 import numpy as np
 from PIL import Image
-FLAG = re.compile(r'byuctf\\{[0-9A-Za-z_]*\\}\\Z')
+
 def decode_blue3(path):
     with Image.open(path) as im:
         pixels = np.asarray(im.convert('RGB'), dtype=np.int16)
@@ -23,6 +22,6 @@ def decode_blue3(path):
         candidate = ''.join(chars)
         if candidate:
             attempts.append({'length': n, 'candidate': candidate})
-        if FLAG.fullmatch(candidate):
+        if candidate.startswith('byuctf{') and candidate.endswith('}') and all(c.isalnum() or c in '_{}' for c in candidate):
             return {'flag': candidate, 'format_valid': True, 'attempts': attempts}
     return {'flag': None, 'format_valid': False, 'attempts': attempts}
