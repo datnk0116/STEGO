@@ -1,27 +1,10 @@
 # LOGBOOK — UET.CN3124 Steganography CTF
 
 **Project:** Blue 3 (image) and Sleepy Alarm (audio)  
-**Development repository:** `datnk0116/STEGO`
-**Official submission repository:** `datnk0116/STEGANO`
+**Repository:** `datnk0116/STEGO`
 **Purpose:** chronological record of the work actually performed, commands reported as executed, observed outputs, and limitations.
 
-> This is the development-repository logbook. Entries 00–04 preserve experiment runs reported from the STEGO development copy, and Entry 05 records STEGO development Git state. Later visualization work is recorded in Entry 06. STEGO commits are not STEGANO submission commits. The official timeline below lists only the last remotely verified STEGANO commit available for comparison.
-
-## Repository roles and official submission history
-
-- `datnk0116/STEGO` is the development and verification repository represented by this logbook.
-- `datnk0116/STEGANO` is the official submission and logbook repository.
-- Only actual commits in STEGANO establish official submission milestones. A STEGO commit, local file, experiment result, or screenshot does not establish submission to STEGANO.
-
-### Last remotely verified STEGANO history
-
-The latest official-repository state available during this review was:
-
-| Date | STEGANO commit SHA | Message |
-|---|---|---|
-| 2026-11-16 | `46bcdb33111fe8a06dd045f4a48bb55aa78d5f5b` | `Initial project submission` |
-
-No fetch or pull was performed for the STEGANO repository, as required for the local-only correction. A newer live GitHub history, if any, is not verified here. This table deliberately contains no STEGO commit.
+> This logbook is an evidence record, not a plan. Entries below describe completed actions only. A result is marked successful only when the corresponding execution output was reported. No later implementation, visualization, or experiment is represented as already completed.
 
 ---
 
@@ -168,15 +151,12 @@ PYTHONPATH=src python -m unittest discover -s tests -v
 
 **Date:** 16 November 2026
 
-The operator supplied the following Git state from the local **STEGO development checkout**. These values are development history, not STEGANO submission history:
+The operator supplied the following Git state from the local checkout:
 
-- Repository: `datnk0116/STEGO` (development)
 - Branch: `rebuild/working-runnable`
-- Development commit observed at that time: `925d9db2a7a969cd30643e1a23bfdd2d124c5122` (`docs: record verified local experiment results in logbook`)
-- Development remote-tracking branch: `origin/rebuild/working-runnable`
+- Commit observed at that time: `925d9db2a7a969cd30643e1a23bfdd2d124c5122`
+- Remote tracking branch: `origin/rebuild/working-runnable`
 - Working-tree status: `?? results/` (the results directory was untracked)
-
-This commit is retained as a development reference only. It is not an official STEGANO submission commit.
 
 The operator also supplied these SHA-256 values:
 
@@ -194,18 +174,17 @@ The operator also supplied these SHA-256 values:
 
 The execution details in Entries 00–05 are transcribed from terminal output and Git information supplied by the operator on 16 November 2026. The exact execution time was not supplied.
 
-At the time this logbook was checked against the GitHub development repository `datnk0116/STEGO`, branch `rebuild/working-runnable` (HEAD `37b672cc2a8b2980be16cd07f77b7c1b173e635d`), its tracked tree did **not** contain the reported `results/` output files or visualization artifacts. The entries therefore record the operator-reported runs; they do not claim those raw output files were archived in that STEGO tree at that time.
+At the time this logbook was checked against the GitHub branch `rebuild/working-runnable` (HEAD `37b672cc2a8b2980be16cd07f77b7c1b173e635d`), the tracked repository tree did **not** contain the reported `results/` output files or visualization artifacts. The entries therefore record the operator-reported runs; they do not claim those raw output files are currently archived in this Git tree.
 
-The later STEGO HEAD above is a development-repository documentation state, not the commit observed during the experiment in Entry 05. No experiment result is attributed to that later commit or to a STEGANO commit.
+The later HEAD above is a repository documentation state, not the commit observed during the experiment in Entry 05. No experiment result is attributed to that later commit.
 
 At the time of the audit above, this logbook made no claim of a screenshot, visualization, reference-free success, or additional test result. The later visualization work is recorded below; no screenshot was captured.
 
 ---
 
-## Entry 06 — Decoder-backed visualization implementation and verification (STEGO development)
+## Entry 06 — Decoder-backed visualization implementation and verification
 
 **Date:** 16 November 2026
-**Repository:** `datnk0116/STEGO` (development)
 **Branch:** `rebuild/working-runnable`
 
 ### Repository synchronization
@@ -262,9 +241,4 @@ The dedicated visualization commit was created:
 - SHA: `e75ed9331fe4e8e2e9774165158de94284b4b290`
 - Message: `feat(viz): add lightweight challenge visualizers`
 
-Subsequent development-repository commits recorded the verification entry and screenshots:
-
-- `d33b11aaab28ab3bc19e4b383576f798056a0540` — `docs: record verified visualization work`
-- `dc4a4c55a2d0dd4806a01816a4b9b05236b6b234` — `docs(evidence): add visualization screenshots` (five screenshots under `evidence/visualization/`)
-
-These are STEGO development commit references only. The visualizer and screenshots are not claimed as officially submitted to STEGANO. This entry records actual local verification and does not claim a successful reference-free extraction.
+This entry records actual local verification. It does not claim a screenshot or a successful reference-free extraction.
