@@ -178,4 +178,67 @@ At the time this logbook was checked against the GitHub branch `rebuild/working-
 
 The later HEAD above is a repository documentation state, not the commit observed during the experiment in Entry 05. No experiment result is attributed to that later commit.
 
-No screenshot, visualization, reference-free success, or additional test result is claimed in this logbook.
+At the time of the audit above, this logbook made no claim of a screenshot, visualization, reference-free success, or additional test result. The later visualization work is recorded below; no screenshot was captured.
+
+---
+
+## Entry 06 — Decoder-backed visualization implementation and verification
+
+**Date:** 16 November 2026
+**Branch:** `rebuild/working-runnable`
+
+### Repository synchronization
+
+- Initial local STEGO HEAD: `37b672cc2a8b2980be16cd07f77b7c1b173e635d`.
+- Fetched STEGO `origin/rebuild/working-runnable` HEAD: `307a4ff1ed599108b1edba7676e2f9a7d24e8fdf`.
+- Fetched STEGANO `origin/main` HEAD: `46bcdb33111fe8a06dd045f4a48bb55aa78d5f5b`. The local STEGANO checkout itself had no commit; its `main` worktree contained untracked files.
+- STEGO was fast-forwarded to `307a4ff1ed599108b1edba7676e2f9a7d24e8fdf`. No history was rewritten.
+- The shared challenge decoder sources, tests, and three input artifacts matched byte for byte between the current STEGANO working copy and STEGO. After the fast-forward, `report/REPORT.md` and `LOGBOOK.md` also matched the STEGANO working copy. Existing `results/` files matched STEGANO's `evidence/results/`; only local `.DS_Store` files differed.
+- The pre-existing local deletion of `evidence/README.md` and untracked `results/` directory were preserved and were not staged in the visualization commit.
+
+### Implementation
+
+Added the Streamlit overview, Blue 3 and Sleepy Alarm pages, shared decoder/data helpers, Plotly charts, tests, and setup/use instructions. The decoder implementation and challenge artifacts were not changed. Audio waveform points are sampled in bounded blocks for display; decoder calls still use the original files.
+
+### Commands run and observed results
+
+Dependency installation:
+
+```text
+rtk proxy .venv/bin/python -m pip install -r requirements.txt
+```
+
+Completed successfully with Streamlit 1.67.0 and Plotly 6.9.0 installed in `.venv`.
+
+The final CLI regression commands were run with output redirected to temporary files:
+
+```text
+rtk proxy env PYTHONPATH=src PATH=.venv/bin:$PATH python -m stego blue3 data/blue3/blue.png > /private/tmp/stego-blue3-final.json
+rtk proxy env PYTHONPATH=src PATH=.venv/bin:$PATH python -m stego sleepy-alarm data/sleepy_alarm/morning_n_breakfast.mp3 --reference data/sleepy_alarm/morning_n_breakfast_original.mp3 > /private/tmp/stego-sleepy-assisted-final.json
+rtk proxy env PYTHONPATH=src PATH=.venv/bin:$PATH python -m stego sleepy-alarm data/sleepy_alarm/morning_n_breakfast.mp3 > /private/tmp/stego-sleepy-free-final.json
+```
+
+- Blue 3 exited `0`; output matched the saved run, with `format_valid: true` and candidate `byuctf{more_blue_steganography_da_ba_dee_nkiY9CyP}`.
+- Reference-assisted Sleepy Alarm exited `0`; output matched the saved run, with `format_valid: true`, decoded text `ictf{1_sl33py_NaYuKi_alarm_2a634dc1bb2}`, lag and target start `1729`, correlation `0.9998734358246231`, and no byte errors.
+- Reference-free Sleepy Alarm exited `2`; output matched the saved run, with `format_valid: false`, fragment `ictsl33p_Nauk_arm_224dcb2}`, and 20 byte errors.
+
+Full test command:
+
+```text
+rtk proxy env PYTHONPATH=src .venv/bin/python -m unittest discover -s tests -v
+```
+
+Observed result: 9 tests ran in 0.669 seconds; all passed (`OK`, exit code `0`).
+
+Streamlit page smoke checks ran `AppTest` with a 30-second timeout for `visualization/app.py`, `visualization/pages/1_Blue_3.py`, and `visualization/pages/2_Sleepy_Alarm.py`; all three reported no exceptions. The live command `rtk proxy .venv/bin/streamlit run visualization/app.py --server.headless=true --server.port=8501` started, and `rtk proxy curl -fsS http://127.0.0.1:8501/_stcore/health` returned `ok`. The temporary server was stopped after verification.
+
+`rtk git diff --check` completed without errors.
+
+### Commit
+
+The dedicated visualization commit was created:
+
+- SHA: `e75ed9331fe4e8e2e9774165158de94284b4b290`
+- Message: `feat(viz): add lightweight challenge visualizers`
+
+This entry records actual local verification. It does not claim a screenshot or a successful reference-free extraction.
