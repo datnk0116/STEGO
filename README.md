@@ -8,6 +8,10 @@
 
 This project investigates two public CTF challenges that conceal data in digital media. It implements independent extraction workflows, validates their output using the challenge formats, and documents the experimental process, evidence and limitations.
 
+## Repository provenance
+
+`datnk0116/STEGO` is the development and verification repository. `datnk0116/STEGANO` is the official submission and logbook repository. The experiment and visualization records here describe STEGO development work; only actual commits in STEGANO establish official submission milestones. Changes or screenshots in STEGO are not thereby submitted to STEGANO.
+
 ## Environment setup
 
 Requires Python 3.10 or newer.

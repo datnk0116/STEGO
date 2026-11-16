@@ -1,5 +1,7 @@
 # Evidence
 
+This directory belongs to the STEGO development repository. The five visualization screenshots under `evidence/visualization/` are development evidence committed in STEGO. They are not screenshots in the separate STEGANO official submission repository. The currently available STEGANO project copy had no screenshots in its nested `evidence/` directory; its raw run outputs were in the outer local workspace and were not part of the cached official commit.
+
 Put real screenshots of experiment execution in this directory, organized as described in the root `LOGBOOK.md`:
 
 - `01_environment/` — Python and dependency installation.

@@ -30,6 +30,8 @@ The reference-assisted mode depends on access to the original recording. It is d
 
 The setup, CLI commands and test invocation are maintained in `README.md`. The exact commands reported as executed, together with their outcomes, are recorded in `LOGBOOK.md`. The expected flag is a validation target only; it is not used as extraction input.
 
+The experiment records in this report describe local runs from the STEGO development and verification repository. STEGANO is the official submission repository; only commits in STEGANO determine which changes were submitted. Development commits and screenshots in STEGO do not establish that those files were included in a STEGANO submission.
+
 ## 6. Results
 
 The following results were reported from local executions on 16 November 2026. Exit codes and metrics are transcribed from the operator-supplied terminal output.
