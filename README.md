@@ -51,7 +51,22 @@ A passing integration test checks the decoder output against the expected challe
 - `report/REPORT.md`: technical report.
 - `LOGBOOK.md`: experiment log, exact commands and evidence register.
 - `evidence/`: screenshots and captured run evidence.
+- `visualization/`: Streamlit overview and challenge-specific visualizations.
 
 ## Reproducibility and evidence
 
 Do not edit original files under `data/`. Store generated plots, decoded outputs and logs under `results/`; store screenshots under `evidence/`. Record the command, date, environment, actual result and corresponding evidence filename for every run. Do not claim a run passed until it has actually completed successfully.
+
+## Visualization
+
+Install all dependencies, including Streamlit and Plotly, with the setup commands above. From the repository root, start the local app with:
+
+```bash
+streamlit run visualization/app.py
+```
+
+The overview runs both decoders and shows their current format-validation status. Open **Blue 3** or **Sleepy Alarm** from Streamlit's page navigation to inspect the image and candidate list, or the audio metadata, waveforms, decoded text, and decoder metrics.
+
+The Blue 3 page shows the supplied RGB image, pixel dimensions, the most common RGB baseline used by the decoder, per-channel RGB histograms, and the candidates returned by `decode_blue3()`. The chart summarizes channel-value distributions; it does not identify suspicious regions.
+
+The Sleepy Alarm page shows sample rate, channels, duration, frames (samples per channel), total scalar samples, and downsampled waveforms for display. Decoder results and their metrics remain unchanged. Reference-assisted extraction aligns and subtracts the original recording before decoding. Reference-free extraction omits that reference; its result is evaluated separately and can fail, as reflected by its actual `format_valid` and byte-error output.
