@@ -270,7 +270,23 @@ The entries below are based on the terminal transcript supplied by the operator.
 
 ### Entry 05 — Git state and artifact integrity
 
-**Status: PENDING.** The supplied terminal transcript does not include `git status`, `git branch --show-current`, `git log -1` or artifact SHA-256 output. Run Section 6 and append the actual values before declaring the repository state verified.
+| Field | Recorded result |
+|---|---|
+| Branch | `rebuild/working-runnable` |
+| Latest commit | `925d9db` |
+| Full commit SHA | `925d9db2a7a969cd30643e1a23bfdd2d124c5122` |
+| Remote tracking | `origin/rebuild/working-runnable`; local branch up to date after fast-forward pull |
+| Working-tree status | `?? results/` — untracked results directory |
+| Blue 3 image SHA-256 | `009dab85bf6ccc5b42b8efa5f959ab6efa0c556b37eb6b4a77a21ec3356b721e` |
+| Sleepy Alarm target SHA-256 | `bd181876c2d28152b9c3982fd88945d4e681fd93d49477622ea5841a3ff25ae2` |
+| Sleepy Alarm reference SHA-256 | `d0c283834955e54d68b0bba723ccd194142a428d2de74722e5f1dff3ccbd94ad` |
+| Result | **PASS — branch, commit and artifact hashes verified; working tree contains untracked experiment outputs** |
+
+**Observation:** the local branch was already on `rebuild/working-runnable`. A fast-forward pull advanced it from `5e2a7b1` to `925d9db`; Git then reported it up to date with the remote. The three challenge-artifact hashes were printed successfully. The only reported working-tree item was the untracked `results/` directory.
+
+**Interpretation:** the local checkout is synchronized with the documented branch commit, and the supplied challenge artifacts have recorded SHA-256 fingerprints. The working tree is not clean because generated experiment outputs are untracked. This is expected evidence material, not a source-code modification. Keep the files under `results/` and decide whether to commit them after reviewing their contents; do not stage unrelated files such as `.venv/`.
+
+**Reproducibility note:** these hashes identify the exact three input artifacts used for the recorded experiments. Future runs can compare their hashes to detect accidental changes.
 
 ## 10. Remaining evidence and documentation checklist
 
@@ -279,8 +295,8 @@ The entries below are based on the terminal transcript supplied by the operator.
 - [x] Sleepy Alarm reference-assisted command, decoded output, alignment metrics and exit code recorded.
 - [x] Sleepy Alarm reference-free failure and exit code recorded.
 - [x] Unit test results (2 passed) recorded.
-- [ ] Git branch, latest commit and working-tree status recorded.
-- [ ] SHA-256 hashes of all three input artifacts recorded.
+- [x] Git branch, latest commit and working-tree status recorded.
+- [x] SHA-256 hashes of all three input artifacts recorded.
 - [ ] Confirm the local output files exist and match the supplied terminal transcript.
 - [ ] Complete the report's personal reflection based on the actual debugging and execution experience.
 
